@@ -1,1 +1,1 @@
-Benchmark(DummyBenchmark)
+Benchmark(BitInterleavingBenchmark)
