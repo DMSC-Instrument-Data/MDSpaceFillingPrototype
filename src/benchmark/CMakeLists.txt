@@ -1,6 +1,8 @@
 set(BENCHMARKS
   BitInterleaving128bitBenchmark
   BitInterleaving64bitBenchmark
+  CoordinateConversionBenchmark
+  EventCreationBenchmark
 )
 
 foreach(BENCHMARK ${BENCHMARKS})
