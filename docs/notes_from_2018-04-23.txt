@@ -1,0 +1,34 @@
+Conversion of floating point to integer:
+- Pros:
+  - Allows easy sorting for space filling curve
+- Cons:
+  - Cost of int conversion
+  - Cost of expanding MD space
+  - Loss of precision
+- Sorting with >64 bits
+  - Multi step sorting
+    - Sort on first integer (MSB)
+    - Build box structure
+    - Sort each box on full number of bits
+  - Memory overhead to move >64 bits
+    - Moving MSB and LSB to only compare MSB in initial/coarse sort
+    - Total memory usage
+
+Sorting methods to try:
+- Binary splitting using iterators to vector of all events
+- Z-order space filling curve (convert coordinate to integer and sort)
+  - Sort all elements
+    - std::sort
+    - Radix sort (boost::sort::spreadsort)
+    - Bitonic sort
+    - Funnel sort
+  - Custom radix sort
+  - Parallel algorithms
+  - Cache optimised algorithms
+  - External sort
+- Other space filling curves
+
+Building box structure:
+- Single traversal over event vector
+- Push box boundaries to stack
+- When event count is over target, backtrace and pop box boundary from stack
