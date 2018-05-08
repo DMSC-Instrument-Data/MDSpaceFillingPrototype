@@ -1,5 +1,7 @@
 #include <benchmark/benchmark.h>
 
+#include <boost/multiprecision/cpp_int.hpp>
+
 #include "BitInterleaving.h"
 
 static void BM_Interleave4(benchmark::State &state) {
@@ -25,5 +27,18 @@ static void BM_Interleave4_128Bit(benchmark::State &state) {
   }
 }
 BENCHMARK(BM_Interleave4_128Bit);
+
+static void BM_Interleave4_128Bit_Boost(benchmark::State &state) {
+  using namespace boost::multiprecision;
+
+  uint32_t a, b, c, d;
+  uint128_t res;
+  for (auto _ : state) {
+    res = Interleave4<uint128_t, uint32_t>(a, b, c, d);
+    Deinterleave4(res, a, b, c, d);
+    benchmark::DoNotOptimize(a);
+  }
+}
+BENCHMARK(BM_Interleave4_128Bit_Boost);
 
 BENCHMARK_MAIN();
