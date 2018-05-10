@@ -8,8 +8,6 @@ target_include_directories(
 )
 target_link_libraries(
   MDEventTest
-  gtest_main
-  ${GTEST_LIBRARIES}
-  pthread
+  ${CONAN_LIBS_GTEST}
 )
 add_test(MDEventTest MDEventTest)
