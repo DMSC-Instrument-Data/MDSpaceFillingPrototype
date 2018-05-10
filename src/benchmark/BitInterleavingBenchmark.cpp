@@ -4,6 +4,18 @@
 
 #include "BitInterleaving.h"
 
+static void BM_Interleave_N4(benchmark::State &state) {
+  Eigen::Array<uint16_t, 4, 1> data;
+  uint16_t a, b, c, d;
+  uint64_t res;
+  for (auto _ : state) {
+    res = Interleave<uint64_t, uint16_t, 4>(data);
+    Deinterleave4(res, a, b, c, d);
+    benchmark::DoNotOptimize(res);
+  }
+}
+BENCHMARK(BM_Interleave_N4);
+
 static void BM_Interleave4(benchmark::State &state) {
   uint16_t a, b, c, d;
   uint64_t res;
