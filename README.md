@@ -1,4 +1,4 @@
-# MD Space Filling Prototype
+# MD Space Filling Prototype [![Build Status](https://travis-ci.org/DMSC-Instrument-Data/MDSpaceFillingPrototype.svg?branch=master)](https://travis-ci.org/DMSC-Instrument-Data/MDSpaceFillingPrototype)
 
 This investigation aims to evaluate the use of space filling curves as an
 alternative method of underlying storage for *MDEventWorkspaces* within Mantid.
