@@ -7,7 +7,7 @@ Currently this is done using a recursive box structure already described
 
 ## Proposed alternative
 
-In the space filling curve approach all event are stored in a single container
+In the space filling curve approach all events are stored in a single container
 which is sorted in the order of the individual events position on the curve.
 
 This can be done via a conversion of floating point coordinates to interleaved
