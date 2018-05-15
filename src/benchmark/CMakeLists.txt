@@ -4,6 +4,7 @@ set(BENCHMARKS
   CoordinateConversionBenchmark
   EventCreationBenchmark
   SortBenchmark
+  SortBenchmarkLarge
 )
 
 foreach(BENCHMARK ${BENCHMARKS})
