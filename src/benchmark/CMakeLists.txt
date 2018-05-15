@@ -5,6 +5,7 @@ set(BENCHMARKS
   EventCreationBenchmark
   SortBenchmark
   SortBenchmarkLarge
+  SortEventBenchmark
 )
 
 foreach(BENCHMARK ${BENCHMARKS})

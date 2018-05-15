@@ -8,6 +8,9 @@
 
 template <size_t ND> class MDEvent {
 public:
+  MDEvent(uint64_t spaceFillingCurveOrder = 0, float signal = 1.0f)
+      : m_spaceFillingCurveOrder(spaceFillingCurveOrder), m_signal(signal) {}
+
   MDEvent(const MDCoordinate<ND> &coord, const MDSpaceBounds<ND> &space,
           float signal = 1.0f)
       : m_signal(signal) {
@@ -18,8 +21,13 @@ public:
   }
 
   uint64_t spaceFillingCurveOrder() const { return m_spaceFillingCurveOrder; }
+  float signal() const { return m_signal; }
 
-protected:
+  bool operator<(const MDEvent<ND> &other) const {
+    return m_spaceFillingCurveOrder < other.m_spaceFillingCurveOrder;
+  }
+
+private:
   float m_signal;
   uint64_t m_spaceFillingCurveOrder;
 };
