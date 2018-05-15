@@ -1,0 +1,35 @@
+dist: trusty
+
+cache:
+  directories:
+    - /home/travis/.conan/
+
+language: shell
+
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+        - CC=gcc-5
+        - CXX=g++-5
+        - OMP_NUM_THREADS=4
+
+script:
+  - ${CC} --version
+  - ${CXX} --version
+
+  - pip install --user conan
+
+  - mkdir build
+  - cd build
+
+  - cmake -DCMAKE_BUILD_TYPE=Release ..
+  - make -j4
+
+  - ctest -V -E Benchmark
