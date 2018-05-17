@@ -1,2 +1,5 @@
 UnitTest(MDEventTest)
 UnitTest(BitInterleavingTest)
+UnitTest(BitInterleaving128BitTest)
+UnitTest(BitInterleavingEigenTest)
+UnitTest(BitInterleavingNaiveTest)
