@@ -81,6 +81,49 @@ static void BM_RoundTrip_Int_4(benchmark::State &state) {
 }
 BENCHMARK(BM_RoundTrip_Int_4);
 
+static void BM_Interleave_4_16_64(benchmark::State &state) {
+  uint16_t a, b, c, d;
+  uint64_t res;
+  for (auto _ : state) {
+    res = Interleave_4_16_64(a, b, c, d);
+    benchmark::DoNotOptimize(a);
+    benchmark::DoNotOptimize(b);
+    benchmark::DoNotOptimize(c);
+    benchmark::DoNotOptimize(d);
+    benchmark::DoNotOptimize(res);
+  }
+}
+BENCHMARK(BM_Interleave_4_16_64);
+
+static void BM_Deinterleave_4_16_64(benchmark::State &state) {
+  uint16_t a, b, c, d;
+  uint64_t res;
+  for (auto _ : state) {
+    Deinterleave_4_16_64(res, a, b, c, d);
+    benchmark::DoNotOptimize(a);
+    benchmark::DoNotOptimize(b);
+    benchmark::DoNotOptimize(c);
+    benchmark::DoNotOptimize(d);
+    benchmark::DoNotOptimize(res);
+  }
+}
+BENCHMARK(BM_Deinterleave_4_16_64);
+
+static void BM_RoundTrip_4_16_64(benchmark::State &state) {
+  uint16_t a, b, c, d;
+  uint64_t res;
+  for (auto _ : state) {
+    res = Interleave_4_16_64(a, b, c, d);
+    Deinterleave_4_16_64(res, a, b, c, d);
+    benchmark::DoNotOptimize(a);
+    benchmark::DoNotOptimize(b);
+    benchmark::DoNotOptimize(c);
+    benchmark::DoNotOptimize(d);
+    benchmark::DoNotOptimize(res);
+  }
+}
+BENCHMARK(BM_RoundTrip_4_16_64);
+
 static void BM_Interleave_128Bit_4(benchmark::State &state) {
   uint32_t a, b, c, d;
   uint64_t msb, lsb;
