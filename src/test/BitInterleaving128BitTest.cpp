@@ -5,7 +5,7 @@
 #include "BitInterleaving128bit.h"
 #include "BitInterleavingNaive.h"
 
-TEST(BitInterleaving128BitTest, Interleave4) {
+TEST(BitInterleaving128BitTest, Interleave_4_32_128) {
   /* A 0b10101010101010101010101010101010 */
   /* B 0b00000000000000001111111111111111 */
   /* C 0b11111111111111110000000000000000 */
@@ -21,13 +21,13 @@ TEST(BitInterleaving128BitTest, Interleave4) {
   uint64_t msb(0);
   uint64_t lsb(0);
 
-  Interleave4_128Bit<uint32_t>(msb, lsb, a, b, c, d);
+  Interleave_4_32_128(msb, lsb, a, b, c, d);
 
   EXPECT_EQ(6076574520689089756UL, msb);
   EXPECT_EQ(13455272145591611954UL, lsb);
 }
 
-TEST(BitInterleaving128BitTest, Deinterleave4) {
+TEST(BitInterleaving128BitTest, Deinterleave_4_32_128) {
   /* A 0b10101010101010101010101010101010 */
   /* B 0b00000000000000001111111111111111 */
   /* C 0b11111111111111110000000000000000 */
@@ -39,7 +39,7 @@ TEST(BitInterleaving128BitTest, Deinterleave4) {
   const uint64_t lsb(13455272145591611954UL);
 
   uint32_t a(0), b(0), c(0), d(0);
-  Deinterleave4_128Bit<uint32_t>(msb, lsb, a, b, c, d);
+  Deinterleave_4_32_128(msb, lsb, a, b, c, d);
 
   EXPECT_EQ(2863311530, a);
   EXPECT_EQ(65535, b);

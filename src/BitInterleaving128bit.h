@@ -1,47 +1,34 @@
 #include <cinttypes>
 #include <cstddef>
 
+#include "BitInterleaving.h"
+
 #pragma once
 
-template <typename IntegerT>
-void Interleave4_128Bit(uint64_t &msb, uint64_t &lsb, const IntegerT a,
-                        const IntegerT b, const IntegerT c, const IntegerT d) {
-  const size_t halfInputBitLength(sizeof(IntegerT) * 4);
+void Interleave_4_32_128(uint64_t &msb, uint64_t &lsb, const uint32_t a,
+                         const uint32_t b, const uint32_t c, const uint32_t d) {
+  const size_t halfBitLen(sizeof(uint32_t) * 4);
 
-  for (int i = 0; i < halfInputBitLength; i++) {
-    /* LSB is identical to Interleave4 */
-    lsb |= (a & (uint64_t)1 << i) << (i * 3);
-    lsb |= (b & (uint64_t)1 << i) << ((i * 3) + 1);
-    lsb |= (c & (uint64_t)1 << i) << ((i * 3) + 2);
-    lsb |= (d & (uint64_t)1 << i) << ((i * 3) + 3);
-
-    /* MSB is as Interleave4 but operating on shifted integers */
-    msb |= ((a >> halfInputBitLength) & (uint64_t)1 << i) << (i * 3);
-    msb |= ((b >> halfInputBitLength) & (uint64_t)1 << i) << ((i * 3) + 1);
-    msb |= ((c >> halfInputBitLength) & (uint64_t)1 << i) << ((i * 3) + 2);
-    msb |= ((d >> halfInputBitLength) & (uint64_t)1 << i) << ((i * 3) + 3);
-  }
+  lsb = Interleave_4_16_64(a, b, c, d);
+  msb = Interleave_4_16_64(a >> halfBitLen, b >> halfBitLen, c >> halfBitLen,
+                           d >> halfBitLen);
 }
 
-template <typename IntegerT>
-void Deinterleave4_128Bit(const uint64_t msb, const uint64_t lsb, IntegerT &a,
-                          IntegerT &b, IntegerT &c, IntegerT &d) {
-  const size_t halfInputBitLength(sizeof(IntegerT) * 4);
+void Deinterleave_4_32_128(const uint64_t msb, const uint64_t lsb, uint32_t &a,
+                           uint32_t &b, uint32_t &c, uint32_t &d) {
+  const size_t halfBitLen(sizeof(uint32_t) * 4);
 
-  for (int i = 0; i < halfInputBitLength; i++) {
-    /* LSB is identical to Interleave4 */
-    a |= ((lsb & (uint64_t)1 << (i * 4)) >> (i * 3));
-    b |= ((lsb & (uint64_t)1 << ((i * 4) + 1)) >> ((i * 3) + 1));
-    c |= ((lsb & (uint64_t)1 << ((i * 4) + 2)) >> ((i * 3) + 2));
-    d |= ((lsb & (uint64_t)1 << ((i * 4) + 3)) >> ((i * 3) + 3));
+  uint16_t aa, bb, cc, dd;
 
-    /* MSB is as Interleave4 but shifting by half input integer width */
-    a |= ((msb & (uint64_t)1 << (i * 4)) >> ((i * 3))) << halfInputBitLength;
-    b |= ((msb & (uint64_t)1 << ((i * 4) + 1)) >> ((i * 3) + 1))
-         << halfInputBitLength;
-    c |= ((msb & (uint64_t)1 << ((i * 4) + 2)) >> ((i * 3) + 2))
-         << halfInputBitLength;
-    d |= ((msb & (uint64_t)1 << ((i * 4) + 3)) >> ((i * 3) + 3))
-         << halfInputBitLength;
-  }
+  Deinterleave_4_16_64(lsb, aa, bb, cc, dd);
+  a = aa;
+  b = bb;
+  c = cc;
+  d = dd;
+
+  Deinterleave_4_16_64(msb, aa, bb, cc, dd);
+  a |= aa << halfBitLen;
+  b |= bb << halfBitLen;
+  c |= cc << halfBitLen;
+  d |= dd << halfBitLen;
 }

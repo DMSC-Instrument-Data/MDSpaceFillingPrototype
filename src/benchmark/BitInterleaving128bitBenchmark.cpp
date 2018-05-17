@@ -9,7 +9,7 @@ static void BM_Interleave_128Bit_4(benchmark::State &state) {
   uint32_t a, b, c, d;
   uint64_t msb, lsb;
   for (auto _ : state) {
-    Interleave4_128Bit<uint32_t>(msb, lsb, a, b, c, d);
+    Interleave_4_32_128(msb, lsb, a, b, c, d);
     benchmark::DoNotOptimize(a);
     benchmark::DoNotOptimize(b);
     benchmark::DoNotOptimize(c);
@@ -24,7 +24,7 @@ static void BM_Deinterleave_128Bit_4(benchmark::State &state) {
   uint32_t a, b, c, d;
   uint64_t msb, lsb;
   for (auto _ : state) {
-    Deinterleave4_128Bit(msb, lsb, a, b, c, d);
+    Deinterleave_4_32_128(msb, lsb, a, b, c, d);
     benchmark::DoNotOptimize(a);
     benchmark::DoNotOptimize(b);
     benchmark::DoNotOptimize(c);
@@ -39,8 +39,8 @@ static void BM_RoundTrip_128Bit_4(benchmark::State &state) {
   uint32_t a, b, c, d;
   uint64_t msb, lsb;
   for (auto _ : state) {
-    Interleave4_128Bit<uint32_t>(msb, lsb, a, b, c, d);
-    Deinterleave4_128Bit(msb, lsb, a, b, c, d);
+    Interleave_4_32_128(msb, lsb, a, b, c, d);
+    Deinterleave_4_32_128(msb, lsb, a, b, c, d);
     benchmark::DoNotOptimize(a);
     benchmark::DoNotOptimize(b);
     benchmark::DoNotOptimize(c);
