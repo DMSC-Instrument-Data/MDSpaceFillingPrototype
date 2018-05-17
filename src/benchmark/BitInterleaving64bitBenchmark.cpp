@@ -2,7 +2,6 @@
 
 #include "BitInterleaving.h"
 #include "BitInterleavingEigen.h"
-#include "BitInterleavingNaive.h"
 
 static void BM_Interleave_4_16_64(benchmark::State &state) {
   uint16_t a, b, c, d;
@@ -80,48 +79,5 @@ static void BM_RoundTrip_Eigen_4(benchmark::State &state) {
   }
 }
 BENCHMARK(BM_RoundTrip_Eigen_4);
-
-static void BM_Interleave_Naive_4(benchmark::State &state) {
-  uint16_t a, b, c, d;
-  uint64_t res;
-  for (auto _ : state) {
-    res = Interleave4<uint64_t, uint16_t>(a, b, c, d);
-    benchmark::DoNotOptimize(a);
-    benchmark::DoNotOptimize(b);
-    benchmark::DoNotOptimize(c);
-    benchmark::DoNotOptimize(d);
-    benchmark::DoNotOptimize(res);
-  }
-}
-BENCHMARK(BM_Interleave_Naive_4);
-
-static void BM_Deinterleave_Naive_4(benchmark::State &state) {
-  uint16_t a, b, c, d;
-  uint64_t res;
-  for (auto _ : state) {
-    Deinterleave4(res, a, b, c, d);
-    benchmark::DoNotOptimize(a);
-    benchmark::DoNotOptimize(b);
-    benchmark::DoNotOptimize(c);
-    benchmark::DoNotOptimize(d);
-    benchmark::DoNotOptimize(res);
-  }
-}
-BENCHMARK(BM_Deinterleave_Naive_4);
-
-static void BM_RoundTrip_Naive_4(benchmark::State &state) {
-  uint16_t a, b, c, d;
-  uint64_t res;
-  for (auto _ : state) {
-    res = Interleave4<uint64_t, uint16_t>(a, b, c, d);
-    Deinterleave4(res, a, b, c, d);
-    benchmark::DoNotOptimize(a);
-    benchmark::DoNotOptimize(b);
-    benchmark::DoNotOptimize(c);
-    benchmark::DoNotOptimize(d);
-    benchmark::DoNotOptimize(res);
-  }
-}
-BENCHMARK(BM_RoundTrip_Naive_4);
 
 BENCHMARK_MAIN();
