@@ -12,12 +12,30 @@ uint64_t Pad1(uint64_t x) {
   return x;
 }
 
+uint64_t Compact1(uint64_t x) {
+  x &= 0x55555555;
+  x = (x | x >> 1) & 0x33333333;
+  x = (x | x >> 2) & 0xf0f0f0f;
+  x = (x | x >> 4) & 0xff00ff;
+  x = (x | x >> 8) & 0xffff;
+  return x;
+}
+
 uint64_t Pad2(uint64_t x) {
   x &= 0xffff;
   x = (x | x << 16) & 0xff0000ff;
   x = (x | x << 8) & 0xf00f00f00f;
   x = (x | x << 4) & 0xc30c30c30c3;
   x = (x | x << 2) & 0x249249249249;
+  return x;
+}
+
+uint64_t Compact2(uint64_t x) {
+  x &= 0x249249249249;
+  x = (x | x >> 2) & 0xc30c30c30c3;
+  x = (x | x >> 4) & 0xf00f00f00f;
+  x = (x | x >> 8) & 0xff0000ff;
+  x = (x | x >> 16) & 0xffff;
   return x;
 }
 
@@ -41,6 +59,25 @@ uint64_t Compact3(uint64_t x) {
   x = (x | x >> 16) & 0xf800000007ff;
   x = (x | x >> 32) & 0xffff;
   return x;
+}
+
+uint32_t Interleave_2_16_32(uint32_t a, uint32_t b) {
+  return Pad1(a) | (Pad1(b) << 1);
+}
+
+void Deinterleave_2_16_32(uint32_t z, uint16_t &a, uint16_t &b) {
+  a = Compact1(z);
+  b = Compact1(z >> 1);
+}
+
+uint64_t Interleave_3_16_64(uint64_t a, uint64_t b, uint64_t c) {
+  return Pad2(a) | (Pad2(b) << 1) | (Pad2(c) << 2);
+}
+
+void Deinterleave_3_16_64(uint64_t z, uint16_t &a, uint16_t &b, uint16_t &c) {
+  a = Compact2(z);
+  b = Compact2(z >> 1);
+  c = Compact2(z >> 2);
 }
 
 uint64_t Interleave_4_16_64(uint64_t a, uint64_t b, uint64_t c, uint64_t d) {
