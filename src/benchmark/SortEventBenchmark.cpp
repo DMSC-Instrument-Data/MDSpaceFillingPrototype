@@ -18,6 +18,8 @@ void GenerateRandomUniformEvents(std::vector<MDEvent<4>> &d, size_t n) {
 }
 
 int main(int argc, char **argv) {
+  benchmark::Initialize(&argc, argv);
+
   benchmark::RegisterBenchmark("sort", [](benchmark::State &state) {
     for (auto _ : state) {
       state.PauseTiming();
@@ -29,6 +31,5 @@ int main(int argc, char **argv) {
     }
   })->Unit(benchmark::kMillisecond);
 
-  benchmark::Initialize(&argc, argv);
   benchmark::RunSpecifiedBenchmarks();
 }

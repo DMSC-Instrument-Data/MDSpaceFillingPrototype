@@ -5,6 +5,8 @@
 #include "SortBenchmarkCommon.h"
 
 int main(int argc, char **argv) {
+  benchmark::Initialize(&argc, argv);
+
   GENERATE_DATASET(uniform_1000000, uint64_t, GenerateRandomUniformDataset,
                    1000000);
 
@@ -46,6 +48,5 @@ int main(int argc, char **argv) {
   REGISTER_SORT_BENCHMARK(uint64_t, std::vector, single_peak_1000000,
                           boost::sort::parallel_stable_sort);
 
-  benchmark::Initialize(&argc, argv);
   benchmark::RunSpecifiedBenchmarks();
 }
