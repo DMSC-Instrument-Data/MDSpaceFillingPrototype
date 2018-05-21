@@ -24,4 +24,5 @@ include(GoogleBenchmark)
 
 enable_testing()
 
+include(targets)
 add_subdirectory(src)
