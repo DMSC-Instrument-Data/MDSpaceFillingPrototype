@@ -1,6 +1,7 @@
 #include <benchmark/benchmark.h>
 
 #include <boost/sort/sort.hpp>
+#include <tbb/parallel_sort.h>
 
 #include "SortBenchmarkCommon.h"
 
@@ -47,6 +48,12 @@ int main(int argc, char **argv) {
 
   REGISTER_SORT_BENCHMARK(uint64_t, std::vector, single_peak_1000000,
                           boost::sort::parallel_stable_sort);
+
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform_1000000,
+                          tbb::parallel_sort);
+
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, single_peak_1000000,
+                          tbb::parallel_sort);
 
   benchmark::RunSpecifiedBenchmarks();
 }

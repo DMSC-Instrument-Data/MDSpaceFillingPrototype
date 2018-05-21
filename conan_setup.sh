@@ -5,4 +5,5 @@
 conan install $1 \
   -s build_type=$2 \
   -s compiler.libcxx=libstdc++11 \
-  --build gtest
+  --build gtest \
+  --build TBB
