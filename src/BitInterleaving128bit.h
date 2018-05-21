@@ -7,6 +7,10 @@
 
 #pragma once
 
+/**
+ * Interleaves four 32 bit integers into a single 128 bit integer (represented
+ * by 64 bit LSB and MSB).
+ */
 void Interleave_4_32_128(uint64_t &msb, uint64_t &lsb, const uint32_t a,
                          const uint32_t b, const uint32_t c, const uint32_t d) {
   const size_t halfBitLen(sizeof(uint32_t) * 4);
@@ -16,6 +20,10 @@ void Interleave_4_32_128(uint64_t &msb, uint64_t &lsb, const uint32_t a,
                            d >> halfBitLen);
 }
 
+/**
+ * Deinterleaves a 128 bit integer (represented by 64 bit MSB and LSB) into four
+ * 32 bit integers.
+ */
 void Deinterleave_4_32_128(const uint64_t msb, const uint64_t lsb, uint32_t &a,
                            uint32_t &b, uint32_t &c, uint32_t &d) {
   const size_t halfBitLen(sizeof(uint32_t) * 4);
@@ -37,6 +45,10 @@ void Deinterleave_4_32_128(const uint64_t msb, const uint64_t lsb, uint32_t &a,
 
 using uint128_t = boost::multiprecision::uint128_t;
 
+/**
+ * Pad an integer with 3 padding bits between integer bits.
+ * Maximum input width is 32 bit.
+ */
 uint128_t Pad3_128(uint128_t x) {
   using namespace boost::multiprecision::literals;
   x &= 0xffffffff_cppui128;
@@ -50,6 +62,11 @@ uint128_t Pad3_128(uint128_t x) {
   return x;
 }
 
+/**
+ * Compacts (removes padding) an integer with 3 padding bits between integer
+ * bits.
+ * Maximum output bit width is 32 bit.
+ */
 uint128_t Compact3_128(uint128_t x) {
   using namespace boost::multiprecision::literals;
   x &= 0x11111111111111111111111111111111_cppui128;
@@ -63,12 +80,18 @@ uint128_t Compact3_128(uint128_t x) {
   return x;
 }
 
+/**
+ * Interleaves four 32 bit integers into a single 128 bit integer.
+ */
 uint128_t Interleave_4_32_128(uint128_t a, uint128_t b, uint128_t c,
                               uint128_t d) {
   return Pad3_128(a) | (Pad3_128(b) << 1) | (Pad3_128(c) << 2) |
          (Pad3_128(d) << 3);
 }
 
+/**
+ * Deinterleaves a 128 bit integer into four 32 bit integers.
+ */
 void Deinterleave_4_32_128(uint128_t z, uint32_t &a, uint32_t &b, uint32_t &c,
                            uint32_t &d) {
   a = (uint32_t)Compact3_128(z);
