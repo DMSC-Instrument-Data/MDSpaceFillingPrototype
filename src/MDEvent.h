@@ -8,7 +8,7 @@
 
 template <size_t ND> class MDEvent {
 public:
-  MDEvent(const MDCoordinate<ND> &coord, const MDSpace<ND> &space,
+  MDEvent(const MDCoordinate<ND> &coord, const MDSpaceBounds<ND> &space,
           float signal = 1.0f)
       : m_signal(signal) {
     const auto intCoord =

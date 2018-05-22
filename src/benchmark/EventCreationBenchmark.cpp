@@ -3,7 +3,7 @@
 #include "MDEvent.h"
 
 static void BM_CreateEvent_N4_100000000(benchmark::State &state) {
-  MDSpace<4> space;
+  MDSpaceBounds<4> space;
   // clang-format off
   space <<
     0.0f, 10.0f,

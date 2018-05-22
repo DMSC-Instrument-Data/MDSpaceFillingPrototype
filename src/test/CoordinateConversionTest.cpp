@@ -3,8 +3,24 @@
 #include "CoordinateConversion.h"
 #include "Types.h"
 
+TEST(CoordinateConversionTest, CalculateRequiredCoordinateIntegerWidth) {
+  MDSpaceBounds<2> bounds;
+  // clang-format off
+  bounds <<
+    1.0f, 8.0f,
+    5.0f, 6.0f;
+  // clang-format on
+
+  MDSpaceSteps<2> steps;
+  steps << 0.02f, 0.01f;
+
+  size_t result = CalculateRequiredCoordinateIntegerWidth<2>(bounds, steps);
+
+  EXPECT_EQ(9, result);
+}
+
 TEST(CoordinateConversionTest, ExpandBounds) {
-  MDSpace<4> bounds;
+  MDSpaceBounds<4> bounds;
   // clang-format off
   bounds <<
     -1.0f, 2.0f,
@@ -27,7 +43,7 @@ TEST(CoordinateConversionTest, ExpandBounds) {
 }
 
 TEST(CoordinateConversionTest, ConvertFloatCoordsTo8BitInteger) {
-  MDSpace<4> bounds;
+  MDSpaceBounds<4> bounds;
   // clang-format off
   bounds <<
     0.0f, 2.0f,
@@ -49,7 +65,7 @@ TEST(CoordinateConversionTest, ConvertFloatCoordsTo8BitInteger) {
 }
 
 TEST(CoordinateConversionTest, ConvertFloatCoordsFrom8BitInteger) {
-  MDSpace<4> bounds;
+  MDSpaceBounds<4> bounds;
   // clang-format off
   bounds <<
     0.0f, 2.0f,
@@ -95,7 +111,7 @@ template <class T>
 class CoordinateConversionTemplatedTest : public testing::Test {
 protected:
   template <int N>
-  void RoundTripTestDouble(const MDSpace<N> bounds,
+  void RoundTripTestDouble(const MDSpaceBounds<N> bounds,
                            const MDCoordinate<N> floatCoord, const float prec) {
     const auto intCoord =
         ConvertCoordinatesToIntegerRangeDouble<N, T>(bounds, floatCoord);
@@ -109,7 +125,7 @@ protected:
   }
 
   template <int N>
-  void RoundTripTestExtendedRanges(MDSpace<N> bounds,
+  void RoundTripTestExtendedRanges(MDSpaceBounds<N> bounds,
                                    const MDCoordinate<N> floatCoord,
                                    const float prec) {
     ExpandBounds<N>(bounds);
@@ -128,7 +144,7 @@ protected:
 TYPED_TEST_CASE(CoordinateConversionTemplatedTest, IntegerTypes);
 
 TYPED_TEST(CoordinateConversionTemplatedTest, RoundTrip4DDoubleTest) {
-  MDSpace<4> bounds;
+  MDSpaceBounds<4> bounds;
   // clang-format off
   bounds <<
     0.0f, 10.0f,
@@ -144,7 +160,7 @@ TYPED_TEST(CoordinateConversionTemplatedTest, RoundTrip4DDoubleTest) {
 }
 
 TYPED_TEST(CoordinateConversionTemplatedTest, RoundTrip4DExtendedRangeTest) {
-  MDSpace<4> bounds;
+  MDSpaceBounds<4> bounds;
   // clang-format off
   bounds <<
     0.0f, 10.0f,

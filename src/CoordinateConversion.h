@@ -2,15 +2,29 @@
 
 #include "Types.h"
 
+#include <algorithm>
+#include <cmath>
 #include <iomanip>
 #include <iostream>
+
+template <size_t ND>
+size_t CalculateRequiredCoordinateIntegerWidth(const MDSpaceBounds<ND> &bounds,
+                                               const MDSpaceSteps<ND> &steps) {
+  size_t maxBits(0);
+  for (size_t i = 0; i < ND; ++i) {
+    size_t bits =
+        std::ceil(std::log2((bounds(i, 1) - bounds(i, 0)) / steps(i)));
+    maxBits = std::max(maxBits, bits);
+  }
+  return maxBits;
+}
 
 /**
  * Expands a coordinate space enough that floating point error cannot cause an
  * overflow when mapping a value at the tupper limit of the range to an integer
  * range.
  */
-template <size_t ND> void ExpandBounds(MDSpace<ND> &bounds) {
+template <size_t ND> void ExpandBounds(MDSpaceBounds<ND> &bounds) {
   bounds.col(0) = bounds.col(0) -
                   (bounds.col(0) * std::numeric_limits<float>::epsilon()).abs();
   bounds.col(1) = bounds.col(1) +
@@ -37,7 +51,7 @@ Eigen::Array<IntT, ND, 1> ConvertCoordinatesToIntegerRange(const auto &bounds,
  */
 template <size_t ND, typename IntT>
 Eigen::Array<IntT, ND, 1>
-ConvertCoordinatesToIntegerRangeDouble(const MDSpace<ND> &bounds,
+ConvertCoordinatesToIntegerRangeDouble(const MDSpaceBounds<ND> &bounds,
                                        const MDCoordinate<ND> &coord) {
   return ConvertCoordinatesToIntegerRange<ND, IntT>(
       bounds.template cast<double>(), coord.template cast<double>());
@@ -49,7 +63,7 @@ ConvertCoordinatesToIntegerRangeDouble(const MDSpace<ND> &bounds,
  */
 template <size_t ND, typename IntT>
 MDCoordinate<ND>
-ConvertCoordinatesFromIntegerRange(const MDSpace<ND> &bounds,
+ConvertCoordinatesFromIntegerRange(const MDSpaceBounds<ND> &bounds,
                                    const Eigen::Array<IntT, ND, 1> &intCoord) {
   const auto range = bounds.col(1) - bounds.col(0);
   const auto coordFactorOfRange =

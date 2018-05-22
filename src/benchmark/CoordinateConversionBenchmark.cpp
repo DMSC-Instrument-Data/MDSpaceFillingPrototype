@@ -7,12 +7,34 @@
 
 using namespace boost::multiprecision;
 
+void BM_CalculateRequiredCoordinateIntegerWidth_4(benchmark::State &state) {
+  MDSpaceBounds<4> bounds;
+  // clang-format off
+  bounds <<
+    1.0f, 8.0f,
+    5.0f, 6.0f,
+    3.0f, 7.0f,
+    0.0f, 3.0f;
+  // clang-format on
+
+  MDSpaceSteps<4> steps;
+  steps << 0.02f, 0.01f, 0.015f, 0.021f;
+
+  size_t result;
+
+  for (auto _ : state) {
+    result = CalculateRequiredCoordinateIntegerWidth<4>(bounds, steps);
+    benchmark::DoNotOptimize(result);
+  }
+}
+BENCHMARK(BM_CalculateRequiredCoordinateIntegerWidth_4);
+
 template <typename T>
 void BM_ConvertCoordinatesToIntegerRange(benchmark::State &state) {
   MDCoordinate<4> coord;
   coord << 1.0f, 6.0f, 5.0f, 12.5f;
 
-  MDSpace<4> bounds;
+  MDSpaceBounds<4> bounds;
   // clang-format off
   bounds <<
     0.0f, 2.0f,
@@ -36,7 +58,7 @@ void BM_ConvertCoordinatesToIntegerRangeDouble(benchmark::State &state) {
   MDCoordinate<4> coord;
   coord << 1.0f, 6.0f, 5.0f, 12.5f;
 
-  MDSpace<4> bounds;
+  MDSpaceBounds<4> bounds;
   // clang-format off
   bounds <<
     0.0f, 2.0f,
@@ -60,7 +82,7 @@ void BM_ConvertCoordinatesFromIntegerRange(benchmark::State &state) {
   Eigen::Array<T, 4, 1> coord;
   coord << 100, 100, 100, 100;
 
-  MDSpace<4> bounds;
+  MDSpaceBounds<4> bounds;
   // clang-format off
   bounds <<
     0.0f, 2.0f,
