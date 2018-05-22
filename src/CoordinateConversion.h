@@ -5,6 +5,11 @@
 #include <iomanip>
 #include <iostream>
 
+/**
+ * Expands a coordinate space enough that floating point error cannot cause an
+ * overflow when mapping a value at the tupper limit of the range to an integer
+ * range.
+ */
 template <size_t ND> void ExpandBounds(MDSpace<ND> &bounds) {
   bounds.col(0) = bounds.col(0) -
                   (bounds.col(0) * std::numeric_limits<float>::epsilon()).abs();
@@ -12,6 +17,10 @@ template <size_t ND> void ExpandBounds(MDSpace<ND> &bounds) {
                   (bounds.col(1) * std::numeric_limits<float>::epsilon()).abs();
 }
 
+/**
+ * Converts a point to integer range given a range of floating point
+ * coordinates.
+ */
 template <size_t ND, typename IntT>
 Eigen::Array<IntT, ND, 1> ConvertCoordinatesToIntegerRange(const auto &bounds,
                                                            const auto &coord) {
@@ -21,6 +30,11 @@ Eigen::Array<IntT, ND, 1> ConvertCoordinatesToIntegerRange(const auto &bounds,
   return n.template cast<IntT>();
 }
 
+/**
+ * Converts a point to integer range given a range of floating point
+ * coordinates after casting to double precision floating point coordinate
+ * values.
+ */
 template <size_t ND, typename IntT>
 Eigen::Array<IntT, ND, 1>
 ConvertCoordinatesToIntegerRangeDouble(const MDSpace<ND> &bounds,
@@ -29,6 +43,10 @@ ConvertCoordinatesToIntegerRangeDouble(const MDSpace<ND> &bounds,
       bounds.template cast<double>(), coord.template cast<double>());
 }
 
+/**
+ * Converts a point expressed as integer coordinates back to floating point,
+ * given bounds of the original coordinate space.
+ */
 template <size_t ND, typename IntT>
 MDCoordinate<ND>
 ConvertCoordinatesFromIntegerRange(const MDSpace<ND> &bounds,
@@ -39,6 +57,9 @@ ConvertCoordinatesFromIntegerRange(const MDSpace<ND> &bounds,
   return bounds.col(0) + (coordFactorOfRange * range);
 }
 
+/**
+ * Converts a single floating point coordinate to an integer range.
+ */
 template <typename IntT>
 IntT ConvertCoordinateToIntegerRange(float value, float lower, float upper) {
   const float coordFactorOfRange = (value - lower) / (upper - lower);
@@ -46,6 +67,9 @@ IntT ConvertCoordinateToIntegerRange(float value, float lower, float upper) {
   return (IntT)intValue;
 }
 
+/**
+ * Converts a single integer coordinate to a floating point.
+ */
 template <typename IntT>
 float ConvertCoordinateFromIntegerRange(IntT value, float lower, float upper) {
   const float coordFactorOfRange =
