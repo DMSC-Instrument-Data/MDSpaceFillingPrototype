@@ -31,7 +31,7 @@ uint64_t Compact1_64(uint64_t x) {
 }
 
 /**
- * Pad an integer with 1 padding bit between integer bits.
+ * Pad an integer with 2 padding bits between integer bits.
  * Maximum input width is 16 bit.
  */
 uint64_t Pad2_64(uint64_t x) {

@@ -14,7 +14,7 @@ This method is easier to understand from the source code alone and does not
 require prior computation of bit masks or writing of overly specific functions
 as with the bit masking approach.
 
-This method uses a calculation of where a git should end up in the interleaved
+This method uses a calculation of where a bit should end up in the interleaved
 integer based on the position of the bit in the input integer and the index of
 the integer in the coordinate.
 
@@ -72,7 +72,7 @@ desirable to mask the inputs to their designed input width.
 ```
 Pad a - mask to input width
 0b........10110010    a
-0b........10110010    a & 0000000011111111
+0b........10110010    a & 0b0000000011111111
 ```
 
 The integer is then shifted and masked several times (depending on the input
@@ -130,7 +130,8 @@ Pad b - iteration 3
 ```
 
 The two integers are then shifted by a fixed offset depending on the axis they
-represent. At this point there should be no integer bits overlapping.
+represent (e.g. shift for x is 0, shift for y is 1, shift for z is 2, etc.). At
+this point there should be no integer bits overlapping.
 
 ```
 0b.1.0.1.1.0.0.1.0    a << 0
@@ -162,7 +163,7 @@ bits) functions by reversing the bit masks, bit shift amounts and bit shift
 directions.
 
 Take the interleaved 16 bit integer `z` that was interleaved from two 8 bit
-integers `a` and `b`:
+integers `a` and `b` (as per the example of interleaving above):
 
 ```
 z = 0b0100011100100100

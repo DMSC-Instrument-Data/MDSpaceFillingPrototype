@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Script to generate bit padding code for integer bit interleaving.
-# Tidied up and tripped down version of the script listed here: https://stackoverflow.com/a/18528775
+# Tidied up and stripped down version of the script listed here: https://stackoverflow.com/a/18528775
 
 def generate_bit_spacing_code(bit_count, empty_bit_count):
     bit_distances = [bin(i * empty_bit_count)[2:] for i in range(bit_count)]
