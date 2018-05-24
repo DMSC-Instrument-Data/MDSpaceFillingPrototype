@@ -7,13 +7,21 @@
 #include <iomanip>
 #include <iostream>
 
+/**
+ * Calculates the required width of the interleaved integer to accurately
+ * represent coordinates in a given space at a given resolution.
+ */
 template <size_t ND>
 size_t CalculateRequiredCoordinateIntegerWidth(const MDSpaceBounds<ND> &bounds,
                                                const MDSpaceSteps<ND> &steps) {
   size_t maxBits(0);
   for (size_t i = 0; i < ND; ++i) {
+    /* Calculate the required integer width to accurately represent coordinates
+     * on axis i. */
     size_t bits =
         std::ceil(std::log2((bounds(i, 1) - bounds(i, 0)) / steps(i)));
+
+    /* Record highest bit width requirement */
     maxBits = std::max(maxBits, bits);
   }
   return maxBits;
@@ -21,8 +29,11 @@ size_t CalculateRequiredCoordinateIntegerWidth(const MDSpaceBounds<ND> &bounds,
 
 /**
  * Expands a coordinate space enough that floating point error cannot cause an
- * overflow when mapping a value at the tupper limit of the range to an integer
+ * overflow when mapping a value at the upper limit of the range to an integer
  * range.
+ *
+ * Sets bounds to the next lowest (for lower axis bound) or highest (for upper
+ * axis bound) representable floating point value.
  */
 template <size_t ND> void ExpandBounds(MDSpaceBounds<ND> &bounds) {
   for (size_t i = 0; i < ND; ++i) {
