@@ -8,29 +8,34 @@ void GenerateRandomUniformDataset(std::vector<T> &d, size_t n) {
   }
 }
 
+using Peaks = std::vector<std::pair<float, float>>;
+
 template <typename T>
-void GenerateRandomUniformDatasetWithSinglePeak(std::vector<T> &d, size_t n) {
+void GenerateRandomUniformDatasetWithPeaks(std::vector<T> &d, size_t n,
+                                           Peaks &peaks) {
   std::mt19937 generator(0);
-  std::cauchy_distribution<float> peak(0.4f, 0.05f);
 
-  for (int i = 0; i < n; i++) {
-    float c = peak(generator);
+  using PeakDist = std::cauchy_distribution<float>;
+  std::vector<PeakDist> peakDistributions;
+  for (const auto &p : peaks) {
+    peakDistributions.emplace_back(p.first, p.second);
+  }
 
-    /* Ensure value is in range (0.0, 1.0) */
-    if (c > 1.0f || c < 0.0f) {
-      i--;
-      continue;
+  for (int i = 0; i < n / peakDistributions.size(); i++) {
+    for (auto &p : peakDistributions) {
+      float c = p(generator);
+
+      /* Ensure value is in range (0.0, 1.0) */
+      if (c > 1.0f || c < 0.0f) {
+        i--;
+        continue;
+      }
+
+      /* Scale to integer range (assumes unsigned to obtain full range) */
+      d.push_back(std::numeric_limits<T>::max() * c);
     }
-
-    /* Scale to integer range (assumes unsigned to obtain full range) */
-    d.push_back(std::numeric_limits<T>::max() * c);
   }
 }
-
-#define GENERATE_DATASET(name, type, generator, n)                             \
-  std::cout << "Generating dataset " #name "\n";                               \
-  std::vector<type> name;                                                      \
-  generator(name, n)
 
 #define REGISTER_SORT_BENCHMARK(type, container, data, sort)                   \
   benchmark::RegisterBenchmark(#type " " #container " " #sort " " #data,       \
