@@ -25,10 +25,12 @@ size_t CalculateRequiredCoordinateIntegerWidth(const MDSpaceBounds<ND> &bounds,
  * range.
  */
 template <size_t ND> void ExpandBounds(MDSpaceBounds<ND> &bounds) {
-  bounds.col(0) = bounds.col(0) -
-                  (bounds.col(0) * std::numeric_limits<float>::epsilon()).abs();
-  bounds.col(1) = bounds.col(1) +
-                  (bounds.col(1) * std::numeric_limits<float>::epsilon()).abs();
+  for (size_t i = 0; i < ND; ++i) {
+    bounds(i, 0) =
+        std::nexttoward(bounds(i, 0), std::numeric_limits<float>::lowest());
+    bounds(i, 1) =
+        std::nexttoward(bounds(i, 1), std::numeric_limits<float>::max());
+  }
 }
 
 /**
