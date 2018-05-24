@@ -11,16 +11,12 @@ int main(int argc, char **argv) {
   benchmark::Initialize(&argc, argv);
 
   /* const size_t numElements(5400000000000); */
-  const size_t numElements(500000);
+  const size_t numElements(10000000);
 
-  std::vector<uint64_t> multiplePeaks;
-  {
-    std::vector<std::pair<float, float>> peaks = {
-        {0.1f, 0.001f}, {0.2f, 0.001f}, {0.3f, 0.001f},
-        {0.4f, 0.001f}, {0.5f, 0.001f}, {0.6f, 0.001f},
-        {0.7f, 0.001f}, {0.8f, 0.001f}, {0.9f, 0.001f}};
-    GenerateRandomUniformDatasetWithPeaks(multiplePeaks, numElements, peaks);
-  }
+  GENERATE_DATASET(multiplePeaks, uint64_t,
+                   GenerateRandomPeakDataset_ClusteredPeaks, numElements);
+
+  /* SaveDataset("multiplePeaks.txt", multiplePeaks); */
 
   REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiplePeaks,
                           boost::sort::block_indirect_sort);
