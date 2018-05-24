@@ -7,17 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
-include(conan)
 
-conan_cmake_run(
-  REQUIRES
-    boost/1.67.0@conan/stable
-    eigen/3.3.4@conan/stable
-    gtest/1.8.0@bincrafters/stable
-  BUILD
-    gtest
-  BASIC_SETUP
-  NO_OUTPUT_DIRS)
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup(NO_OUTPUT_DIRS)
 
 find_package(Threads REQUIRED)
 include(GoogleBenchmark)
