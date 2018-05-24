@@ -20,51 +20,47 @@
 int main(int argc, char **argv) {
   benchmark::Initialize(&argc, argv);
 
-  GENERATE_DATASET(uniform_1000000, uint64_t, GenerateRandomUniformDataset,
-                   1000000);
+  GENERATE_DATASET(uniform, uint64_t, GenerateRandomUniformDataset, 10000000);
 
-  GENERATE_DATASET(multiple_peaks_1000000, uint64_t,
-                   GenerateRandomPeakDataset_ClusteredPeaks, 1000000);
+  GENERATE_DATASET(multiple_peaks, uint64_t,
+                   GenerateRandomPeakDataset_ClusteredPeaks, 10000000);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform_1000000, std::sort);
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform, std::sort);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks_1000000,
-                          std::sort);
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks, std::sort);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform_1000000,
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform,
                           boost::sort::spreadsort::spreadsort);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks_1000000,
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks,
                           boost::sort::spreadsort::spreadsort);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform_1000000,
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform, boost::sort::pdqsort);
+
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks,
                           boost::sort::pdqsort);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks_1000000,
-                          boost::sort::pdqsort);
-
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform_1000000,
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform,
                           boost::sort::block_indirect_sort);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks_1000000,
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks,
                           boost::sort::block_indirect_sort);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform_1000000,
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform,
                           boost::sort::sample_sort);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks_1000000,
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks,
                           boost::sort::sample_sort);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform_1000000,
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform,
                           boost::sort::parallel_stable_sort);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks_1000000,
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks,
                           boost::sort::parallel_stable_sort);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform_1000000,
-                          tbb::parallel_sort);
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, uniform, tbb::parallel_sort);
 
-  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks_1000000,
+  REGISTER_SORT_BENCHMARK(uint64_t, std::vector, multiple_peaks,
                           tbb::parallel_sort);
 
   benchmark::RunSpecifiedBenchmarks();
