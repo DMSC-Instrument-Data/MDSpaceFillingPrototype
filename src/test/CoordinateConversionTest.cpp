@@ -104,8 +104,8 @@ TEST(CoordinateConversionTest, ConvertCoordinateFromIntegerRange) {
                   ConvertCoordinateFromIntegerRange<uint8_t>(0, 5.0f, 15.0f));
 }
 
-/* unsigned char, unsigned short, unsigned int */
-typedef testing::Types<uint8_t, uint16_t, uint32_t> IntegerTypes;
+/* unsigned char, unsigned short, unsigned int, unsigned long */
+typedef testing::Types<uint8_t, uint16_t, uint32_t, uint64_t> IntegerTypes;
 
 template <class T>
 class CoordinateConversionTemplatedTest : public testing::Test {
