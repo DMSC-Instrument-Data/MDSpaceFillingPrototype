@@ -80,8 +80,11 @@ Ia = cast_to_I(Fa * max(I))
 ```
 
 This method is prone to integer overflow when the floating point coordinate is
-very close to the upper bound of the axis, this problem has two solutions;
-use double precision floating points in the conversion or expand the axis range
-to avoid overflows.
+very close to the upper bound of the axis, this problem is resolved by expanding
+the coordinate range by a sufficient amount to guarantee that no inter overflow
+can occur.
 
-Both solutions have been implemented.
+The implementation of this uses
+[`std::nexttoward`](https://en.cppreference.com/w/cpp/numeric/math/nextafter) to
+expand the ranges to the next representable floating point value at either side
+of the range.

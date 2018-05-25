@@ -54,30 +54,6 @@ BENCHMARK_TEMPLATE(BM_ConvertCoordinatesToIntegerRange, uint32_t);
 BENCHMARK_TEMPLATE(BM_ConvertCoordinatesToIntegerRange, uint64_t);
 
 template <typename T>
-void BM_ConvertCoordinatesToIntegerRangeDouble(benchmark::State &state) {
-  MDCoordinate<4> coord;
-  coord << 1.0f, 6.0f, 5.0f, 12.5f;
-
-  MDSpaceBounds<4> bounds;
-  // clang-format off
-  bounds <<
-    0.0f, 2.0f,
-    5.0f, 10.0f,
-    3.0f, 7.0f,
-    5.0f, 15.0f;
-  // clang-format on
-
-  for (auto _ : state) {
-    auto result = ConvertCoordinatesToIntegerRangeDouble<4, T>(bounds, coord);
-    benchmark::DoNotOptimize(result);
-  }
-}
-BENCHMARK_TEMPLATE(BM_ConvertCoordinatesToIntegerRangeDouble, uint8_t);
-BENCHMARK_TEMPLATE(BM_ConvertCoordinatesToIntegerRangeDouble, uint16_t);
-BENCHMARK_TEMPLATE(BM_ConvertCoordinatesToIntegerRangeDouble, uint32_t);
-BENCHMARK_TEMPLATE(BM_ConvertCoordinatesToIntegerRangeDouble, uint64_t);
-
-template <typename T>
 void BM_ConvertCoordinatesFromIntegerRange(benchmark::State &state) {
   Eigen::Array<T, 4, 1> coord;
   coord << 100, 100, 100, 100;

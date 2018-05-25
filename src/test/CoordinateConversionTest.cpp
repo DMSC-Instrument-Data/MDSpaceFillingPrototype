@@ -111,20 +111,6 @@ template <class T>
 class CoordinateConversionTemplatedTest : public testing::Test {
 protected:
   template <int N>
-  void RoundTripTestDouble(const MDSpaceBounds<N> bounds,
-                           const MDCoordinate<N> floatCoord, const float prec) {
-    const auto intCoord =
-        ConvertCoordinatesToIntegerRangeDouble<N, T>(bounds, floatCoord);
-
-    const auto result =
-        ConvertCoordinatesFromIntegerRange<N, T>(bounds, intCoord);
-
-    for (int i = 0; i < N; i++) {
-      EXPECT_NEAR(floatCoord[i], result[i], prec);
-    }
-  }
-
-  template <int N>
   void RoundTripTestExtendedRanges(MDSpaceBounds<N> bounds,
                                    const MDCoordinate<N> floatCoord,
                                    const float prec) {
@@ -142,22 +128,6 @@ protected:
   }
 };
 TYPED_TEST_CASE(CoordinateConversionTemplatedTest, IntegerTypes);
-
-TYPED_TEST(CoordinateConversionTemplatedTest, RoundTrip4DDoubleTest) {
-  MDSpaceBounds<4> bounds;
-  // clang-format off
-  bounds <<
-    0.0f, 10.0f,
-    0.0f, 10.0f,
-    0.0f, 10.0f,
-    0.0f, 10.0f;
-  // clang-format on
-
-  MDCoordinate<4> floatCoord;
-  floatCoord << 1.5f, 10.0f, 5.0f, 0.0f;
-
-  this->RoundTripTestDouble(bounds, floatCoord, 0.1f);
-}
 
 TYPED_TEST(CoordinateConversionTemplatedTest, RoundTrip4DExtendedRangeTest) {
   MDSpaceBounds<4> bounds;

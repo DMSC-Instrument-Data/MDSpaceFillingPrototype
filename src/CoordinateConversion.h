@@ -58,19 +58,6 @@ Eigen::Array<IntT, ND, 1> ConvertCoordinatesToIntegerRange(const auto &bounds,
 }
 
 /**
- * Converts a point to integer range given a range of floating point
- * coordinates after casting to double precision floating point coordinate
- * values.
- */
-template <size_t ND, typename IntT>
-Eigen::Array<IntT, ND, 1>
-ConvertCoordinatesToIntegerRangeDouble(const MDSpaceBounds<ND> &bounds,
-                                       const MDCoordinate<ND> &coord) {
-  return ConvertCoordinatesToIntegerRange<ND, IntT>(
-      bounds.template cast<double>(), coord.template cast<double>());
-}
-
-/**
  * Converts a point expressed as integer coordinates back to floating point,
  * given bounds of the original coordinate space.
  */
