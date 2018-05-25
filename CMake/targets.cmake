@@ -1,31 +1,66 @@
-function(UnitTest NAME)
-  add_executable(${NAME} ${NAME}.cpp)
-  add_test(${NAME} ${NAME})
+macro(parse_arguments)
+  set(options)
+  set(oneValueArgs NAME)
+  set(multiValueArgs SOURCES HEADERS LIBRARIES)
+  cmake_parse_arguments(
+    TARGET
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+  )
+endmacro()
+
+function(UnitTest)
+  parse_arguments(${ARGV})
+
+  add_executable(
+    ${TARGET_NAME}
+    ${TARGET_SOURCES}
+  )
+  add_test(${TARGET_NAME} ${TARGET_NAME})
 
   target_include_directories(
-    ${NAME} PUBLIC
-    ${CMAKE_SOURCE_DIR}/src
+    ${TARGET_NAME}
+    PRIVATE
+    ${TARGET_HEADERS}
   )
 
   target_link_libraries(
-    ${NAME}
+    ${TARGET_NAME}
     ${CONAN_LIBS_GTEST}
+    ${TARGET_LIBRARIES}
   )
-endfunction(UnitTest)
+endfunction()
 
-function(Benchmark NAME)
-  add_executable(${NAME} ${NAME}.cpp)
-  add_test(${NAME} ${NAME})
-  add_dependencies(${NAME} benchmark)
+function(Benchmark)
+  parse_arguments(${ARGV})
+
+  add_executable(
+    ${TARGET_NAME}
+    ${TARGET_SOURCES}
+  )
+
+  add_test(
+    ${TARGET_NAME}
+    ${TARGET_NAME}
+  )
+
+  add_dependencies(
+    ${TARGET_NAME}
+    benchmark
+  )
 
   target_include_directories(
-    ${NAME} PUBLIC
-    ${CMAKE_SOURCE_DIR}/src
+    ${TARGET_NAME}
+    PRIVATE
+    ${TARGET_HEADERS}
   )
 
   target_link_libraries(
-    ${NAME}
+    ${TARGET_NAME}
     ${GBENCH_LIBRARIES}
     ${CONAN_LIBS}
+    ${TARGET_LIBRARIES}
   )
-endfunction(Benchmark)
+endfunction()
