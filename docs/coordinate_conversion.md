@@ -62,20 +62,21 @@ Bm = Bi * N
 ## Mapping to integer range
 
 The mapping of floating point coordinates to an integer range is a relatively
-trivial operation.
+trivial operation; a linear scaling from the floating point axis range to
+full unsigned integer range (for the given integer width).
 
-For each coordinate a fraction of the position of the point along the axis is
-taken:
+For each axis coordinate `a` a fraction of the position of the point along the
+axis is taken:
 
 ```
-Fx = (x - Xmin) / (Xmax - Xmin)
+Fa = (a - Amin) / (Amax - Amin)
 ```
 
 The fraction is then multiplied by the maximum value for the given integer width
 and cast to the given integer type:
 
 ```
-Ix = (I) Fx * max(I)
+Ia = cast_to_I(Fa * max(I))
 ```
 
 This method is prone to integer overflow when the floating point coordinate is
