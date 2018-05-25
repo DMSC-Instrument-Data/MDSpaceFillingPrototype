@@ -1,5 +1,6 @@
 set(UNIT_TESTS
   BitInterleaving128BitTest
+  BitInterleavingBoostGMPTest
   BitInterleavingEigenTest
   BitInterleavingTest
   CoordinateConversionTest
@@ -13,7 +14,7 @@ foreach(TEST ${UNIT_TESTS})
     NAME ${TEST}
     SOURCES ${TEST}.cpp
     HEADERS ${CMAKE_SOURCE_DIR}/src
-    LIBRARIES ${CONAN_LIBS} MDSpaceFillingPrototype
+    LIBRARIES ${CONAN_LIBS} ${GMP_LIBRARIES} MDSpaceFillingPrototype
   )
 endforeach(TEST)
 
