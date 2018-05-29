@@ -1,4 +1,5 @@
 #include <cinttypes>
+#include <climits>
 #include <cstddef>
 
 #include <Eigen/Dense>
@@ -11,7 +12,7 @@ template <typename InterleavedT, typename IntegerT, size_t N>
 InterleavedT Interleave(const Array<IntegerT, N> &data) {
   InterleavedT out(0);
   /* For each bit in the input integer width */
-  for (int i = 0; i < sizeof(IntegerT) * 8; i++) {
+  for (int i = 0; i < sizeof(IntegerT) * CHAR_BIT; i++) {
     /* For each input integer */
     for (int b = 0; b < N; b++) {
       out |=
@@ -36,7 +37,7 @@ Array<IntegerT, N> Deinterleave(const InterleavedT in) {
   Array<IntegerT, N> res;
   res.setZero();
   /* For each bit in the input integer width */
-  for (int i = 0; i < sizeof(IntegerT) * 8; i++) {
+  for (int i = 0; i < sizeof(IntegerT) * CHAR_BIT; i++) {
     /* For each input integer */
     for (int b = 0; b < N; b++) {
       /* Select the bit in the interleaved number, shift it back to the
