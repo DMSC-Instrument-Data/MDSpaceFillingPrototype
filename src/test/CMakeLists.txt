@@ -2,6 +2,7 @@ set(UNIT_TESTS
   BitInterleaving128BitTest
   BitInterleavingEigenTest
   BitInterleavingTest
+  CoordinateConversionTest
   MDEventTest
   TestUtilTest
 )
