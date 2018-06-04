@@ -6,4 +6,8 @@ conan install $1 \
   -s build_type=$2 \
   -s compiler.libcxx=libstdc++11 \
   --build gtest \
-  --build TBB
+  --build TBB \
+  --build hdf5 \
+  --build gflags \
+  --build Boost \
+  --build h5cpp

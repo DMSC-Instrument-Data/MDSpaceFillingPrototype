@@ -3,7 +3,19 @@
 #include <boost/sort/sort.hpp>
 #include <tbb/parallel_sort.h>
 
-#include "SortBenchmarkCommon.h"
+#include "DistributionGenerator.h"
+
+#define REGISTER_SORT_BENCHMARK(type, container, data, sort)                   \
+  benchmark::RegisterBenchmark(#type " " #container " " #sort " " #data,       \
+                               [=](benchmark::State & state) {                 \
+    for (auto _ : state) {                                                     \
+      state.PauseTiming();                                                     \
+      container<type> v;                                                       \
+      std::copy(data.begin(), data.end(), std::back_inserter(v));              \
+      state.ResumeTiming();                                                    \
+      sort(v.begin(), v.end());                                                \
+    }                                                                          \
+                               })->Unit(benchmark::kMillisecond);
 
 int main(int argc, char **argv) {
   benchmark::Initialize(&argc, argv);

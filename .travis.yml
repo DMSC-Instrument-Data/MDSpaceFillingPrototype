@@ -25,6 +25,7 @@ script:
   - ${CXX} --version
 
   - pip install --user conan
+  - conan remote add ess-dmsc https://api.bintray.com/conan/ess-dmsc/conan
 
   - mkdir build
   - cd build

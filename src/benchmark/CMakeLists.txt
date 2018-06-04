@@ -4,7 +4,7 @@ set(BENCHMARKS
   CoordinateConversionBenchmark
   EventCreationBenchmark
   SortBenchmark
-  SortBenchmarkLarge
+  SortDatasetBenchmark
   SortEventBenchmark
 )
 

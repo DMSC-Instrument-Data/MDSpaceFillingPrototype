@@ -1,5 +1,5 @@
-#include <fstream>
 #include <vector>
+#include <random>
 
 #pragma once
 
@@ -110,29 +110,3 @@ void GenerateRandomPeakDataset_ClusteredPeaks(std::vector<T> &d, size_t n) {
   std::cout << "Generating dataset " #name "\n";                               \
   std::vector<type> name;                                                      \
   generator(name, n)
-
-#define REGISTER_SORT_BENCHMARK(type, container, data, sort)                   \
-  benchmark::RegisterBenchmark(#type " " #container " " #sort " " #data,       \
-                               [=](benchmark::State &state) {                  \
-                                 for (auto _ : state) {                        \
-                                   state.PauseTiming();                        \
-                                   container<type> v;                          \
-                                   std::copy(data.begin(), data.end(),         \
-                                             std::back_inserter(v));           \
-                                   state.ResumeTiming();                       \
-                                   sort(v.begin(), v.end());                   \
-                                 }                                             \
-                               })                                              \
-      ->Unit(benchmark::kMillisecond);
-
-/**
- * Saves a dataset to a text file.
- *
- * Mainly intended for manual inspection of the data generation output.
- */
-void SaveDataset(const std::string &filename, auto &dataset) {
-  std::ofstream file(filename);
-  for (const auto &p : dataset) {
-    file << p << '\n';
-  }
-}
