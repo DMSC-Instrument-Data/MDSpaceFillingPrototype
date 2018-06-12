@@ -41,11 +41,6 @@ function(Benchmark)
     ${TARGET_SOURCES}
   )
 
-  add_test(
-    ${TARGET_NAME}
-    ${TARGET_NAME}
-  )
-
   add_dependencies(
     ${TARGET_NAME}
     benchmark
