@@ -1,37 +1,12 @@
-dist: trusty
-
-cache:
-  directories:
-    - /home/travis/.conan/
+sudo: required
 
 language: shell
 
-matrix:
-  include:
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-      env:
-        - CC=gcc-5
-        - CXX=g++-5
-        - OMP_NUM_THREADS=4
+services:
+  - docker
+
+before_install:
+  - docker build -t testenv .travis
 
 script:
-  - ${CC} --version
-  - ${CXX} --version
-
-  - pip install --user conan
-  - conan remote add ess-dmsc https://api.bintray.com/conan/ess-dmsc/conan
-
-  - mkdir build
-  - cd build
-
-  - ../conan_setup.sh .. Release
-  - cmake -DCMAKE_BUILD_TYPE=Release ..
-  - make -j4
-
-  - ctest -V
+  - docker run -v ${PWD}:/travis testenv .travis/script.sh
