@@ -25,7 +25,6 @@ Building requires CMake and [Conan](https://conan.io/).
 
 1. `mkdir build`
 2. `cd build`
-3. `cmake -DCMAKE_BUILD_TYPE=Release /path/to/src/dir`
-   ([cmake-conan](https://github.com/conan-io/cmake-conan) requires
-   `CMAKE_BUILD_TYPE` to be non-empty)
-4. `make`
+3. `./conan_setup.sh /path/to/src/dir/conanfile.txt [Release/Debug]`
+4. `cmake /path/to/src/dir -DCMAKE_BUILD_TYPE=[Release/Debug]`
+5. `make`
