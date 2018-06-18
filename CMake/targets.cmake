@@ -79,3 +79,13 @@ function(Executable)
     ${TARGET_LIBRARIES}
   )
 endfunction()
+
+function(Library)
+  parse_arguments(${ARGV})
+
+  add_library(
+    ${TARGET_NAME}
+    SHARED
+    ${TARGET_SOURCES}
+  )
+endfunction()
