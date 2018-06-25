@@ -7,4 +7,6 @@ Library(
     MDSpaceFillingPrototype
   SOURCES
     EventNexusLoader.cpp
+    EventToMDEventConversion.cpp
+    Instrument.cpp
 )

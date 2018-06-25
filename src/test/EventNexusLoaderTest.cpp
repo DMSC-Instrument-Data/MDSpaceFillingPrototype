@@ -9,7 +9,7 @@ TEST(EventNexusLoaderTest, load_frames_all) {
   EXPECT_EQ(15, loader.totalEventCount());
   EXPECT_EQ(4, loader.frameCount());
 
-  std::vector<Event> events;
+  std::vector<TofEvent> events;
   loader.loadFrames(events, std::vector<size_t>{0, 1, 2, 3});
 
   EXPECT_EQ(15, events.size());
@@ -54,7 +54,7 @@ TEST(EventNexusLoaderTest, load_frame_0) {
   EXPECT_EQ(15, loader.totalEventCount());
   EXPECT_EQ(4, loader.frameCount());
 
-  std::vector<Event> events;
+  std::vector<TofEvent> events;
   loader.loadFrames(events, std::vector<size_t>{0});
 
   EXPECT_EQ(4, events.size());
@@ -77,7 +77,7 @@ TEST(EventNexusLoaderTest, load_frame_3) {
   EXPECT_EQ(15, loader.totalEventCount());
   EXPECT_EQ(4, loader.frameCount());
 
-  std::vector<Event> events;
+  std::vector<TofEvent> events;
   loader.loadFrames(events, std::vector<size_t>{3});
 
   EXPECT_EQ(5, events.size());

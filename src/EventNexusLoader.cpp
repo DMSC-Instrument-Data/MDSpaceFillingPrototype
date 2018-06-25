@@ -48,7 +48,7 @@ EventNexusLoader::getFrameEventRange(size_t frameIdx) const {
   return std::make_pair(start, end - start);
 }
 
-void EventNexusLoader::loadFrames(std::vector<Event> &events,
+void EventNexusLoader::loadFrames(std::vector<TofEvent> &events,
                                   const std::vector<size_t> &frameIdxs) const {
   struct FrameParams {
     size_t nexusEventStart;

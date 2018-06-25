@@ -3,6 +3,8 @@ set(UNIT_TESTS
   BitInterleavingEigenTest
   BitInterleavingTest
   CoordinateConversionTest
+  EventToMDEventConversionTest
+  InstrumentTest
   MDBox2DTest
   MDBox4DTest
   MDEventTest

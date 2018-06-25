@@ -2,7 +2,7 @@
 
 #include <h5cpp/hdf5.hpp>
 
-#include "Event.h"
+#include "TofEvent.h"
 
 #pragma once
 
@@ -38,7 +38,7 @@ public:
 
   std::pair<size_t, size_t> getFrameEventRange(size_t frameIdx) const;
 
-  void loadFrames(std::vector<Event> &events,
+  void loadFrames(std::vector<TofEvent> &events,
                   const std::vector<size_t> &frameIdxs) const;
 
 private:

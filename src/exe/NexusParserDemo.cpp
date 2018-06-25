@@ -6,8 +6,8 @@
 #include <boost/algorithm/string/split.hpp>
 #include <gflags/gflags.h>
 
-#include "Event.h"
 #include "EventNexusLoader.h"
+#include "TofEvent.h"
 
 const std::string AllFrames("all");
 
@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
   }
   std::cerr << '\n';
 
-  std::vector<Event> events;
+  std::vector<TofEvent> events;
   loader.loadFrames(events, frameIdxs);
 
   std::cerr << "Loaded " << events.size() << " events total.\n";
