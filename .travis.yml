@@ -1,36 +1,16 @@
-dist: trusty
-
-cache:
-  directories:
-    - /home/travis/.conan/
+sudo: required
 
 language: shell
 
-matrix:
-  include:
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-      env:
-        - CC=gcc-5
-        - CXX=g++-5
-        - OMP_NUM_THREADS=4
+services:
+  - docker
+
+cache:
+  directories:
+    - ${HOME}/conan_data/
+
+before_install:
+  - mkdir -p ${HOME}/conan_data
 
 script:
-  - ${CC} --version
-  - ${CXX} --version
-
-  - pip install --user conan
-
-  - mkdir build
-  - cd build
-
-  - ../conan_setup.sh .. Release
-  - cmake -DCMAKE_BUILD_TYPE=Release ..
-  - make -j4
-
-  - ctest -V -E Benchmark
+  - docker run -v ${PWD}:/home/conan/src -v ${HOME}/conan_data:/home/conan/.conan/ lasote/conangcc52 src/.travis_script.sh

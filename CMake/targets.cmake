@@ -41,11 +41,6 @@ function(Benchmark)
     ${TARGET_SOURCES}
   )
 
-  add_test(
-    ${TARGET_NAME}
-    ${TARGET_NAME}
-  )
-
   add_dependencies(
     ${TARGET_NAME}
     benchmark
@@ -61,6 +56,26 @@ function(Benchmark)
     ${TARGET_NAME}
     ${GBENCH_LIBRARIES}
     ${CONAN_LIBS}
+    ${TARGET_LIBRARIES}
+  )
+endfunction()
+
+function(Executable)
+  parse_arguments(${ARGV})
+
+  add_executable(
+    ${TARGET_NAME}
+    ${TARGET_SOURCES}
+  )
+
+  target_include_directories(
+    ${TARGET_NAME}
+    PRIVATE
+    ${TARGET_HEADERS}
+  )
+
+  target_link_libraries(
+    ${TARGET_NAME}
     ${TARGET_LIBRARIES}
   )
 endfunction()
