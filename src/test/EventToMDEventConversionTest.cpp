@@ -46,18 +46,30 @@ TEST(EventToMDEventConversionTest, preprocess_events) {
 TEST(EventToMDEventConversionTest, convert_events) {
   // clang-format off
   TofEventList events{
-    TofEvent{0, 0.0f, 0.0},
-    TofEvent{1, 0.0f, 0.0},
-    TofEvent{2, 0.0f, 0.0},
-    TofEvent{2, 0.0f, 0.0},
-    TofEvent{1, 0.0f, 0.0},
-    TofEvent{1, 0.0f, 0.0},
-    TofEvent{0, 0.0f, 0.0},
-    TofEvent{1, 0.0f, 0.0},
-    TofEvent{1, 0.0f, 0.0},
-    TofEvent{2, 0.0f, 0.0},
+    TofEvent{10, 6000.0f, 0.0},
+    TofEvent{20, 6000.0f, 0.0},
+    TofEvent{50, 6000.0f, 0.0},
+    TofEvent{50, 6000.0f, 0.0},
+    TofEvent{20, 6000.0f, 0.0},
+    TofEvent{20, 6000.0f, 0.0},
+    TofEvent{10, 6000.0f, 0.0},
+    TofEvent{20, 6000.0f, 0.0},
+    TofEvent{20, 6000.0f, 0.0},
+    TofEvent{50, 6000.0f, 0.0},
   };
   // clang-format on
 
-  convert_events(events);
+  ConversionInfo convInfo{true, Eigen::Matrix3f::Identity()};
+
+  Instrument inst{Eigen::Vector3f(0.0f, 0.0f, 0.0f),
+                  Eigen::Vector3f(0.0f, 0.0f, -1.5f),
+                  {
+                      {10, Detector{Eigen::Vector3f(-1.0f, 0.0f, 1.0f), -10.0}},
+                      {20, Detector{Eigen::Vector3f(-0.5f, 0.0f, 1.0f), -5.0}},
+                      {30, Detector{Eigen::Vector3f(0.0f, 0.0f, 1.0f), 0.0}},
+                      {40, Detector{Eigen::Vector3f(0.5f, 0.0f, 1.0f), 5.0}},
+                      {50, Detector{Eigen::Vector3f(1.0f, 0.0f, 1.0f), 10.0}},
+                  }};
+
+  convert_events(events, convInfo, inst);
 }

@@ -3,10 +3,16 @@
 
 #include <Eigen/Dense>
 
+#include "Instrument.h"
 #include "TofEvent.h"
 #include "Types.h"
 
 #pragma once
+
+struct ConversionInfo {
+  bool lorentz_correction = false;
+  Eigen::Matrix3f ub_matrix;
+};
 
 struct PreprocessedEventInfo {
   std::map<size_t, std::pair<TofEventList::iterator, TofEventList::iterator>>
@@ -15,7 +21,5 @@ struct PreprocessedEventInfo {
 
 PreprocessedEventInfo preprocess_events(TofEventList &events);
 
-void convert_events_for_detector(TofEventList::const_iterator begin,
-                                 TofEventList::const_iterator end);
-
-void convert_events(TofEventList &events);
+void convert_events(TofEventList &events, const ConversionInfo &convInfo,
+                    const Instrument &inst);
