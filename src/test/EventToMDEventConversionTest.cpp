@@ -64,11 +64,11 @@ TEST(EventToMDEventConversionTest, convert_events) {
   Instrument inst{Eigen::Vector3f(0.0f, 0.0f, 0.0f),
                   Eigen::Vector3f(0.0f, 0.0f, -1.5f),
                   {
-                      {10, Detector{Eigen::Vector3f(-1.0f, 0.0f, 1.0f), -10.0}},
-                      {20, Detector{Eigen::Vector3f(-0.5f, 0.0f, 1.0f), -5.0}},
-                      {30, Detector{Eigen::Vector3f(0.0f, 0.0f, 1.0f), 0.0}},
-                      {40, Detector{Eigen::Vector3f(0.5f, 0.0f, 1.0f), 5.0}},
-                      {50, Detector{Eigen::Vector3f(1.0f, 0.0f, 1.0f), 10.0}},
+                      {10, Detector{Eigen::Vector3f(-1.0f, 0.0f, 1.0f)}},
+                      {20, Detector{Eigen::Vector3f(-0.5f, 0.0f, 1.0f)}},
+                      {30, Detector{Eigen::Vector3f(0.0f, 0.0f, 1.0f)}},
+                      {40, Detector{Eigen::Vector3f(0.5f, 0.0f, 1.0f)}},
+                      {50, Detector{Eigen::Vector3f(1.0f, 0.0f, 1.0f)}},
                   }};
 
   convert_events(events, convInfo, inst);

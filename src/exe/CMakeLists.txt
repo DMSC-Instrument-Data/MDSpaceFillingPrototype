@@ -6,8 +6,15 @@ Executable(
 )
 
 Executable(
+  NAME LoadInstrumentDemo
+  SOURCES LoadInstrumentDemo.cpp
+  HEADERS ${CMAKE_SOURCE_DIR}/src
+  LIBRARIES ${CONAN_LIBS} MDSpaceFillingPrototype
+)
+
+Executable(
   NAME NexusParserDemo
-  SOURCES NexusParserDemo
+  SOURCES NexusParserDemo.cpp
   HEADERS ${CMAKE_SOURCE_DIR}/src
   LIBRARIES ${CONAN_LIBS} MDSpaceFillingPrototype
 )

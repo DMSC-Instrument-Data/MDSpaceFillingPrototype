@@ -8,7 +8,6 @@ using detid_t = size_t;
 
 struct Detector {
   Eigen::Vector3f position;
-  double twoTheta;
 };
 
 struct Instrument {
@@ -22,3 +21,6 @@ float get_l2(const Instrument &inst, const detid_t detId);
 Eigen::Vector3f get_beam_direction(const Instrument &inst);
 Eigen::Vector3f get_detector_direction(const Instrument &inst,
                                        const detid_t detId);
+float get_detector_two_theta(const Instrument &inst, const detid_t detId);
+
+void load_instrument(Instrument &inst, const std::string &filename);

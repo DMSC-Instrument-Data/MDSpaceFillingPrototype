@@ -9,4 +9,6 @@ Library(
     EventNexusLoader.cpp
     EventToMDEventConversion.cpp
     Instrument.cpp
+  LIBRARIES
+    ${CONAN_LIBS_H5CPP}
 )

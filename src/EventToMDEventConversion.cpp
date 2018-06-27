@@ -53,7 +53,7 @@ void convert_events(TofEventList &events, const ConversionInfo &convInfo,
     /* Lorentz correction */
     auto sinThetaSquared = 0.0;
     if (convInfo.lorentz_correction) {
-      const auto theta = inst.detectors.at(detId).twoTheta;
+      const auto theta = get_detector_two_theta(inst, detId);
       sinThetaSquared = sin(theta);
       sinThetaSquared *= sinThetaSquared;
     }
