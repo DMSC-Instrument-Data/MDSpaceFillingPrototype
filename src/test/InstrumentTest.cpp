@@ -22,27 +22,27 @@ TEST(InstrumentTest, test_instrument_property_getters) {
   EXPECT_FLOAT_EQ(1.5f, get_l1(inst));
   EXPECT_EQ(Eigen::Vector3f(0.0f, 0.0f, 1.0f), get_beam_direction(inst));
 
-  EXPECT_FLOAT_EQ(std::sqrt(2), get_l2(inst, 10));
-  EXPECT_FLOAT_EQ(1.0f, get_l2(inst, 30));
-  EXPECT_FLOAT_EQ(std::sqrt(2), get_l2(inst, 50));
+  EXPECT_FLOAT_EQ(std::sqrt(2), get_l2(inst, {10}));
+  EXPECT_FLOAT_EQ(1.0f, get_l2(inst, {30}));
+  EXPECT_FLOAT_EQ(std::sqrt(2), get_l2(inst, {50}));
 
   {
-    const auto &dir = get_detector_direction(inst, 10);
+    const auto &dir = get_detector_direction(inst, {10});
     EXPECT_FLOAT_EQ(-std::sqrt(2) / 2.0f, dir[0]);
     EXPECT_FLOAT_EQ(0.0f, dir[1]);
     EXPECT_FLOAT_EQ(std::sqrt(2) / 2.0f, dir[2]);
   }
 
   {
-    const auto &dir = get_detector_direction(inst, 50);
+    const auto &dir = get_detector_direction(inst, {50});
     EXPECT_FLOAT_EQ(std::sqrt(2) / 2.0f, dir[0]);
     EXPECT_FLOAT_EQ(0.0f, dir[1]);
     EXPECT_FLOAT_EQ(std::sqrt(2) / 2.0f, dir[2]);
   }
 
-  EXPECT_FLOAT_EQ(0.0f, get_detector_two_theta(inst, 30));
-  EXPECT_FLOAT_EQ(M_PI / 4.0f, get_detector_two_theta(inst, 60));
-  EXPECT_FLOAT_EQ(M_PI / 2.0f, get_detector_two_theta(inst, 70));
+  EXPECT_FLOAT_EQ(0.0f, get_detector_two_theta(inst, {30}));
+  EXPECT_FLOAT_EQ(M_PI / 4.0f, get_detector_two_theta(inst, {60}));
+  EXPECT_FLOAT_EQ(M_PI / 2.0f, get_detector_two_theta(inst, {70}));
 }
 
 TEST(InstrumentTest, test_instrument_property_getters_WISH_small) {
@@ -61,11 +61,11 @@ TEST(InstrumentTest, test_instrument_property_getters_WISH_small) {
 
   /* Expected values taken from Mantid detector view */
 
-  EXPECT_FLOAT_EQ(2.2636249496688396f, get_l2(inst, 1707000));
+  EXPECT_FLOAT_EQ(2.2636249496688396f, get_l2(inst, {1707000}));
   EXPECT_FLOAT_EQ(deg2rad(16.58760639183f),
-                  get_detector_two_theta(inst, 1707000));
+                  get_detector_two_theta(inst, {1707000}));
 
-  EXPECT_FLOAT_EQ(2.205429161228848f, get_l2(inst, 5400300));
+  EXPECT_FLOAT_EQ(2.205429161228848f, get_l2(inst, {5400300}));
   EXPECT_FLOAT_EQ(deg2rad(154.6387415122f),
-                  get_detector_two_theta(inst, 5400300));
+                  get_detector_two_theta(inst, {5400300}));
 }

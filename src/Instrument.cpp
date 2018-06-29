@@ -18,10 +18,14 @@ float get_l1(const Instrument &inst) {
 /**
  * Gets L2 (sample to detector) distance.
  * @param inst Instrument
- * @param detId Detector ID
+ * @param detIds Detector IDs
  */
-float get_l2(const Instrument &inst, const detid_t detId) {
-  return (inst.detectors.at(detId).position - inst.sample_position).norm();
+float get_l2(const Instrument &inst, const DetectorIdList &detIds) {
+  float l2(0.0f);
+  for (const auto detId : detIds) {
+    l2 += (inst.detectors.at(detId).position - inst.sample_position).norm();
+  }
+  return l2 / detIds.size();
 }
 
 /**
@@ -36,12 +40,17 @@ Eigen::Vector3f get_beam_direction(const Instrument &inst) {
 /**
  * Gets detector direction vector.
  * @param inst Instrument
- * @param detId Detector ID
+ * @param detIds Detector IDs
  */
 Eigen::Vector3f get_detector_direction(const Instrument &inst,
-                                       const detid_t detId) {
-  const auto &detPos = inst.detectors.at(detId).position - inst.sample_position;
-  return detPos / detPos.norm();
+                                       const DetectorIdList &detIds) {
+  Eigen::Vector3f pos(Eigen::Vector3f::Zero());
+  for (const auto detId : detIds) {
+    const auto &detPos =
+        inst.detectors.at(detId).position - inst.sample_position;
+    pos += (detPos / detPos.norm());
+  }
+  return pos / detIds.size();
 }
 
 /**
@@ -49,11 +58,12 @@ Eigen::Vector3f get_detector_direction(const Instrument &inst,
  *
  * Angle between incident beam direction and sample to detector direction.
  * @param inst Instrument
- * @param detId Detector ID
+ * @param detIds Detector IDs
  */
-float get_detector_two_theta(const Instrument &inst, const detid_t detId) {
+float get_detector_two_theta(const Instrument &inst,
+                             const DetectorIdList &detIds) {
   const auto beamDir = get_beam_direction(inst);
-  const auto detectorDir = get_detector_direction(inst, detId);
+  const auto detectorDir = get_detector_direction(inst, detIds);
   return acos(beamDir.dot(detectorDir));
 }
 

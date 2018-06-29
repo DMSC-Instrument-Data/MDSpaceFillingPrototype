@@ -7,6 +7,7 @@
 #include <gflags/gflags.h>
 
 #include "EventNexusLoader.h"
+#include "Instrument.h"
 #include "TofEvent.h"
 
 const std::string AllFrames("all");
@@ -23,35 +24,45 @@ int main(int argc, char **argv) {
   EventNexusLoader loader(FLAGS_filename, FLAGS_datasetName);
   std::cerr << "Total events in file: " << loader.totalEventCount() << '\n';
 
-  std::vector<size_t> frameIdxs;
+  /* Load spectrum to detector mapping */
   {
-    if (FLAGS_frames == AllFrames) {
-      frameIdxs.resize(loader.frameCount());
-      std::iota(frameIdxs.begin(), frameIdxs.end(), 0);
-    } else {
-      std::vector<std::string> frameIdxStrings;
-      boost::algorithm::split(frameIdxStrings, FLAGS_frames,
-                              boost::algorithm::is_any_of(","));
-      for (const auto &p : frameIdxStrings) {
-        frameIdxs.push_back(std::stol(p));
+    SpectrumToDetectorMapping mapping;
+    loader.loadSpectrumDetectorMapping(mapping);
+    std::cout << "Spectrum count: " << mapping.size() << '\n';
+  }
+
+  /* Load data */
+  {
+    std::vector<size_t> frameIdxs;
+    {
+      if (FLAGS_frames == AllFrames) {
+        frameIdxs.resize(loader.frameCount());
+        std::iota(frameIdxs.begin(), frameIdxs.end(), 0);
+      } else {
+        std::vector<std::string> frameIdxStrings;
+        boost::algorithm::split(frameIdxStrings, FLAGS_frames,
+                                boost::algorithm::is_any_of(","));
+        for (const auto &p : frameIdxStrings) {
+          frameIdxs.push_back(std::stol(p));
+        }
       }
     }
-  }
 
-  std::cerr << "Frames:";
-  for (const auto &frameIdx : frameIdxs) {
-    std::cerr << ' ' << frameIdx;
-  }
-  std::cerr << '\n';
+    std::cerr << "Frames to be loaded:";
+    for (const auto &frameIdx : frameIdxs) {
+      std::cerr << ' ' << frameIdx;
+    }
+    std::cerr << '\n';
 
-  std::vector<TofEvent> events;
-  loader.loadFrames(events, frameIdxs);
+    std::vector<TofEvent> events;
+    loader.loadFrames(events, frameIdxs);
 
-  std::cerr << "Loaded " << events.size() << " events total.\n";
+    std::cerr << "Loaded " << events.size() << " events total.\n";
 
-  if (FLAGS_print) {
-    for (const auto &e : events) {
-      std::cout << e.id << '\t' << e.tof << '\t' << e.pulse_time << '\n';
+    if (FLAGS_print) {
+      for (const auto &e : events) {
+        std::cout << e.id << '\t' << e.tof << '\t' << e.pulse_time << '\n';
+      }
     }
   }
 }

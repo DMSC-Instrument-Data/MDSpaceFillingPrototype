@@ -19,7 +19,7 @@ TEST(EventToMDEventConversionTest, preprocess_events) {
   // clang-format on
 
   const auto info = preprocess_events(events);
-  const auto det_to_events = info.detector_to_events;
+  const auto det_to_events = info.spectrum_to_events;
 
   EXPECT_EQ(3, det_to_events.size());
 
@@ -46,16 +46,16 @@ TEST(EventToMDEventConversionTest, preprocess_events) {
 TEST(EventToMDEventConversionTest, convert_events) {
   // clang-format off
   TofEventList events{
-    TofEvent{10, 6000.0f, 0.0},
-    TofEvent{20, 6000.0f, 0.0},
-    TofEvent{50, 6000.0f, 0.0},
-    TofEvent{50, 6000.0f, 0.0},
-    TofEvent{20, 6000.0f, 0.0},
-    TofEvent{20, 6000.0f, 0.0},
-    TofEvent{10, 6000.0f, 0.0},
-    TofEvent{20, 6000.0f, 0.0},
-    TofEvent{20, 6000.0f, 0.0},
-    TofEvent{50, 6000.0f, 0.0},
+    TofEvent{1, 6000.0f, 0.0},
+    TofEvent{2, 6000.0f, 0.0},
+    TofEvent{5, 6000.0f, 0.0},
+    TofEvent{5, 6000.0f, 0.0},
+    TofEvent{2, 6000.0f, 0.0},
+    TofEvent{2, 6000.0f, 0.0},
+    TofEvent{1, 6000.0f, 0.0},
+    TofEvent{2, 6000.0f, 0.0},
+    TofEvent{2, 6000.0f, 0.0},
+    TofEvent{5, 6000.0f, 0.0},
   };
   // clang-format on
 
@@ -69,6 +69,9 @@ TEST(EventToMDEventConversionTest, convert_events) {
                       {30, Detector{Eigen::Vector3f(0.0f, 0.0f, 1.0f)}},
                       {40, Detector{Eigen::Vector3f(0.5f, 0.0f, 1.0f)}},
                       {50, Detector{Eigen::Vector3f(1.0f, 0.0f, 1.0f)}},
+                  },
+                  {
+                      {1, {10}}, {2, {20}}, {3, {30}}, {4, {40}}, {5, {50}},
                   }};
 
   convert_events(events, convInfo, inst);

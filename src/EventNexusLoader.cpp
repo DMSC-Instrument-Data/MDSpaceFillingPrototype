@@ -2,10 +2,38 @@
 
 using namespace hdf5;
 
+void generate_spectrum_detector_mapping(SpectrumToDetectorMapping &mapping,
+                                        const std::vector<int32_t> &spec,
+                                        const std::vector<int32_t> &udet) {
+  if (spec.size() != udet.size()) {
+    return;
+  }
+
+  auto specLast = spec.cbegin();
+  auto udetLast = udet.cbegin();
+
+  auto specIt = spec.cbegin() + 1;
+  auto udetIt = udet.cbegin() + 1;
+
+  for (; specIt != spec.end() && udetIt != udet.end();) {
+    if (*specIt != *specLast) {
+      mapping[*specLast] = std::vector<detid_t>(udetLast, udetIt);
+
+      specLast = specIt;
+      udetLast = udetIt;
+    }
+
+    ++specIt;
+    ++udetIt;
+  }
+  mapping[*specLast] = std::vector<detid_t>(udetLast, udet.end());
+}
+
 EventNexusLoader::EventNexusLoader(const std::string &filename,
                                    const std::string &dataPath)
     : m_file(file::open(filename, file::AccessFlags::READONLY)) {
   m_datasetGroup = m_file.root()[dataPath];
+  m_vmsCompatGroup = m_datasetGroup.link().parent()["isis_vms_compat"];
 
   resize_and_read_dataset(m_eventIndex, m_datasetGroup["event_index"]);
   resize_and_read_dataset(m_eventTimeZero, m_datasetGroup["event_time_zero"]);
@@ -109,4 +137,29 @@ void EventNexusLoader::loadFrames(std::vector<TofEvent> &events,
       *(eventIt++) = {eventId[i], eventTimeOffset[i], params.timeZero};
     }
   }
+}
+
+void EventNexusLoader::loadSpectrumDetectorMapping(
+    SpectrumToDetectorMapping &mapping) const {
+  /* Get datasets */
+  node::Dataset specDataset = m_vmsCompatGroup["SPEC"];
+  node::Dataset udetDataset = m_vmsCompatGroup["UDET"];
+
+  /* Validate dimensions */
+  const size_t numSpec = specDataset.dataspace().size();
+  const size_t numUdet = udetDataset.dataspace().size();
+
+  if (numSpec != numUdet) {
+    return;
+  }
+
+  /* Read data */
+  std::vector<int32_t> spec(numSpec);
+  std::vector<int32_t> udet(numUdet);
+
+  specDataset.read(spec);
+  udetDataset.read(udet);
+
+  /* Do mapping generation */
+  generate_spectrum_detector_mapping(mapping, spec, udet);
 }

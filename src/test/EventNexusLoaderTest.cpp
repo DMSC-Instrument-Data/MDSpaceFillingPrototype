@@ -94,3 +94,56 @@ TEST(EventNexusLoaderTest, load_frame_3) {
   EXPECT_FLOAT_EQ(0.04f, events[3].tof);
   EXPECT_FLOAT_EQ(0.05f, events[4].tof);
 }
+
+TEST(EventNexusLoaderTest, test_generate_spectrum_detector_mapping) {
+  std::vector<int32_t> spec{
+      1, 1, 1, 4, 4, 5, 5, 5, 6, 6, 6,
+  };
+
+  std::vector<int32_t> udet{
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+  };
+
+  EXPECT_EQ(spec.size(), udet.size());
+
+  SpectrumToDetectorMapping mapping;
+  generate_spectrum_detector_mapping(mapping, spec, udet);
+
+  EXPECT_EQ(4, mapping.size());
+
+  {
+    std::vector<detid_t> expected{1, 2, 3};
+    EXPECT_EQ(expected, mapping[1]);
+  }
+
+  {
+    std::vector<detid_t> expected{4, 5};
+    EXPECT_EQ(expected, mapping[4]);
+  }
+
+  {
+    std::vector<detid_t> expected{6, 7, 8};
+    EXPECT_EQ(expected, mapping[5]);
+  }
+
+  {
+    std::vector<detid_t> expected{9, 10, 11};
+    EXPECT_EQ(expected, mapping[6]);
+  }
+}
+
+TEST(EventNexusLoaderTest,
+     test_generate_spectrum_detector_mapping_non_equal_dimensions) {
+  std::vector<int32_t> spec{
+      1, 1, 1, 4, 4, 5, 5, 5, 6, 6, 6,
+  };
+
+  std::vector<int32_t> udet{
+      1, 2, 3, 4, 5, 6, 7, 8, 9,
+  };
+
+  SpectrumToDetectorMapping mapping;
+  generate_spectrum_detector_mapping(mapping, spec, udet);
+
+  EXPECT_EQ(0, mapping.size());
+}

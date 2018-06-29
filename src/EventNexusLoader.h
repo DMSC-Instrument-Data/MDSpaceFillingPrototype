@@ -2,6 +2,7 @@
 
 #include <h5cpp/hdf5.hpp>
 
+#include "Instrument.h"
 #include "TofEvent.h"
 
 #pragma once
@@ -22,6 +23,10 @@ void resize_and_read_dataset(std::vector<T> &data,
   dataset.read(data);
 }
 
+void generate_spectrum_detector_mapping(SpectrumToDetectorMapping &mapping,
+                                        const std::vector<int32_t> &spec,
+                                        const std::vector<int32_t> &udet);
+
 class EventNexusLoader {
 public:
   EventNexusLoader(const std::string &filename, const std::string &dataPath);
@@ -41,9 +46,12 @@ public:
   void loadFrames(std::vector<TofEvent> &events,
                   const std::vector<size_t> &frameIdxs) const;
 
+  void loadSpectrumDetectorMapping(SpectrumToDetectorMapping &mapping) const;
+
 private:
   hdf5::file::File m_file;
   hdf5::node::Group m_datasetGroup;
+  hdf5::node::Group m_vmsCompatGroup;
 
   std::vector<uint64_t> m_eventIndex;
   std::vector<double> m_eventTimeZero;

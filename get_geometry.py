@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+# Usage: get_geometry.py IDF_FILENAME OUTPUT_FILENAME
 # Requires: https://github.com/ess-dmsc/python-nexus-utilities
 
 import sys

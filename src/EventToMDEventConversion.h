@@ -15,8 +15,8 @@ struct ConversionInfo {
 };
 
 struct PreprocessedEventInfo {
-  std::map<size_t, std::pair<TofEventList::iterator, TofEventList::iterator>>
-      detector_to_events;
+  std::map<specid_t, std::pair<TofEventList::iterator, TofEventList::iterator>>
+      spectrum_to_events;
 };
 
 PreprocessedEventInfo preprocess_events(TofEventList &events);
