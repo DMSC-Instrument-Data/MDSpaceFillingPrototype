@@ -18,3 +18,10 @@ Executable(
   HEADERS ${CMAKE_SOURCE_DIR}/src
   LIBRARIES ${CONAN_LIBS} MDSpaceFillingPrototype
 )
+
+Executable(
+  NAME QConversionDemo
+  SOURCES QConversionDemo.cpp
+  HEADERS ${CMAKE_SOURCE_DIR}/src
+  LIBRARIES ${CONAN_LIBS} MDSpaceFillingPrototype
+)
