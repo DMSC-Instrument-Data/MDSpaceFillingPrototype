@@ -24,11 +24,15 @@ int main(int argc, char **argv) {
   Instrument inst;
   load_instrument(inst, FLAGS_instrument);
 
+  EventNexusLoader loader(FLAGS_data, FLAGS_dataset);
+
+  /* Load spectrum to detector mapping */
+  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
+
   /* Load ToF events */
   std::vector<TofEvent> events;
   {
     std::cout << "Load ToF events\n";
-    EventNexusLoader loader(FLAGS_data, FLAGS_dataset);
 
     std::vector<size_t> frameIdxs;
     {
