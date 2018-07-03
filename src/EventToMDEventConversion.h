@@ -4,6 +4,7 @@
 #include <Eigen/Dense>
 
 #include "Instrument.h"
+#include "MDEvent.h"
 #include "TofEvent.h"
 #include "Types.h"
 
@@ -21,5 +22,6 @@ struct PreprocessedEventInfo {
 
 PreprocessedEventInfo preprocess_events(TofEventList &events);
 
-void convert_events(TofEventList &events, const ConversionInfo &convInfo,
-                    const Instrument &inst);
+void convert_events(std::vector<MDEvent<3, uint16_t, uint64_t>> &mdEvents,
+                    TofEventList &events, const ConversionInfo &convInfo,
+                    const Instrument &inst, const MDSpaceBounds<3> &space);

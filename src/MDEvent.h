@@ -6,30 +6,37 @@
 
 #pragma once
 
-template <size_t ND> class MDEvent {
+template <size_t ND, typename IntT, typename MortonT> class MDEvent {
 public:
-  using ZCurve = std::vector<MDEvent<ND>>;
+  using ZCurve = std::vector<MDEvent<ND, IntT, MortonT>>;
 
 public:
-  MDEvent(uint64_t spaceFillingCurveOrder = 0, float signal = 1.0f)
-      : m_spaceFillingCurveOrder(spaceFillingCurveOrder), m_signal(signal) {}
+  MDEvent(MortonT mortonNumber = 0, float signal = 1.0f)
+      : m_morton(mortonNumber), m_signal(signal) {}
 
   MDEvent(const MDCoordinate<ND> &coord, const MDSpaceBounds<ND> &space,
           float signal = 1.0f)
       : m_signal(signal) {
     const auto intCoord =
-        ConvertCoordinatesToIntegerRange<ND, uint16_t>(space, coord);
-    m_spaceFillingCurveOrder = interleave<ND, uint16_t, uint64_t>(intCoord);
+        ConvertCoordinatesToIntegerRange<ND, IntT>(space, coord);
+    m_morton = interleave<ND, IntT, MortonT>(intCoord);
   }
 
-  uint64_t spaceFillingCurveOrder() const { return m_spaceFillingCurveOrder; }
+  size_t dimensions() const { return ND; }
+
+  MDCoordinate<ND> coordinates(const MDSpaceBounds<ND> &space) const {
+    const auto intCoord = deinterleave<ND, IntT, MortonT>(m_morton);
+    return ConvertCoordinatesFromIntegerRange<ND, IntT>(space, intCoord);
+  }
+
+  MortonT mortonNumber() const { return m_morton; }
   float signal() const { return m_signal; }
 
-  bool operator<(const MDEvent<ND> &other) const {
-    return m_spaceFillingCurveOrder < other.m_spaceFillingCurveOrder;
+  bool operator<(const MDEvent<ND, IntT, MortonT> &other) const {
+    return m_morton < other.m_morton;
   }
 
 private:
   float m_signal;
-  uint64_t m_spaceFillingCurveOrder;
+  MortonT m_morton;
 };

@@ -11,8 +11,8 @@ const size_t ND(4);
 using IntT = uint16_t;
 using MortonT = uint64_t;
 
+using Event = MDEvent<ND, IntT, MortonT>;
 using Box = MDBox<ND, IntT, MortonT>;
-using Event = MDEvent<ND>;
 
 void BM_MDBox_fill(benchmark::State &state) {
   std::mt19937 gen;

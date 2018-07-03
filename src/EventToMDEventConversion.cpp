@@ -4,17 +4,18 @@
 
 #include "Constants.h"
 
-PreprocessedEventInfo preprocess_events(TofEventList &events) {
+PreprocessedEventInfo preprocess_events(TofEventList &tofEvents) {
   PreprocessedEventInfo eventInfo;
 
   /* Sort TOF events by spectrum ID */
   boost::sort::block_indirect_sort(
-      events.begin(), events.end(),
+      tofEvents.begin(), tofEvents.end(),
       [](const TofEvent &a, const TofEvent &b) { return a.id < b.id; });
 
   /* Get iterators to each spectrum range in TOF event list */
-  auto rangeStart = events.begin();
-  for (auto eventIt = events.begin() + 1; eventIt != events.end(); ++eventIt) {
+  auto rangeStart = tofEvents.begin();
+  for (auto eventIt = tofEvents.begin() + 1; eventIt != tofEvents.end();
+       ++eventIt) {
     if (eventIt->id != rangeStart->id) {
       eventInfo.spectrum_to_events[rangeStart->id] =
           std::make_pair(rangeStart, eventIt);
@@ -22,15 +23,16 @@ PreprocessedEventInfo preprocess_events(TofEventList &events) {
     }
   }
   eventInfo.spectrum_to_events[rangeStart->id] =
-      std::make_pair(rangeStart, events.end());
+      std::make_pair(rangeStart, tofEvents.end());
 
   return eventInfo;
 }
 
-void convert_events(TofEventList &events, const ConversionInfo &convInfo,
-                    const Instrument &inst) {
+void convert_events(std::vector<MDEvent<3, uint16_t, uint64_t>> &mdEvents,
+                    TofEventList &tofEvents, const ConversionInfo &convInfo,
+                    const Instrument &inst, const MDSpaceBounds<3> &space) {
   /* Do preprocessing */
-  const auto eventInfo = preprocess_events(events);
+  const auto eventInfo = preprocess_events(tofEvents);
 
   /* Get common instrument parameters */
   const auto beamDirection = get_beam_direction(inst);
@@ -59,13 +61,6 @@ void convert_events(TofEventList &events, const ConversionInfo &convInfo,
       sinThetaSquared *= sinThetaSquared;
     }
 
-    std::cout << "spectrum " << specId << ": "
-              << "L=" << neutronFlightPath << " : "
-              << "f=" << conversionFactor << " : "
-              << std::distance(events.begin(), eventIteratorRange.first) << '-'
-              << std::distance(events.begin(), eventIteratorRange.second)
-              << '\n';
-
     /* Iterate over events for detector */
     for (auto eventIt = eventIteratorRange.first;
          eventIt != eventIteratorRange.second; ++eventIt) {
@@ -81,10 +76,8 @@ void convert_events(TofEventList &events, const ConversionInfo &convInfo,
         weight *= corr;
       }
 
-      // TODO
-      std::cout << center << '\n' << weight << "\n\n";
+      /* Create event */
+      mdEvents.emplace_back(center, space, weight);
     }
-
-    std::cout << "\n\n";
   }
 }

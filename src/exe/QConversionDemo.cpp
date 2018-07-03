@@ -54,10 +54,21 @@ int main(int argc, char **argv) {
   }
 
   /* Convert to Q space */
+  std::vector<MDEvent<3, uint16_t, uint64_t>> mdEvents;
   {
     std::cout << "Convert to Q space\n";
+
     ConversionInfo convInfo{false, Eigen::Matrix3f::Identity()};
-    convert_events(events, convInfo, inst);
+
+    MDSpaceBounds<3> space;
+    // clang-format off
+    space <<
+      -10.0f, 10.0f,
+      -10.0f, 10.0f,
+      -10.0f, 10.0f;
+    // clang-format on
+
+    convert_events(mdEvents, events, convInfo, inst, space);
   }
 
   /* TODO */

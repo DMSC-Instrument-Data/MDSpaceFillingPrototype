@@ -17,7 +17,7 @@ static void BM_CreateEvent_N4_100000000(benchmark::State &state) {
 
   for (auto _ : state) {
     for (size_t i = 0; i < 100000000; i++) {
-      MDEvent<4> event(coord, space);
+      MDEvent<4, uint16_t, uint64_t> event(coord, space);
       benchmark::DoNotOptimize(event);
     }
   }

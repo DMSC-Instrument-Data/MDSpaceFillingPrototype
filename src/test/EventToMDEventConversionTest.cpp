@@ -74,5 +74,15 @@ TEST(EventToMDEventConversionTest, convert_events) {
                       {1, {10}}, {2, {20}}, {3, {30}}, {4, {40}}, {5, {50}},
                   }};
 
-  convert_events(events, convInfo, inst);
+  MDSpaceBounds<3> space;
+  // clang-format off
+  space <<
+    -10.0f, 10.0f,
+    -10.0f, 10.0f,
+    -10.0f, 10.0f;
+  // clang-format on
+
+  std::vector<MDEvent<3, uint16_t, uint64_t>> mdEvents;
+
+  convert_events(mdEvents, events, convInfo, inst, space);
 }

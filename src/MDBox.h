@@ -57,7 +57,8 @@ public:
 
 public:
   using Children = std::vector<MDBox<ND, IntT, MortonT>>;
-  using ZCurveIterator = typename MDEvent<ND>::ZCurve::const_iterator;
+  using ZCurveIterator =
+      typename MDEvent<ND, IntT, MortonT>::ZCurve::const_iterator;
 
 private:
   using MortonTLimits = std::numeric_limits<MortonT>;
@@ -86,8 +87,8 @@ public:
    * @param event MDEvent to test
    * @return True if event falls within bounds of this box
    */
-  bool contains(const MDEvent<ND> &event) const {
-    return contains(event.spaceFillingCurveOrder());
+  bool contains(const MDEvent<ND, IntT, MortonT> &event) const {
+    return contains(event.mortonNumber());
   }
 
   /**
@@ -148,8 +149,8 @@ public:
 
       /* Iterate over event list to find the first event that should not be in
        * the current child box */
-      while (morton_contains(boxLower, boxUpper,
-                             eventIt->spaceFillingCurveOrder()) &&
+      while (morton_contains<MortonT>(boxLower, boxUpper,
+                                      eventIt->mortonNumber()) &&
              eventIt != m_eventEnd) {
         /* Event was in the box, increment the event iterator */
         ++eventIt;
