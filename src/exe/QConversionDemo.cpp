@@ -3,6 +3,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/sort/sort.hpp>
 #include <gflags/gflags.h>
 
 #include "EventNexusLoader.h"
@@ -13,7 +14,7 @@ const std::string AllFrames("all");
 
 DEFINE_string(instrument, "instrument.h5", "Instrument geometry file.");
 DEFINE_string(data, "raw_data.nxs", "TOF event data file.");
-DEFINE_string(dataset, "data", "Path to HDF5 dataset.");
+DEFINE_string(dataset, "raw_data_1/detector_1_events", "Path to HDF5 dataset.");
 DEFINE_string(frames, "1", "Frames to load.");
 
 int main(int argc, char **argv) {
@@ -70,6 +71,10 @@ int main(int argc, char **argv) {
 
     convert_events(mdEvents, events, convInfo, inst, space);
   }
+
+  /* Sort events */
+  std::cout << "Sort events\n";
+  boost::sort::block_indirect_sort(mdEvents.begin(), mdEvents.end());
 
   /* TODO */
 }

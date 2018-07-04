@@ -1,6 +1,7 @@
 #include "EventToMDEventConversion.h"
 
 #include <boost/sort/sort.hpp>
+#include <omp.h>
 
 #include "Constants.h"
 
@@ -69,15 +70,18 @@ void convert_events(std::vector<MDEvent<3, uint16_t, uint64_t>> &mdEvents,
       const auto wavenumber = conversionFactor / eventIt->tof;
       const auto center = qDir * wavenumber;
 
-      /* Lorentz correction */
-      if (convInfo.lorentz_correction) {
-        const auto corr =
-            sinThetaSquared * wavenumber * wavenumber * wavenumber * wavenumber;
-        weight *= corr;
-      }
+      /* Ensure the event is within the bounds of the MD space */
+      if (CheckCoordinatesInMDSpace(space, center)) {
+        /* Lorentz correction */
+        if (convInfo.lorentz_correction) {
+          const auto corr = sinThetaSquared * wavenumber * wavenumber *
+                            wavenumber * wavenumber;
+          weight *= corr;
+        }
 
-      /* Create event */
-      mdEvents.emplace_back(center, space, weight);
+        /* Create event */
+        mdEvents.emplace_back(center, space, weight);
+      }
     }
   }
 }

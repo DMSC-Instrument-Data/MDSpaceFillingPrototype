@@ -42,6 +42,36 @@ TEST(CoordinateConversionTest, ExpandBounds) {
   EXPECT_GT(bounds.col(1)[3], 15.0f);
 }
 
+TEST(CoordinateConversionTest, CheckCoordinatesInMDSpace) {
+  MDSpaceBounds<2> bounds;
+  // clang-format off
+  bounds <<
+    1.0f, 8.0f,
+    5.0f, 6.0f;
+  // clang-format on
+
+  {
+    MDCoordinate<2> coord;
+    coord << 5.0f, 5.5f;
+
+    EXPECT_TRUE(CheckCoordinatesInMDSpace(bounds, coord));
+  }
+
+  {
+    MDCoordinate<2> coord;
+    coord << 0.5f, 5.5f;
+
+    EXPECT_FALSE(CheckCoordinatesInMDSpace(bounds, coord));
+  }
+
+  {
+    MDCoordinate<2> coord;
+    coord << 5.0f, 7.0f;
+
+    EXPECT_FALSE(CheckCoordinatesInMDSpace(bounds, coord));
+  }
+}
+
 TEST(CoordinateConversionTest, ConvertFloatCoordsTo8BitInteger) {
   MDSpaceBounds<4> bounds;
   // clang-format off
