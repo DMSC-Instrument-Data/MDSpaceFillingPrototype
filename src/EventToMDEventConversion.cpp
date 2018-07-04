@@ -18,13 +18,13 @@ PreprocessedEventInfo preprocess_events(TofEventList &tofEvents) {
   for (auto eventIt = tofEvents.begin() + 1; eventIt != tofEvents.end();
        ++eventIt) {
     if (eventIt->id != rangeStart->id) {
-      eventInfo.spectrum_to_events[rangeStart->id] =
-          std::make_pair(rangeStart, eventIt);
+      eventInfo.spectrum_to_events.push_back(
+          std::make_tuple(rangeStart->id, rangeStart, eventIt));
       rangeStart = eventIt;
     }
   }
-  eventInfo.spectrum_to_events[rangeStart->id] =
-      std::make_pair(rangeStart, tofEvents.end());
+  eventInfo.spectrum_to_events.push_back(
+      std::make_tuple(rangeStart->id, rangeStart, tofEvents.end()));
 
   return eventInfo;
 }
@@ -39,10 +39,15 @@ void convert_events(std::vector<MDEvent<3, uint16_t, uint64_t>> &mdEvents,
   const auto beamDirection = get_beam_direction(inst);
   const auto l1 = get_l1(inst);
 
+#pragma omp parallel for
   /* Iterate over spectra */
-  for (const auto spectrumInfo : eventInfo.spectrum_to_events) {
-    const auto specId(spectrumInfo.first);
-    const auto eventIteratorRange(spectrumInfo.second);
+  for (size_t i = 0; i < eventInfo.spectrum_to_events.size(); i++) {
+    const auto specInfo(eventInfo.spectrum_to_events[i]);
+
+    const auto specId(std::get<0>(specInfo));
+    const auto eventIteratorStart(std::get<1>(specInfo));
+    const auto eventIteratorEnd(std::get<2>(specInfo));
+
     const auto detectorsForSpectrum = inst.spectrum_detector_mapping.at(specId);
 
     /* Get common detector parameters */
@@ -63,8 +68,9 @@ void convert_events(std::vector<MDEvent<3, uint16_t, uint64_t>> &mdEvents,
     }
 
     /* Iterate over events for detector */
-    for (auto eventIt = eventIteratorRange.first;
-         eventIt != eventIteratorRange.second; ++eventIt) {
+    std::vector<MDEvent<3, uint16_t, uint64_t>> mdEventsForSpectrum;
+    for (auto eventIt = eventIteratorStart; eventIt != eventIteratorEnd;
+         ++eventIt) {
       auto weight = 1.0f;
 
       const auto wavenumber = conversionFactor / eventIt->tof;
@@ -80,8 +86,15 @@ void convert_events(std::vector<MDEvent<3, uint16_t, uint64_t>> &mdEvents,
         }
 
         /* Create event */
-        mdEvents.emplace_back(center, space, weight);
+        mdEventsForSpectrum.emplace_back(center, space, weight);
       }
+    }
+
+#pragma omp critical
+    {
+      /* Add to event list */
+      mdEvents.insert(mdEvents.cend(), mdEventsForSpectrum.begin(),
+                      mdEventsForSpectrum.end());
     }
   }
 }

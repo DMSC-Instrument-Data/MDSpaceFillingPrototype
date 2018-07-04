@@ -1,4 +1,6 @@
+#include <chrono>
 #include <iostream>
+#include <vector>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -15,7 +17,7 @@ const std::string AllFrames("all");
 DEFINE_string(instrument, "instrument.h5", "Instrument geometry file.");
 DEFINE_string(data, "raw_data.nxs", "TOF event data file.");
 DEFINE_string(dataset, "raw_data_1/detector_1_events", "Path to HDF5 dataset.");
-DEFINE_string(frames, "1", "Frames to load.");
+DEFINE_string(frames, "0", "Frames to load.");
 
 int main(int argc, char **argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -28,6 +30,7 @@ int main(int argc, char **argv) {
   EventNexusLoader loader(FLAGS_data, FLAGS_dataset);
 
   /* Load spectrum to detector mapping */
+  std::cout << "Load spectrum to detector mapping\n";
   loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
 
   /* Load ToF events */
@@ -51,8 +54,12 @@ int main(int argc, char **argv) {
     }
 
     loader.loadFrames(events, frameIdxs);
-    std::cout << " (loaded " << events.size() << " events)\n";
+    std::cout << " (" << events.size() << " ToF events loaded)\n";
   }
+
+  /* Start timing */
+  std::cout << "Timing started\n";
+  const auto startTime = std::chrono::high_resolution_clock::now();
 
   /* Convert to Q space */
   std::vector<MDEvent<3, uint16_t, uint64_t>> mdEvents;
@@ -70,11 +77,15 @@ int main(int argc, char **argv) {
     // clang-format on
 
     convert_events(mdEvents, events, convInfo, inst, space);
+    std::cout << " (" << mdEvents.size() << " MD events created)\n";
   }
 
   /* Sort events */
   std::cout << "Sort events\n";
   boost::sort::block_indirect_sort(mdEvents.begin(), mdEvents.end());
 
-  /* TODO */
+  /* Stop timing */
+  const auto duration = std::chrono::high_resolution_clock::now() - startTime;
+  std::cout << mdEvents.size() << " events done in "
+            << std::chrono::duration<float>(duration).count() << " seconds\n";
 }

@@ -27,17 +27,29 @@ TEST(EventToMDEventConversionTest, preprocess_events) {
   {
     auto it = events.begin();
 
-    EXPECT_EQ(it, det_to_events.at(0).first);
-    std::advance(it, 2);
-    EXPECT_EQ(it, det_to_events.at(0).second);
+    {
+      const auto mapping = det_to_events[0];
+      EXPECT_EQ(0, std::get<0>(mapping));
+      EXPECT_EQ(it, std::get<1>(mapping));
+      std::advance(it, 2);
+      EXPECT_EQ(it, std::get<2>(mapping));
+    }
 
-    EXPECT_EQ(it, det_to_events.at(1).first);
-    std::advance(it, 5);
-    EXPECT_EQ(it, det_to_events.at(1).second);
+    {
+      const auto mapping = det_to_events[1];
+      EXPECT_EQ(1, std::get<0>(mapping));
+      EXPECT_EQ(it, std::get<1>(mapping));
+      std::advance(it, 5);
+      EXPECT_EQ(it, std::get<2>(mapping));
+    }
 
-    EXPECT_EQ(it, det_to_events.at(2).first);
-    std::advance(it, 3);
-    EXPECT_EQ(it, det_to_events.at(2).second);
+    {
+      const auto mapping = det_to_events[2];
+      EXPECT_EQ(2, std::get<0>(mapping));
+      EXPECT_EQ(it, std::get<1>(mapping));
+      std::advance(it, 3);
+      EXPECT_EQ(it, std::get<2>(mapping));
+    }
 
     EXPECT_EQ(events.end(), it);
   }

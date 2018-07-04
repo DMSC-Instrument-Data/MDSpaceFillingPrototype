@@ -1,4 +1,4 @@
-#include <map>
+#include <tuple>
 #include <vector>
 
 #include <Eigen/Dense>
@@ -16,7 +16,8 @@ struct ConversionInfo {
 };
 
 struct PreprocessedEventInfo {
-  std::map<specid_t, std::pair<TofEventList::iterator, TofEventList::iterator>>
+  std::vector<
+      std::tuple<specid_t, TofEventList::iterator, TofEventList::iterator>>
       spectrum_to_events;
 };
 
