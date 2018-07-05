@@ -18,6 +18,25 @@ DEFINE_string(instrument, "instrument.h5", "Instrument geometry file.");
 DEFINE_string(data, "raw_data.nxs", "TOF event data file.");
 DEFINE_string(dataset, "raw_data_1/detector_1_events", "Path to HDF5 dataset.");
 DEFINE_string(frames, "0", "Frames to load.");
+DEFINE_string(space, "-10,10,-10,10,-10,10", "Q space dimensions.");
+
+void parse_integer_string_array(std::vector<size_t> &numbers,
+                                const std::string &str) {
+  std::vector<std::string> subStrings;
+  boost::algorithm::split(subStrings, str, boost::algorithm::is_any_of(","));
+  for (const auto &p : subStrings) {
+    numbers.push_back(std::stol(p));
+  }
+}
+
+void parse_float_string_array(std::vector<float> &numbers,
+                              const std::string &str) {
+  std::vector<std::string> subStrings;
+  boost::algorithm::split(subStrings, str, boost::algorithm::is_any_of(","));
+  for (const auto &p : subStrings) {
+    numbers.push_back(std::stof(p));
+  }
+}
 
 int main(int argc, char **argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -44,12 +63,7 @@ int main(int argc, char **argv) {
         frameIdxs.resize(loader.frameCount());
         std::iota(frameIdxs.begin(), frameIdxs.end(), 0);
       } else {
-        std::vector<std::string> frameIdxStrings;
-        boost::algorithm::split(frameIdxStrings, FLAGS_frames,
-                                boost::algorithm::is_any_of(","));
-        for (const auto &p : frameIdxStrings) {
-          frameIdxs.push_back(std::stol(p));
-        }
+        parse_integer_string_array(frameIdxs, FLAGS_frames);
       }
     }
 
@@ -69,12 +83,17 @@ int main(int argc, char **argv) {
     ConversionInfo convInfo{false, Eigen::Matrix3f::Identity()};
 
     MDSpaceBounds<3> space;
-    // clang-format off
-    space <<
-      -10.0f, 10.0f,
-      -10.0f, 10.0f,
-      -10.0f, 10.0f;
-    // clang-format on
+    {
+      std::vector<float> extents;
+      parse_float_string_array(extents, FLAGS_space);
+
+      space(0, 0) = extents[0];
+      space(0, 1) = extents[1];
+      space(1, 0) = extents[2];
+      space(1, 1) = extents[3];
+      space(2, 0) = extents[4];
+      space(2, 1) = extents[5];
+    }
 
     convert_events(mdEvents, events, convInfo, inst, space);
     std::cout << " (" << mdEvents.size() << " MD events created)\n";
