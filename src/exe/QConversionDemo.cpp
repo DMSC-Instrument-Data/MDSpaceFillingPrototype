@@ -7,6 +7,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/sort/sort.hpp>
 #include <gflags/gflags.h>
+#include <h5cpp/hdf5.hpp>
 
 #include "EventNexusLoader.h"
 #include "EventToMDEventConversion.h"
@@ -71,6 +72,20 @@ int main(int argc, char **argv) {
     std::cout << " (" << events.size() << " ToF events loaded)\n";
   }
 
+  /* Parse MD space */
+  MDSpaceBounds<3> space;
+  {
+    std::vector<float> extents;
+    parse_float_string_array(extents, FLAGS_space);
+
+    space(0, 0) = extents[0];
+    space(0, 1) = extents[1];
+    space(1, 0) = extents[2];
+    space(1, 1) = extents[3];
+    space(2, 0) = extents[4];
+    space(2, 1) = extents[5];
+  }
+
   /* Start timing */
   std::cout << "Timing started\n";
   const auto startTime = std::chrono::high_resolution_clock::now();
@@ -81,19 +96,6 @@ int main(int argc, char **argv) {
     std::cout << "Convert to Q space\n";
 
     ConversionInfo convInfo{false, Eigen::Matrix3f::Identity()};
-
-    MDSpaceBounds<3> space;
-    {
-      std::vector<float> extents;
-      parse_float_string_array(extents, FLAGS_space);
-
-      space(0, 0) = extents[0];
-      space(0, 1) = extents[1];
-      space(1, 0) = extents[2];
-      space(1, 1) = extents[3];
-      space(2, 0) = extents[4];
-      space(2, 1) = extents[5];
-    }
 
     convert_events(mdEvents, events, convInfo, inst, space);
     std::cout << " (" << mdEvents.size() << " MD events created)\n";
@@ -107,4 +109,45 @@ int main(int argc, char **argv) {
   const auto duration = std::chrono::high_resolution_clock::now() - startTime;
   std::cout << mdEvents.size() << " events done in "
             << std::chrono::duration<float>(duration).count() << " seconds\n";
+
+  /* Save MD events */
+  {
+    std::cout << "Saving MD events\n";
+
+    using namespace hdf5;
+
+    file::File f =
+        file::create("md_events_out.h5", file::AccessFlags::TRUNCATE);
+    node::Group rootGroup = f.root();
+
+    dataspace::Simple dataspace{{mdEvents.size()}};
+    auto type = datatype::create<std::vector<float>>();
+
+    /* Save signal */
+    {
+      std::vector<float> signal;
+      node::Dataset ds = rootGroup.create_dataset("signal", type, dataspace);
+      for (const auto e : mdEvents) {
+        signal.push_back(e.signal());
+      }
+      ds.write(signal);
+    }
+
+    /* Save coordinates */
+    {
+      std::vector<float> qx, qy, qz;
+      node::Dataset dsx = rootGroup.create_dataset("qx", type, dataspace);
+      node::Dataset dsy = rootGroup.create_dataset("qy", type, dataspace);
+      node::Dataset dsz = rootGroup.create_dataset("qz", type, dataspace);
+      for (const auto e : mdEvents) {
+        const auto coord = e.coordinates(space);
+        qx.push_back(coord[0]);
+        qy.push_back(coord[1]);
+        qz.push_back(coord[2]);
+      }
+      dsx.write(qx);
+      dsy.write(qy);
+      dsz.write(qz);
+    }
+  }
 }
