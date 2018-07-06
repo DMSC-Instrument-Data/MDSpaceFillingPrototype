@@ -4,6 +4,7 @@ set(UNIT_TESTS
   BitInterleavingTest
   CoordinateConversionTest
   MDEventTest
+  EventNexusLoaderTest
   TestUtilTest
 )
 
@@ -12,5 +13,8 @@ foreach(TEST ${UNIT_TESTS})
     NAME ${TEST}
     SOURCES ${TEST}.cpp
     HEADERS ${CMAKE_SOURCE_DIR}/src
+    LIBRARIES ${CONAN_LIBS} MDSpaceFillingPrototype
   )
 endforeach(TEST)
+
+file(COPY test_data DESTINATION .)
