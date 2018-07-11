@@ -12,7 +12,8 @@
 const std::string AllFrames("all");
 
 DEFINE_string(filename, "testdata.nxs", "NeXus file.");
-DEFINE_string(datasetName, "data", "Name of generated dataset.");
+DEFINE_string(datasetName, "raw_data_1/detector_1_events",
+              "Name of generated dataset.");
 DEFINE_string(frames, AllFrames, "Frames to load.");
 DEFINE_bool(print, false, "Print output events");
 

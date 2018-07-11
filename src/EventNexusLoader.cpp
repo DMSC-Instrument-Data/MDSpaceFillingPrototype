@@ -42,7 +42,7 @@ std::pair<size_t, size_t>
 EventNexusLoader::getFrameEventRange(size_t frameIdx) const {
   const auto start = m_eventIndex[frameIdx];
   const auto end = frameIdx >= m_eventIndex.size() - 1
-                       ? totalEventCount() - 1
+                       ? totalEventCount()
                        : m_eventIndex[frameIdx + 1];
 
   return std::make_pair(start, end - start);
