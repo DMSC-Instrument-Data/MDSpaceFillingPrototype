@@ -3,6 +3,7 @@ set(BENCHMARKS
   BitInterleaving64bitBenchmark
   CoordinateConversionBenchmark
   EventCreationBenchmark
+  MDBoxBenchmark
   SortBenchmark
   SortDatasetBenchmark
   SortEventBenchmark
