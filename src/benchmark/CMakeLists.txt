@@ -1,6 +1,7 @@
 set(BENCHMARKS
   BitInterleaving128bitBenchmark
   BitInterleaving64bitBenchmark
+  BitInterleaving64bitBoostGMPBenchmark
   CoordinateConversionBenchmark
   EventCreationBenchmark
   SortBenchmark
@@ -13,5 +14,6 @@ foreach(BENCHMARK ${BENCHMARKS})
     NAME ${BENCHMARK}
     SOURCES ${BENCHMARK}.cpp
     HEADERS ${CMAKE_SOURCE_DIR}/src
+    LIBRARIES ${GMP_LIBRARIES}
   )
 endforeach(BENCHMARK)
