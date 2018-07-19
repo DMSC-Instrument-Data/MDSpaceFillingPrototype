@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <string>
 
 /* Reverse wrapper taken from: https://stackoverflow.com/a/28139075 */
@@ -31,5 +32,16 @@ template <typename IntT> IntT bit_string_to_int(const std::string &bitStr) {
   for (const auto &c : reverse(bitStr)) {
     res |= (IntT)(c == '1' ? 1 : 0) << i++;
   }
+  return res;
+}
+
+template <typename IntT> std::string int_to_bit_string(const IntT val) {
+  std::string res;
+  const auto bits(std::numeric_limits<IntT>::digits);
+  for (size_t i = 0; i < bits; ++i) {
+    const bool set = (val >> i) & 1;
+    res.append(set ? "1" : "0");
+  }
+  std::reverse(res.begin(), res.end());
   return res;
 }

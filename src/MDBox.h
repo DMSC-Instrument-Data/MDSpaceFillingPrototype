@@ -20,70 +20,27 @@ MortonT calculate_centre(const MortonT min, const MortonT max) {
 template <size_t ND, typename IntT, typename MortonT> class MDBox {
 public:
   using Children = std::vector<MDBox<ND, IntT, MortonT>>;
-  using LeafBoxVector =
-      std::vector<std::reference_wrapper<MDBox<ND, IntT, MortonT>>>;
   using ZCurveIterator = typename MDEvent<ND>::ZCurve::const_iterator;
-
-public:
-  /**
-   * Adds MD events from a Z-curve to the appropriate leaf boxes on a box
-   * structure.
-   *
-   * @param leafBoxes Leaf boxes (must be sorted by Morton number)
-   * @param curve Events on Z-curve (must be sorted by Morton number)
-   */
-  static void
-  InsertEventsToLeafBoxes(LeafBoxVector &leafBoxes,
-                          const typename MDEvent<ND>::ZCurve &curve) {
-    auto boxIt = leafBoxes.begin();
-
-    /* First box always begins at the first event (even if the first even does
-     * not belong in this box) */
-    boxIt->get().m_eventBegin = curve.cbegin();
-
-    /* For each event on the Z-curve */
-    for (auto eventIt = curve.cbegin(); eventIt != curve.cend(); ++eventIt) {
-      /* Stop when we find the box this event fits in */
-      while (!boxIt->get().contains(*eventIt)) {
-        /* Terminate the previous box */
-        boxIt->get().m_eventEnd = eventIt;
-
-        /* End if we run out of boxes */
-        if (++boxIt == leafBoxes.end()) {
-          return;
-        }
-
-        /* Start the next box */
-        boxIt->get().m_eventBegin = eventIt;
-      }
-    }
-
-    /* If we run out of events then terminate the current box */
-    (boxIt++)->get().m_eventEnd = curve.cend();
-
-    /* If there are boxes remaining then mark them as empty */
-    for (; boxIt != leafBoxes.end(); ++boxIt) {
-      boxIt->get().m_eventBegin = curve.cend();
-      boxIt->get().m_eventEnd = curve.cend();
-    }
-  }
 
 public:
   /**
    * Construct a "root" MDBox, i.e. one that makes use of the full intermediate
    * integer space.
    */
-  MDBox() {
-    using intLimits = std::numeric_limits<IntT>;
+  MDBox(ZCurveIterator begin, ZCurveIterator end)
+      : m_min(std::numeric_limits<MortonT>::min()),
+        m_max(std::numeric_limits<MortonT>::max()),
+        m_morton(calculate_centre<ND, IntT, MortonT>(m_min, m_max)),
+        m_eventBegin(begin), m_eventEnd(end) {}
 
-    const auto axisMin = intLimits::min();
-    const auto axisMax = intLimits::max();
-
-    m_min = interleave<ND, IntT, MortonT>({axisMin, axisMin, axisMin, axisMin});
-    m_max = interleave<ND, IntT, MortonT>({axisMax, axisMax, axisMax, axisMax});
-
-    m_morton = calculate_centre<ND, IntT, MortonT>(m_min, m_max);
-  }
+  /**
+   * Construct a "root" MDBox, i.e. one that makes use of the full intermediate
+   * integer space.
+   */
+  MDBox()
+      : m_min(std::numeric_limits<MortonT>::min()),
+        m_max(std::numeric_limits<MortonT>::max()),
+        m_morton(calculate_centre<ND, IntT, MortonT>(m_min, m_max)) {}
 
   /**
    * Construct an MDBox with given integer bounds.
@@ -110,12 +67,23 @@ public:
    * @return True if event falls within bounds of this box
    */
   bool contains(const MDEvent<ND> &event) const {
-    const MortonT eventMorton(event.spaceFillingCurveOrder());
-    return eventMorton >= m_min && eventMorton < m_max;
+    return contains(event.spaceFillingCurveOrder());
   }
 
   /**
-   * (Recursively) splits boxes into 2^N boxes by taking the midpoint
+   * Tests if a given Morton number is inside this box.
+   *
+   * @see MDBox::contains(MDEvent)
+   *
+   * @param morton Morton number to test
+   * @return True if Morton number falls within bounds of this box
+   */
+  bool contains(const MortonT morton) const {
+    return m_min <= morton && morton <= m_max;
+  }
+
+  /**
+   * Recursively splits boxes into 2^N boxes by taking the midpoint
    * coordinate of each axis.
    *
    * @param depth Maximum depth to perform splitting to (defaults to 1 (i.e.
@@ -125,7 +93,7 @@ public:
     const auto lower = deinterleave<ND, IntT, MortonT>(m_min);
     const auto upper = deinterleave<ND, IntT, MortonT>(m_max);
 
-    const auto mid = (upper - lower) / 2;
+    const auto mid = lower + ((upper - lower) / 2);
 
     /* Iterate over permutations of coordinates (selected from bits of integers
      * up to 2^ND) */
@@ -135,7 +103,7 @@ public:
       /* Select coordinates based on set bits */
       for (size_t i = 0; i < ND; i++) {
         const bool select((p >> i) & 0x1);
-        boxLower[i] = select ? lower[i] : mid[i];
+        boxLower[i] = select ? lower[i] : mid[i] + 1;
         boxUpper[i] = select ? mid[i] : upper[i];
       }
 
@@ -155,73 +123,48 @@ public:
   }
 
   /**
-   * Removes child boxes where the total event count is less than a threshold.
+   * Recursively splits this box into 2^N uniformly sized child boxes and
+   * distributes its events within the child boxes.
    *
-   * @param threshold Minimum number of events in a single box
+   * @param splitThreshold Number of events at which a box will be further split
+   * @param maxDepth Maximum box tree depth (including root box)
    */
-  void prune(size_t threshold) {
-    bool allChildBoxesBelowThreshold(true);
-
-    /* If this box has no events then we can just remove all the child boxes and
-     * exit */
-    if (eventCount() == 0) {
-      m_childBoxes.clear();
+  void distributeEvents(size_t splitThreshold, size_t maxDepth) {
+    /* If this box has less events than the splitting threshold or we have
+     * reached the maximum tree depth then exit */
+    if (eventCount() < splitThreshold || maxDepth-- == 0) {
       return;
     }
 
-    /* Prune children first */
-    for (auto &child : m_childBoxes) {
-      child.prune(threshold);
+    /* Split this box */
+    split();
 
-      /* Record if all child boxes have less events than the minimum threshold
-       */
-      if (child.eventCount() >= threshold) {
-        allChildBoxesBelowThreshold = false;
-      }
-    }
+    auto childIt = m_childBoxes.begin();
+    auto eventIt = m_eventBegin;
 
-    /* If all child boxes have less events than the minimum number of events per
-     * box */
-    if (allChildBoxesBelowThreshold) {
-      /* "Merge" the boxes (essentially just delete the children as the start
-       * and end iterators will remain unchanged in this box) */
-      m_childBoxes.clear();
-    }
-  }
+    /* First child always has same event begin iterator as this box */
+    childIt->m_eventBegin = m_eventBegin;
 
-  /**
-   * Gets all leaf boxes in a single vector.
-   *
-   * @param boxes Vector of references to child boxes
-   */
-  void getLeafBoxes(LeafBoxVector &boxes) {
-    if (m_childBoxes.empty()) {
-      boxes.push_back(*this);
-    } else {
-      for (auto &b : m_childBoxes) {
-        b.getLeafBoxes(boxes);
-      }
-    }
-  }
-
-  /**
-   * Updates the start and end event iterators that point to the Z-curve from
-   * child boxes.
-   *
-   * Uses the start iterator of the child with the lowest Morton number and the
-   * end iterator of the child with the highest Morton number.
-   *
-   * Assumes that the child box list is already sorted by Morton number.
-   */
-  void setIteratorsFromChildren() {
-    if (m_childBoxes.size() > 0) {
-      for (auto &child : m_childBoxes) {
-        child.setIteratorsFromChildren();
+    /* Iterate over all child boxes except the last */
+    for (; childIt != m_childBoxes.end() - 1;) {
+      /* Iterate over event list to find the first event that should not be in
+       * the current child box */
+      while (childIt->contains(*eventIt) && eventIt != m_eventEnd) {
+        ++eventIt;
       }
 
-      m_eventBegin = m_childBoxes.front().m_eventBegin;
-      m_eventEnd = m_childBoxes.back().m_eventEnd;
+      /* Set the end event iterator of the current child box */
+      childIt->m_eventEnd = eventIt;
+
+      /* Distribute events of the current child box */
+      /* childIt->distributeEvents(splitThreshold, maxDepth); */
+
+      /* Set the start event iterator of the next child box */
+      (++childIt)->m_eventBegin = eventIt;
     }
+
+    /* Last child always has same event end iterator as this box */
+    childIt->m_eventEnd = m_eventEnd;
   }
 
   MortonT min() const { return m_min; }
