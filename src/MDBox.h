@@ -1,6 +1,8 @@
 #include <functional>
 #include <vector>
 
+#include <omp.h>
+
 #include "BitInterleaving.h"
 #include "MDEvent.h"
 #include "Types.h"
@@ -163,9 +165,16 @@ public:
     /* Last child always has same event end iterator as this box */
     childIt->m_eventEnd = m_eventEnd;
 
-    /* Distribute events within child boxes */
-    for (auto &child : m_childBoxes) {
-      child.distributeEvents(splitThreshold, maxDepth);
+/* Distribute events within child boxes */
+#pragma omp parallel
+#pragma omp single nowait
+    {
+      for (size_t i = 0; i < m_childBoxes.size(); i++) {
+#pragma omp task
+        m_childBoxes[i].distributeEvents(splitThreshold, maxDepth);
+      }
+
+#pragma omp taskwait
     }
   }
 
