@@ -156,15 +156,17 @@ public:
       /* Set the end event iterator of the current child box */
       childIt->m_eventEnd = eventIt;
 
-      /* Distribute events of the current child box */
-      childIt->distributeEvents(splitThreshold, maxDepth);
-
       /* Set the start event iterator of the next child box */
       (++childIt)->m_eventBegin = eventIt;
     }
 
     /* Last child always has same event end iterator as this box */
     childIt->m_eventEnd = m_eventEnd;
+
+    /* Distribute events within child boxes */
+    for (auto &child : m_childBoxes) {
+      child.distributeEvents(splitThreshold, maxDepth);
+    }
   }
 
   MortonT min() const { return m_min; }

@@ -2,6 +2,8 @@
 
 #include <limits>
 
+#include <boost/range/combine.hpp>
+
 #include "TestUtil.h"
 
 #include "MDBox.h"
@@ -201,6 +203,34 @@ TEST(MDBox4DTest, test_split_3times) {
   }
 }
 
+struct ExpectedBox {
+  size_t event_count;
+  std::vector<ExpectedBox> children;
+};
+
+void recursive_box_tree_validation(const Box &box, Box::ZCurveIterator &curveIt,
+                                   const ExpectedBox &expected) {
+  ASSERT_EQ(expected.event_count, box.eventCount());
+
+  EXPECT_EQ(curveIt, box.eventBegin());
+
+  ASSERT_EQ(expected.children.size(), box.children().size());
+
+  if (expected.children.empty()) {
+    std::advance(curveIt, expected.event_count);
+  } else {
+    for (auto tup : boost::combine(expected.children, box.children())) {
+      ExpectedBox expectedChild;
+      Box child;
+      boost::tie(expectedChild, child) = tup;
+
+      recursive_box_tree_validation(child, curveIt, expectedChild);
+    }
+  }
+
+  EXPECT_EQ(curveIt, box.eventEnd());
+}
+
 TEST(MDBox4DTest, test_fill_events) {
   /* Create test MD event Z-curve */
   Event::ZCurve curve;
@@ -210,6 +240,8 @@ TEST(MDBox4DTest, test_fill_events) {
     const IntT b(step * 3);
 
     curve.emplace_back(interleaveFunc({a, a, a, a}));
+    curve.emplace_back(interleaveFunc({a, a, a + 1, a}));
+    curve.emplace_back(interleaveFunc({a, a, a + 2, a}));
     curve.emplace_back(interleaveFunc({a, a, a, b}));
     curve.emplace_back(interleaveFunc({a, a, b, a}));
     curve.emplace_back(interleaveFunc({a, a, b, b}));
@@ -218,6 +250,8 @@ TEST(MDBox4DTest, test_fill_events) {
     curve.emplace_back(interleaveFunc({a, b, b, a}));
     curve.emplace_back(interleaveFunc({a, b, b, b}));
     curve.emplace_back(interleaveFunc({b, a, a, a}));
+    curve.emplace_back(interleaveFunc({b + 1, a, a, a}));
+    curve.emplace_back(interleaveFunc({b + 2, a, a, a}));
     curve.emplace_back(interleaveFunc({b, a, a, b}));
     curve.emplace_back(interleaveFunc({b, a, b, a}));
     curve.emplace_back(interleaveFunc({b, a, b, b}));
@@ -232,23 +266,109 @@ TEST(MDBox4DTest, test_fill_events) {
   /* Create root box and set events */
   Box root(curve.cbegin(), curve.cend());
 
-  /* Distribute events, split when a box contains 4 or greater events, limit to
-   * one level of child boxes */
-  root.distributeEvents(4, 1);
+  /* Distribute events, split when a box contains 2 or greater events, limit to
+   * three levels of child boxes */
+  root.distributeEvents(2, 3);
 
   /* Should contain all events */
-  EXPECT_EQ(16, root.eventCount());
+  EXPECT_EQ(20, root.eventCount());
   EXPECT_EQ(curve.cbegin(), root.eventBegin());
   EXPECT_EQ(curve.cend(), root.eventEnd());
 
-  /* Should have 16 child boxes */
-  EXPECT_EQ(16, root.children().size());
+  /* Expected structure */
+  ExpectedBox expectedRoot{20,
+                           {
+                               {3,
+                                {
+                                    {1, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {2,
+                                     {
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {2, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                     }},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                }},
+                               {3,
+                                {
+                                    {3,
+                                     {
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {0, {}},
+                                         {3, {}},
+                                     }},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                    {0, {}},
+                                }},
+                               {1, {}},
+                               {1, {}},
+                               {1, {}},
+                               {1, {}},
+                               {1, {}},
+                               {1, {}},
+                               {1, {}},
+                               {1, {}},
+                               {1, {}},
+                               {1, {}},
+                               {1, {}},
+                               {1, {}},
+                               {1, {}},
+                               {1, {}},
+                           }};
 
-  /* All child boxes should have 1 event each */
+  /* Validate structure */
   Box::ZCurveIterator curveIt = curve.cbegin();
-  for (auto &child : root.children()) {
-    EXPECT_EQ(1, child.eventCount());
-    EXPECT_EQ(curveIt, child.eventBegin());
-    EXPECT_EQ(++curveIt, child.eventEnd());
-  }
+  recursive_box_tree_validation(root, curveIt, expectedRoot);
 }
