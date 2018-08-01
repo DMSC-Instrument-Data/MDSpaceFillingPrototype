@@ -157,7 +157,7 @@ public:
       childIt->m_eventEnd = eventIt;
 
       /* Distribute events of the current child box */
-      /* childIt->distributeEvents(splitThreshold, maxDepth); */
+      childIt->distributeEvents(splitThreshold, maxDepth);
 
       /* Set the start event iterator of the next child box */
       (++childIt)->m_eventBegin = eventIt;
