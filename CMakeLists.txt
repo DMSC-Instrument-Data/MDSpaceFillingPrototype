@@ -12,7 +12,6 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(NO_OUTPUT_DIRS)
 
 find_package(Threads REQUIRED)
-include(GoogleBenchmark)
 include(OpenMP)
 
 enable_testing()
