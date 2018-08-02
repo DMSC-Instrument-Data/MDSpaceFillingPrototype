@@ -1,14 +1,16 @@
 #include <cinttypes>
 #include <cstddef>
 
+#include "Types.h"
+
 #pragma once
 
 template <size_t N, typename Int> Int pad(Int x) {
-  throw std::runtime_error("");
+  throw std::runtime_error("No pad() specialisation.");
 }
 
 template <size_t N, typename Int> Int compact(Int x) {
-  throw std::runtime_error("");
+  throw std::runtime_error("No compact() specialisation.");
 }
 
 /**
@@ -96,57 +98,20 @@ template <> uint64_t compact<3, uint64_t>(uint64_t x) {
   return x;
 }
 
-/**
- * Interleaves two 16 bit integers into a single 32 bit integer.
- */
-uint32_t Interleave_2_16_32(uint32_t a, uint32_t b) {
-  const auto padFunc = pad<1, uint64_t>;
-  return padFunc(a) | (padFunc(b) << 1);
+template <size_t ND, typename IntT, typename MortonT>
+MortonT interleave(const IntArray<ND, IntT> &coord) {
+  MortonT retVal(0);
+  for (size_t i = 0; i < ND; i++) {
+    retVal |= pad<ND - 1, uint64_t>(coord[i]) << i;
+  }
+  return retVal;
 }
 
-/**
- * Deinterleaves a 32 bit integer into two 16 bit integers.
- */
-void Deinterleave_2_16_32(uint32_t z, uint16_t &a, uint16_t &b) {
-  const auto compactFunc = compact<1, uint64_t>;
-  a = compactFunc(z);
-  b = compactFunc(z >> 1);
-}
-
-/**
- * Interleaves three 16 bit integers into a single 64 bit integer.
- */
-uint64_t Interleave_3_16_64(uint64_t a, uint64_t b, uint64_t c) {
-  const auto padFunc = pad<2, uint64_t>;
-  return padFunc(a) | (padFunc(b) << 1) | (padFunc(c) << 2);
-}
-
-/**
- * Deinterleaves a 64 bit integer into three 16 bit integers.
- */
-void Deinterleave_3_16_64(uint64_t z, uint16_t &a, uint16_t &b, uint16_t &c) {
-  const auto compactFunc = compact<2, uint64_t>;
-  a = compactFunc(z);
-  b = compactFunc(z >> 1);
-  c = compactFunc(z >> 2);
-}
-
-/**
- * Interleaves four 16 bit integers into a single 64 bit integer.
- */
-uint64_t Interleave_4_16_64(uint64_t a, uint64_t b, uint64_t c, uint64_t d) {
-  const auto padFunc = pad<3, uint64_t>;
-  return padFunc(a) | (padFunc(b) << 1) | (padFunc(c) << 2) | (padFunc(d) << 3);
-}
-
-/**
- * Deinterleaves a 64 bit integer into four 16 bit integers.
- */
-void Deinterleave_4_16_64(uint64_t z, uint16_t &a, uint16_t &b, uint16_t &c,
-                          uint16_t &d) {
-  const auto compactFunc = compact<3, uint64_t>;
-  a = compactFunc(z);
-  b = compactFunc(z >> 1);
-  c = compactFunc(z >> 2);
-  d = compactFunc(z >> 3);
+template <size_t ND, typename IntT, typename MortonT>
+IntArray<ND, IntT> deinterleave(const MortonT z) {
+  IntArray<ND, IntT> retVal;
+  for (size_t i = 0; i < ND; i++) {
+    retVal[i] = compact<ND - 1, uint64_t>(z >> i);
+  }
+  return retVal;
 }

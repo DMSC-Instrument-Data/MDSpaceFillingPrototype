@@ -16,8 +16,7 @@ public:
       : m_signal(signal) {
     const auto intCoord =
         ConvertCoordinatesToIntegerRange<ND, uint16_t>(space, coord);
-    m_spaceFillingCurveOrder =
-        Interleave_4_16_64(intCoord[0], intCoord[1], intCoord[2], intCoord[3]);
+    m_spaceFillingCurveOrder = interleave<ND, uint16_t, uint64_t>(intCoord);
   }
 
   uint64_t spaceFillingCurveOrder() const { return m_spaceFillingCurveOrder; }
