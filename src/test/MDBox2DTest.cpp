@@ -80,7 +80,7 @@ TEST(MDBox2DTest, test_fill_events) {
 
   /* Distribute events, split when a box contains 4 or greater events, limit to
    * one level of child boxes */
-  root.distributeEvents(4, 1);
+  root.distributeEvents(4, 2);
 
   /* Should contain all events */
   EXPECT_EQ(4, root.eventCount());

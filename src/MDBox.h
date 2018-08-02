@@ -132,12 +132,6 @@ public:
    * @param maxDepth Maximum box tree depth (including root box)
    */
   void distributeEvents(size_t splitThreshold, size_t maxDepth) {
-    /* If this box has less events than the splitting threshold or we have
-     * reached the maximum tree depth then exit */
-    if (eventCount() < splitThreshold || maxDepth-- == 0) {
-      return;
-    }
-
     /* Split this box */
     split();
 
@@ -165,16 +159,33 @@ public:
     /* Last child always has same event end iterator as this box */
     childIt->m_eventEnd = m_eventEnd;
 
-/* Distribute events within child boxes */
+    /* Distribute events within child boxes */
+    /* Check maximum tree depth has yet to be reached: first decrement the depth
+     * counter (as we are checking for the children) and ensure it is greater
+     * than 1 (the root box is included in the tree depth but does not take part
+     * in the recursive step, therefore we stop recursion at 1). */
+    if (--maxDepth > 1) {
+/* See https://en.wikibooks.org/wiki/OpenMP/Tasks */
+/* The parallel pragma enables execution of the following block by all worker
+ * threads. */
 #pragma omp parallel
+/* The single nowait pragma disables execution on a single worker thread and
+ * disables its barrier. */
 #pragma omp single nowait
-    {
-      for (size_t i = 0; i < m_childBoxes.size(); i++) {
-#pragma omp task
-        m_childBoxes[i].distributeEvents(splitThreshold, maxDepth);
-      }
+      {
+        for (size_t i = 0; i < m_childBoxes.size(); i++) {
+          /* Ensure there are enough events in the child to require splitting */
+          if (m_childBoxes[i].eventCount() >= splitThreshold) {
 
+/* Run each child box splitting as a separate task */
+#pragma omp task
+            m_childBoxes[i].distributeEvents(splitThreshold, maxDepth);
+          }
+        }
+
+/* Wait for all tasks to be completed */
 #pragma omp taskwait
+      }
     }
   }
 
