@@ -1,6 +1,8 @@
 #include <cinttypes>
 #include <cstddef>
 
+#include <boost/multiprecision/cpp_int.hpp>
+
 #include "Types.h"
 
 #pragma once
@@ -108,6 +110,43 @@ template <> uint64_t compact<3, uint64_t>(uint64_t x) {
   return x;
 }
 
+using uint128_t = boost::multiprecision::uint128_t;
+
+/**
+ * Pad an integer with 3 padding bits between integer bits.
+ * Maximum input width is 32 bit.
+ */
+template <> uint128_t pad<3, uint128_t>(uint128_t x) {
+  using namespace boost::multiprecision::literals;
+  x &= 0xffffffff_cppui128;
+  x = (x | x << 64) & 0xffc0000000000000003fffff_cppui128;
+  x = (x | x << 32) & 0xffc00000003ff800000007ff_cppui128;
+  x = (x | x << 16) & 0xf80007c0003f0000f80007c0003f_cppui128;
+  x = (x | x << 8) & 0xc0380700c0380700c0380700c03807_cppui128;
+  x = (x | x << 4) & 0x8430843084308430843084308430843_cppui128;
+  x = (x | x << 2) & 0x9090909090909090909090909090909_cppui128;
+  x = (x | x << 1) & 0x11111111111111111111111111111111_cppui128;
+  return x;
+}
+
+/**
+ * Compacts (removes padding) an integer with 3 padding bits between integer
+ * bits.
+ * Maximum output bit width is 32 bit.
+ */
+template <> uint128_t compact<3, uint128_t>(uint128_t x) {
+  using namespace boost::multiprecision::literals;
+  x &= 0x11111111111111111111111111111111_cppui128;
+  x = (x | x >> 1) & 0x9090909090909090909090909090909_cppui128;
+  x = (x | x >> 2) & 0x8430843084308430843084308430843_cppui128;
+  x = (x | x >> 4) & 0xc0380700c0380700c0380700c03807_cppui128;
+  x = (x | x >> 8) & 0xf80007c0003f0000f80007c0003f_cppui128;
+  x = (x | x >> 16) & 0xffc00000003ff800000007ff_cppui128;
+  x = (x | x >> 32) & 0xffc0000000000000003fffff_cppui128;
+  x = (x | x >> 64) & 0xffffffff_cppui128;
+  return x;
+}
+
 template <size_t ND, typename IntT, typename MortonT>
 MortonT interleave(const IntArray<ND, IntT> &coord) {
   MortonT retVal(0);
@@ -123,7 +162,7 @@ template <size_t ND, typename IntT, typename MortonT>
 IntArray<ND, IntT> deinterleave(const MortonT z) {
   IntArray<ND, IntT> retVal;
   for (size_t i = 0; i < ND; i++) {
-    retVal[i] =
+    retVal[i] = (IntT)
         compact<ND - 1, typename morton_to_pad_compact_int<MortonT>::type>(z >>
                                                                            i);
   }

@@ -4,6 +4,7 @@
 
 #include "TestUtil.h"
 
+#include "BitInterleaving.h"
 #include "BitInterleaving128bit.h"
 
 TEST(BitInterleaving128BitTest, Interleave_4_32_128) {
@@ -69,7 +70,7 @@ TEST(BitInterleaving128BitTest, Interleave_4_32_128_Boost) {
   const uint32_t d =
       bit_string_to_int<uint32_t>("00000000111111111111111100000000");
 
-  uint128_t res = Interleave_4_32_128(a, b, c, d);
+  uint128_t res = interleave<4, uint32_t, uint128_t>({a, b, c, d});
 
   uint128_t expected(lsb);
   expected |= msb << 64;
@@ -86,8 +87,7 @@ TEST(BitInterleaving128BitTest, Deinterleave_4_32_128_Boost) {
   uint128_t z(lsb);
   z |= msb << 64;
 
-  uint32_t a(0), b(0), c(0), d(0);
-  Deinterleave_4_32_128(z, a, b, c, d);
+  const auto result = deinterleave<4, uint32_t, uint128_t>(z);
 
   const uint32_t expectedA =
       bit_string_to_int<uint32_t>("10101010101010101010101010101010");
@@ -98,8 +98,8 @@ TEST(BitInterleaving128BitTest, Deinterleave_4_32_128_Boost) {
   const uint32_t expectedD =
       bit_string_to_int<uint32_t>("00000000111111111111111100000000");
 
-  EXPECT_EQ(expectedA, a);
-  EXPECT_EQ(expectedB, b);
-  EXPECT_EQ(expectedC, c);
-  EXPECT_EQ(expectedD, d);
+  EXPECT_EQ(expectedA, result[0]);
+  EXPECT_EQ(expectedB, result[1]);
+  EXPECT_EQ(expectedC, result[2]);
+  EXPECT_EQ(expectedD, result[3]);
 }
