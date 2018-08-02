@@ -7,99 +7,58 @@
 #include "BitInterleaving.h"
 #include "BitInterleaving128bit.h"
 
-TEST(BitInterleaving128BitTest, Interleave_4_32_128) {
-  const uint32_t a =
-      bit_string_to_int<uint32_t>("10101010101010101010101010101010");
-  const uint32_t b =
-      bit_string_to_int<uint32_t>("00000000000000001111111111111111");
-  const uint32_t c =
-      bit_string_to_int<uint32_t>("11111111111111110000000000000000");
-  const uint32_t d =
-      bit_string_to_int<uint32_t>("00000000111111111111111100000000");
+const uint32_t integerA =
+    bit_string_to_int<uint32_t>("10101010101010101010101010101010");
+const uint32_t integerB =
+    bit_string_to_int<uint32_t>("00000000000000001111111111111111");
+const uint32_t integerC =
+    bit_string_to_int<uint32_t>("11111111111111110000000000000000");
+const uint32_t integerD =
+    bit_string_to_int<uint32_t>("00000000111111111111111100000000");
 
+const uint64_t interleavedMsb = bit_string_to_int<uint64_t>(
+    "0101010001010100010101000101010011011100110111001101110011011100");
+const uint64_t interleavedLsb = bit_string_to_int<uint64_t>(
+    "1011101010111010101110101011101000110010001100100011001000110010");
+
+TEST(BitInterleaving128BitTest, Interleave_4_32_128) {
   uint64_t msb(0);
   uint64_t lsb(0);
 
-  Interleave_4_32_128(msb, lsb, a, b, c, d);
+  Interleave_4_32_128(msb, lsb, integerA, integerB, integerC, integerD);
 
-  const uint64_t expectedMsb = bit_string_to_int<uint64_t>(
-      "0101010001010100010101000101010011011100110111001101110011011100");
-  const uint64_t expectedLsb = bit_string_to_int<uint64_t>(
-      "1011101010111010101110101011101000110010001100100011001000110010");
-
-  EXPECT_EQ(expectedMsb, msb);
-  EXPECT_EQ(expectedLsb, lsb);
+  EXPECT_EQ(interleavedMsb, msb);
+  EXPECT_EQ(interleavedLsb, lsb);
 }
 
 TEST(BitInterleaving128BitTest, Deinterleave_4_32_128) {
-  const uint64_t msb = bit_string_to_int<uint64_t>(
-      "0101010001010100010101000101010011011100110111001101110011011100");
-  const uint64_t lsb = bit_string_to_int<uint64_t>(
-      "1011101010111010101110101011101000110010001100100011001000110010");
-
   uint32_t a(0), b(0), c(0), d(0);
-  Deinterleave_4_32_128(msb, lsb, a, b, c, d);
+  Deinterleave_4_32_128(interleavedMsb, interleavedLsb, a, b, c, d);
 
-  const uint32_t expectedA =
-      bit_string_to_int<uint32_t>("10101010101010101010101010101010");
-  const uint32_t expectedB =
-      bit_string_to_int<uint32_t>("00000000000000001111111111111111");
-  const uint32_t expectedC =
-      bit_string_to_int<uint32_t>("11111111111111110000000000000000");
-  const uint32_t expectedD =
-      bit_string_to_int<uint32_t>("00000000111111111111111100000000");
-
-  EXPECT_EQ(expectedA, a);
-  EXPECT_EQ(expectedB, b);
-  EXPECT_EQ(expectedC, c);
-  EXPECT_EQ(expectedD, d);
+  EXPECT_EQ(integerA, a);
+  EXPECT_EQ(integerB, b);
+  EXPECT_EQ(integerC, c);
+  EXPECT_EQ(integerD, d);
 }
 
 TEST(BitInterleaving128BitTest, Interleave_4_32_128_Boost) {
-  const uint128_t msb = bit_string_to_int<uint64_t>(
-      "0101010001010100010101000101010011011100110111001101110011011100");
-  const uint128_t lsb = bit_string_to_int<uint64_t>(
-      "1011101010111010101110101011101000110010001100100011001000110010");
+  uint128_t res = interleave<4, uint32_t, uint128_t>(
+      {integerA, integerB, integerC, integerD});
 
-  const uint32_t a =
-      bit_string_to_int<uint32_t>("10101010101010101010101010101010");
-  const uint32_t b =
-      bit_string_to_int<uint32_t>("00000000000000001111111111111111");
-  const uint32_t c =
-      bit_string_to_int<uint32_t>("11111111111111110000000000000000");
-  const uint32_t d =
-      bit_string_to_int<uint32_t>("00000000111111111111111100000000");
+  uint128_t interleaved(interleavedLsb);
+  interleaved |= ((uint128_t)interleavedMsb) << 64;
 
-  uint128_t res = interleave<4, uint32_t, uint128_t>({a, b, c, d});
-
-  uint128_t expected(lsb);
-  expected |= msb << 64;
-
-  EXPECT_EQ(expected, res);
+  EXPECT_EQ(interleaved, res);
 }
 
 TEST(BitInterleaving128BitTest, Deinterleave_4_32_128_Boost) {
-  const uint128_t msb = bit_string_to_int<uint64_t>(
-      "0101010001010100010101000101010011011100110111001101110011011100");
-  const uint128_t lsb = bit_string_to_int<uint64_t>(
-      "1011101010111010101110101011101000110010001100100011001000110010");
-
-  uint128_t z(lsb);
-  z |= msb << 64;
+  uint128_t z(interleavedLsb);
+  z |= ((uint128_t)interleavedMsb) << 64;
 
   const auto result = deinterleave<4, uint32_t, uint128_t>(z);
 
-  const uint32_t expectedA =
-      bit_string_to_int<uint32_t>("10101010101010101010101010101010");
-  const uint32_t expectedB =
-      bit_string_to_int<uint32_t>("00000000000000001111111111111111");
-  const uint32_t expectedC =
-      bit_string_to_int<uint32_t>("11111111111111110000000000000000");
-  const uint32_t expectedD =
-      bit_string_to_int<uint32_t>("00000000111111111111111100000000");
-
-  EXPECT_EQ(expectedA, result[0]);
-  EXPECT_EQ(expectedB, result[1]);
-  EXPECT_EQ(expectedC, result[2]);
-  EXPECT_EQ(expectedD, result[3]);
+  EXPECT_EQ(integerA, result[0]);
+  EXPECT_EQ(integerB, result[1]);
+  EXPECT_EQ(integerC, result[2]);
+  EXPECT_EQ(integerD, result[3]);
 }

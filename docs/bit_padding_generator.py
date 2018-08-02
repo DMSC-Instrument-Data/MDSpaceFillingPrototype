@@ -38,6 +38,7 @@ def generate_bit_spacing_code(bit_count, empty_bit_count):
 
     return code_str
 
+
 print(generate_bit_spacing_code(8, 1))
 
 print(generate_bit_spacing_code(16, 1))
@@ -47,3 +48,5 @@ print(generate_bit_spacing_code(16, 3))
 print(generate_bit_spacing_code(32, 1))
 print(generate_bit_spacing_code(32, 2))
 print(generate_bit_spacing_code(32, 3))
+
+print(generate_bit_spacing_code(64, 3))
