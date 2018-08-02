@@ -9,16 +9,6 @@
 
 #pragma once
 
-template <size_t ND, typename IntT, typename MortonT>
-MortonT calculate_centre(const MortonT min, const MortonT max) {
-  const auto lower = deinterleave<ND, IntT, MortonT>(min);
-  const auto upper = deinterleave<ND, IntT, MortonT>(max);
-
-  const auto mid = (upper - lower) / 2;
-
-  return interleave<ND, IntT, MortonT>(mid);
-}
-
 template <size_t ND, typename IntT, typename MortonT> class MDBox {
 public:
   using Children = std::vector<MDBox<ND, IntT, MortonT>>;
@@ -31,9 +21,8 @@ public:
    */
   MDBox(ZCurveIterator begin, ZCurveIterator end)
       : m_min(std::numeric_limits<MortonT>::min()),
-        m_max(std::numeric_limits<MortonT>::max()),
-        m_morton(calculate_centre<ND, IntT, MortonT>(m_min, m_max)),
-        m_eventBegin(begin), m_eventEnd(end) {}
+        m_max(std::numeric_limits<MortonT>::max()), m_eventBegin(begin),
+        m_eventEnd(end) {}
 
   /**
    * Construct a "root" MDBox, i.e. one that makes use of the full intermediate
@@ -41,8 +30,7 @@ public:
    */
   MDBox()
       : m_min(std::numeric_limits<MortonT>::min()),
-        m_max(std::numeric_limits<MortonT>::max()),
-        m_morton(calculate_centre<ND, IntT, MortonT>(m_min, m_max)) {}
+        m_max(std::numeric_limits<MortonT>::max()) {}
 
   /**
    * Construct an MDBox with given integer bounds.
@@ -52,8 +40,7 @@ public:
    */
   MDBox(IntArray<ND, IntT> min, IntArray<ND, IntT> max)
       : m_min(interleave<ND, IntT, MortonT>(min)),
-        m_max(interleave<ND, IntT, MortonT>(max)),
-        m_morton(calculate_centre<ND, IntT, MortonT>(m_min, m_max)) {}
+        m_max(interleave<ND, IntT, MortonT>(max)) {}
 
   /**
    * Performs a check if an MDEvent falls within the bounds of this box.
@@ -191,7 +178,6 @@ public:
 
   MortonT min() const { return m_min; }
   MortonT max() const { return m_max; }
-  MortonT morton() const { return m_morton; }
 
   Children &children() { return m_childBoxes; }
   const Children &children() const { return m_childBoxes; }
@@ -201,21 +187,20 @@ public:
   ZCurveIterator eventEnd() const { return m_eventEnd; };
 
   /**
-   * Compares MDBox using their central Morton number.
+   * Compares MDBox using their lower bound Morton number.
    *
    * Primarily used for sorting in Z-curve order.
    */
-  bool operator<(const auto &other) const { return m_morton < other.m_morton; }
+  bool operator<(const auto &other) const { return m_min < other.m_min; }
 
 private:
   MortonT m_min;
   MortonT m_max;
 
-  MortonT m_morton;
-
   /**
    * Vector of child boxes.
-   * Must be kept sorted by the central Morton number of each box.
+   * Must be kept sorted by Morton number (either lower or upper will work) of
+   * each box.
    */
   Children m_childBoxes;
 

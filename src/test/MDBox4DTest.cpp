@@ -25,15 +25,6 @@ TEST(MDBoxTest, test_simple) {
   EXPECT_EQ(intLimits::min(), root.min());
   EXPECT_EQ(intLimits::max(), root.max());
 
-  /* Morton number should be all set bits except for the most significant bit of
-   * each interleaved number (as each coordinate was halved to produce the
-   * "center" coordinate from which the box Morton number is calculated) */
-  {
-    const uint64_t expected = bit_string_to_int<MortonT>(
-        "0000111111111111111111111111111111111111111111111111111111111111");
-    EXPECT_EQ(expected, root.morton());
-  }
-
   /* Should not have children */
   EXPECT_EQ(0, root.children().size());
 
