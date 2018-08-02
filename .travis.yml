@@ -13,4 +13,4 @@ before_install:
   - mkdir -p ${HOME}/conan_data
 
 script:
-  - docker run -v ${PWD}:/home/conan/src -v ${HOME}/conan_data:/home/conan/.conan/ lasote/conangcc52 src/.travis_script.sh
+  - docker run -v ${PWD}:/home/conan/src -v ${HOME}/conan_data:/home/conan/.conan/ lasote/conangcc54 src/.travis_script.sh

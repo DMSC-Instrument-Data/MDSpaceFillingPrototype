@@ -41,11 +41,6 @@ function(Benchmark)
     ${TARGET_SOURCES}
   )
 
-  add_dependencies(
-    ${TARGET_NAME}
-    benchmark
-  )
-
   target_include_directories(
     ${TARGET_NAME}
     PRIVATE
