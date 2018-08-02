@@ -14,6 +14,16 @@ template <size_t N, typename Int> Int compact(Int x) {
 }
 
 /**
+ * Trait used to determine which pad and compact function we can use for a given
+ * Morton number type (defaults to the Morton number type itself).
+ */
+template <typename T> struct morton_to_pad_compact_int { typedef T type; };
+
+template <> struct morton_to_pad_compact_int<uint32_t> {
+  typedef uint64_t type;
+};
+
+/**
  * Pad an integer with 1 padding bit between integer bits.
  * Maximum input width is 32 bit.
  */
@@ -102,7 +112,9 @@ template <size_t ND, typename IntT, typename MortonT>
 MortonT interleave(const IntArray<ND, IntT> &coord) {
   MortonT retVal(0);
   for (size_t i = 0; i < ND; i++) {
-    retVal |= pad<ND - 1, uint64_t>(coord[i]) << i;
+    retVal |=
+        pad<ND - 1, typename morton_to_pad_compact_int<MortonT>::type>(coord[i])
+        << i;
   }
   return retVal;
 }
@@ -111,7 +123,9 @@ template <size_t ND, typename IntT, typename MortonT>
 IntArray<ND, IntT> deinterleave(const MortonT z) {
   IntArray<ND, IntT> retVal;
   for (size_t i = 0; i < ND; i++) {
-    retVal[i] = compact<ND - 1, uint64_t>(z >> i);
+    retVal[i] =
+        compact<ND - 1, typename morton_to_pad_compact_int<MortonT>::type>(z >>
+                                                                           i);
   }
   return retVal;
 }
