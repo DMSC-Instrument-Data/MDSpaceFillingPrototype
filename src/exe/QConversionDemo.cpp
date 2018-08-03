@@ -39,6 +39,27 @@ void parse_float_string_array(std::vector<float> &numbers,
   }
 }
 
+class scoped_wallclock_timer {
+public:
+  using Clock = std::chrono::high_resolution_clock;
+
+public:
+  scoped_wallclock_timer(const std::string &name)
+      : m_name(name), m_start(Clock::now()) {
+    std::cout << "TIMER: " << m_name << " started...\n";
+  }
+
+  ~scoped_wallclock_timer() {
+    const auto duration = Clock::now() - m_start;
+    std::cout << "TIMER: " << m_name << " complete in "
+              << std::chrono::duration<float>(duration).count() << " seconds\n";
+  }
+
+private:
+  const std::string m_name;
+  const std::chrono::time_point<Clock> m_start;
+};
+
 int main(int argc, char **argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
@@ -56,7 +77,7 @@ int main(int argc, char **argv) {
   /* Load ToF events */
   std::vector<TofEvent> events;
   {
-    std::cout << "Load ToF events\n";
+    scoped_wallclock_timer timer("Load TOF events");
 
     std::vector<size_t> frameIdxs;
     {
@@ -86,14 +107,10 @@ int main(int argc, char **argv) {
     space(2, 1) = extents[5];
   }
 
-  /* Start timing */
-  std::cout << "Timing started\n";
-  const auto startTime = std::chrono::high_resolution_clock::now();
-
   /* Convert to Q space */
   std::vector<MDEvent<3, uint16_t, uint64_t>> mdEvents;
   {
-    std::cout << "Convert to Q space\n";
+    scoped_wallclock_timer timer("Convert to Q space");
 
     ConversionInfo convInfo{false, Eigen::Matrix3f::Identity()};
 
@@ -102,13 +119,10 @@ int main(int argc, char **argv) {
   }
 
   /* Sort events */
-  std::cout << "Sort events\n";
-  boost::sort::block_indirect_sort(mdEvents.begin(), mdEvents.end());
-
-  /* Stop timing */
-  const auto duration = std::chrono::high_resolution_clock::now() - startTime;
-  std::cout << mdEvents.size() << " events done in "
-            << std::chrono::duration<float>(duration).count() << " seconds\n";
+  {
+    scoped_wallclock_timer timer("Sort events");
+    boost::sort::block_indirect_sort(mdEvents.begin(), mdEvents.end());
+  }
 
   /* Save MD events */
   {
