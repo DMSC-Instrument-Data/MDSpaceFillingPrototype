@@ -1,13 +1,35 @@
 #include <cinttypes>
 #include <cstddef>
 
+#include <boost/multiprecision/cpp_int.hpp>
+
+#include "Types.h"
+
 #pragma once
+
+template <size_t N, typename Int> Int pad(Int x) {
+  throw std::runtime_error("No pad() specialisation.");
+}
+
+template <size_t N, typename Int> Int compact(Int x) {
+  throw std::runtime_error("No compact() specialisation.");
+}
+
+/**
+ * Trait used to determine which pad and compact function we can use for a given
+ * Morton number type (defaults to the Morton number type itself).
+ */
+template <typename T> struct morton_to_pad_compact_int { typedef T type; };
+
+template <> struct morton_to_pad_compact_int<uint32_t> {
+  typedef uint64_t type;
+};
 
 /**
  * Pad an integer with 1 padding bit between integer bits.
  * Maximum input width is 32 bit.
  */
-uint64_t Pad1_64(uint64_t x) {
+template <> uint64_t pad<1, uint64_t>(uint64_t x) {
   x &= 0xffff;
   x = (x | x << 8) & 0xff00ff;
   x = (x | x << 4) & 0xf0f0f0f;
@@ -21,7 +43,7 @@ uint64_t Pad1_64(uint64_t x) {
  * bits.
  * Maximum output bit width is 32 bit.
  */
-uint64_t Compact1_64(uint64_t x) {
+template <> uint64_t compact<1, uint64_t>(uint64_t x) {
   x &= 0x55555555;
   x = (x | x >> 1) & 0x33333333;
   x = (x | x >> 2) & 0xf0f0f0f;
@@ -34,7 +56,7 @@ uint64_t Compact1_64(uint64_t x) {
  * Pad an integer with 2 padding bits between integer bits.
  * Maximum input width is 16 bit.
  */
-uint64_t Pad2_64(uint64_t x) {
+template <> uint64_t pad<2, uint64_t>(uint64_t x) {
   x &= 0xffff;
   x = (x | x << 16) & 0xff0000ff;
   x = (x | x << 8) & 0xf00f00f00f;
@@ -48,7 +70,7 @@ uint64_t Pad2_64(uint64_t x) {
  * bits.
  * Maximum output bit width is 16 bit.
  */
-uint64_t Compact2_64(uint64_t x) {
+template <> uint64_t compact<2, uint64_t>(uint64_t x) {
   x &= 0x249249249249;
   x = (x | x >> 2) & 0xc30c30c30c3;
   x = (x | x >> 4) & 0xf00f00f00f;
@@ -61,7 +83,7 @@ uint64_t Compact2_64(uint64_t x) {
  * Pad an integer with 3 padding bits between integer bits.
  * Maximum input width is 16 bit.
  */
-uint64_t Pad3_64(uint64_t x) {
+template <> uint64_t pad<3, uint64_t>(uint64_t x) {
   x &= 0xffff;
   x = (x | x << 32) & 0xf800000007ff;
   x = (x | x << 16) & 0xf80007c0003f;
@@ -77,7 +99,7 @@ uint64_t Pad3_64(uint64_t x) {
  * bits.
  * Maximum output bit width is 16 bit.
  */
-uint64_t Compact3_64(uint64_t x) {
+template <> uint64_t compact<3, uint64_t>(uint64_t x) {
   x &= 0x1111111111111111;
   x = (x | x >> 1) & 0x909090909090909;
   x = (x | x >> 2) & 0x843084308430843;
@@ -88,51 +110,61 @@ uint64_t Compact3_64(uint64_t x) {
   return x;
 }
 
+using uint128_t = boost::multiprecision::uint128_t;
+
 /**
- * Interleaves two 16 bit integers into a single 32 bit integer.
+ * Pad an integer with 3 padding bits between integer bits.
+ * Maximum input width is 32 bit.
  */
-uint32_t Interleave_2_16_32(uint32_t a, uint32_t b) {
-  return Pad1_64(a) | (Pad1_64(b) << 1);
+template <> uint128_t pad<3, uint128_t>(uint128_t x) {
+  using namespace boost::multiprecision::literals;
+  x &= 0xffffffff_cppui128;
+  x = (x | x << 64) & 0xffc0000000000000003fffff_cppui128;
+  x = (x | x << 32) & 0xffc00000003ff800000007ff_cppui128;
+  x = (x | x << 16) & 0xf80007c0003f0000f80007c0003f_cppui128;
+  x = (x | x << 8) & 0xc0380700c0380700c0380700c03807_cppui128;
+  x = (x | x << 4) & 0x8430843084308430843084308430843_cppui128;
+  x = (x | x << 2) & 0x9090909090909090909090909090909_cppui128;
+  x = (x | x << 1) & 0x11111111111111111111111111111111_cppui128;
+  return x;
 }
 
 /**
- * Deinterleaves a 32 bit integer into two 16 bit integers.
+ * Compacts (removes padding) an integer with 3 padding bits between integer
+ * bits.
+ * Maximum output bit width is 32 bit.
  */
-void Deinterleave_2_16_32(uint32_t z, uint16_t &a, uint16_t &b) {
-  a = Compact1_64(z);
-  b = Compact1_64(z >> 1);
+template <> uint128_t compact<3, uint128_t>(uint128_t x) {
+  using namespace boost::multiprecision::literals;
+  x &= 0x11111111111111111111111111111111_cppui128;
+  x = (x | x >> 1) & 0x9090909090909090909090909090909_cppui128;
+  x = (x | x >> 2) & 0x8430843084308430843084308430843_cppui128;
+  x = (x | x >> 4) & 0xc0380700c0380700c0380700c03807_cppui128;
+  x = (x | x >> 8) & 0xf80007c0003f0000f80007c0003f_cppui128;
+  x = (x | x >> 16) & 0xffc00000003ff800000007ff_cppui128;
+  x = (x | x >> 32) & 0xffc0000000000000003fffff_cppui128;
+  x = (x | x >> 64) & 0xffffffff_cppui128;
+  return x;
 }
 
-/**
- * Interleaves three 16 bit integers into a single 64 bit integer.
- */
-uint64_t Interleave_3_16_64(uint64_t a, uint64_t b, uint64_t c) {
-  return Pad2_64(a) | (Pad2_64(b) << 1) | (Pad2_64(c) << 2);
+template <size_t ND, typename IntT, typename MortonT>
+MortonT interleave(const IntArray<ND, IntT> &coord) {
+  MortonT retVal(0);
+  for (size_t i = 0; i < ND; i++) {
+    retVal |=
+        pad<ND - 1, typename morton_to_pad_compact_int<MortonT>::type>(coord[i])
+        << i;
+  }
+  return retVal;
 }
 
-/**
- * Deinterleaves a 64 bit integer into three 16 bit integers.
- */
-void Deinterleave_3_16_64(uint64_t z, uint16_t &a, uint16_t &b, uint16_t &c) {
-  a = Compact2_64(z);
-  b = Compact2_64(z >> 1);
-  c = Compact2_64(z >> 2);
-}
-
-/**
- * Interleaves four 16 bit integers into a single 64 bit integer.
- */
-uint64_t Interleave_4_16_64(uint64_t a, uint64_t b, uint64_t c, uint64_t d) {
-  return Pad3_64(a) | (Pad3_64(b) << 1) | (Pad3_64(c) << 2) | (Pad3_64(d) << 3);
-}
-
-/**
- * Deinterleaves a 64 bit integer into four 16 bit integers.
- */
-void Deinterleave_4_16_64(uint64_t z, uint16_t &a, uint16_t &b, uint16_t &c,
-                          uint16_t &d) {
-  a = Compact3_64(z);
-  b = Compact3_64(z >> 1);
-  c = Compact3_64(z >> 2);
-  d = Compact3_64(z >> 3);
+template <size_t ND, typename IntT, typename MortonT>
+IntArray<ND, IntT> deinterleave(const MortonT z) {
+  IntArray<ND, IntT> retVal;
+  for (size_t i = 0; i < ND; i++) {
+    retVal[i] = (IntT)
+        compact<ND - 1, typename morton_to_pad_compact_int<MortonT>::type>(z >>
+                                                                           i);
+  }
+  return retVal;
 }

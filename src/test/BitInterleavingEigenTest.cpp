@@ -5,9 +5,10 @@
 #include "TestUtil.h"
 
 #include "BitInterleavingEigen.h"
+#include "Types.h"
 
 TEST(BitInterleavingEigenTest, Interleave2) {
-  Array<uint8_t, 2> a;
+  IntArray<2, uint8_t> a;
   // clang-format off
   a << bit_string_to_int<uint8_t>("10101010"),
        bit_string_to_int<uint8_t>("00001111");
@@ -28,7 +29,7 @@ TEST(BitInterleavingEigenTest, Deinterleave2) {
 }
 
 TEST(BitInterleavingEigenTest, Interleave3) {
-  Array<uint8_t, 3> a;
+  IntArray<3, uint8_t> a;
   // clang-format off
   a << bit_string_to_int<uint8_t>("10101010"),
        bit_string_to_int<uint8_t>("00001111"),
@@ -51,7 +52,7 @@ TEST(BitInterleavingEigenTest, Deinterleave3) {
 }
 
 TEST(BitInterleavingEigenTest, Interleave4) {
-  Array<uint8_t, 4> a;
+  IntArray<4, uint8_t> a;
   // clang-format off
   a << bit_string_to_int<uint8_t>("10101010"),
        bit_string_to_int<uint8_t>("00001111"),
