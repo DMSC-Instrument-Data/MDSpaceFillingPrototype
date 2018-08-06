@@ -12,6 +12,11 @@
 #include "EventNexusLoader.h"
 #include "EventToMDEventConversion.h"
 #include "Instrument.h"
+#include "MDBox.h"
+
+constexpr size_t ND(3);
+using IntT = uint16_t;
+using MortonT = uint64_t;
 
 const std::string AllFrames("all");
 
@@ -20,6 +25,8 @@ DEFINE_string(data, "raw_data.nxs", "TOF event data file.");
 DEFINE_string(dataset, "raw_data_1/detector_1_events", "Path to HDF5 dataset.");
 DEFINE_string(frames, "0", "Frames to load.");
 DEFINE_string(space, "-10,10,-10,10,-10,10", "Q space dimensions.");
+DEFINE_uint64(split_threshold, 1000, "Box splitting threshold.");
+DEFINE_uint64(max_box_depth, 20, "Maximum box structure tree depth.");
 
 void parse_integer_string_array(std::vector<size_t> &numbers,
                                 const std::string &str) {
@@ -108,7 +115,7 @@ int main(int argc, char **argv) {
   }
 
   /* Convert to Q space */
-  std::vector<MDEvent<3, uint16_t, uint64_t>> mdEvents;
+  std::vector<MDEvent<ND, IntT, MortonT>> mdEvents;
   {
     scoped_wallclock_timer timer("Convert to Q space");
 
@@ -122,6 +129,13 @@ int main(int argc, char **argv) {
   {
     scoped_wallclock_timer timer("Sort events");
     boost::sort::block_indirect_sort(mdEvents.begin(), mdEvents.end());
+  }
+
+  /* Construct box structure */
+  MDBox<ND, IntT, MortonT> rootMdBox(mdEvents.cbegin(), mdEvents.cend());
+  {
+    scoped_wallclock_timer timer("Construct box structure");
+    rootMdBox.distributeEvents(FLAGS_split_threshold, FLAGS_max_box_depth);
   }
 
   /* Save MD events */
