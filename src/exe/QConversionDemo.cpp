@@ -71,15 +71,19 @@ int main(int argc, char **argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   /* Load instrument */
-  std::cout << "Load instrument\n";
   Instrument inst;
-  load_instrument(inst, FLAGS_instrument);
+  {
+    scoped_wallclock_timer timer("Load instrument");
+    load_instrument(inst, FLAGS_instrument);
+  }
 
   EventNexusLoader loader(FLAGS_data, FLAGS_dataset);
 
   /* Load spectrum to detector mapping */
-  std::cout << "Load spectrum to detector mapping\n";
-  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
+  {
+    scoped_wallclock_timer timer("Load spectrum to detector mapping");
+    loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
+  }
 
   /* Load ToF events */
   std::vector<TofEvent> events;
@@ -140,7 +144,7 @@ int main(int argc, char **argv) {
 
   /* Save MD events */
   {
-    std::cout << "Saving MD events\n";
+    scoped_wallclock_timer timer("Saving MD events");
 
     using namespace hdf5;
 
