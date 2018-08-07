@@ -38,8 +38,6 @@ void BM_MDBox_fill(benchmark::State &state) {
     /* Create root box and perform splitting/distribution */
     Box root(curve.cbegin(), curve.cend());
     root.distributeEvents(splitThreshold, maxDepth);
-
-    benchmark::DoNotOptimize(root);
   }
 }
 /* NB: ConvertToMD currently defaults to split threshold of 1000 and max depth

@@ -9,7 +9,52 @@
 
 #pragma once
 
+/**
+ * Checks if a point defined by a Morton number is within the box bounds (as
+ * defined by an upper and lower Morton number).
+ *
+ * A box contains a Morton number if it is within the upper and lower bounds,
+ * inclusive of the box bounds themselves.
+ *
+ * @param lower Lower bound
+ * @param upper Upper bound
+ * @param value Morton value to test
+ */
+template <typename MortonT>
+bool morton_contains(const MortonT lower, const MortonT upper,
+                     const MortonT value) {
+  return lower <= value && value <= upper;
+}
+
+/**
+ * @class MDBox
+ *
+ * A single box in an MD structure.
+ *
+ * Boxes are defined by an upper and lower bound given as Morton numbers, Morton
+ * numbers of events that fall within the box fall within these bounds.
+ *
+ * Bounds of adjacent boxes i and i+1 are such that the lower bound of i+1 is
+ * one less than the upper bound of i. As such containment checking is performed
+ * by an inclusive range check of the box's Morton number bounds.
+ *
+ * MDBox is templated as follows:
+ *  - ND: number of dimensions in the MD space
+ *  - IntT: intermediate integer type
+ *  - MortonT: Morton number type
+ *
+ * The bit width of MortonT should be at least ND times greater than IntT.
+ */
 template <size_t ND, typename IntT, typename MortonT> class MDBox {
+public:
+  /**
+   * The number of child boxes a box can have.
+   *
+   * This is fixed and determined by the dimensionality of the box (2^N).
+   * A box may have either zero or ChildBoxCount child boxes.
+   */
+  static constexpr size_t ChildBoxCount = 1 << ND;
+
 public:
   using Children = std::vector<MDBox<ND, IntT, MortonT>>;
   using ZCurveIterator = typename MDEvent<ND>::ZCurve::const_iterator;
@@ -25,7 +70,7 @@ public:
   MDBox(ZCurveIterator begin, ZCurveIterator end,
         MortonT mortonMin = MortonTLimits::min(),
         MortonT mortonMax = MortonTLimits::max())
-      : m_min(mortonMin), m_max(mortonMax), m_eventBegin(begin),
+      : m_lowerBound(mortonMin), m_upperBound(mortonMax), m_eventBegin(begin),
         m_eventEnd(end) {}
 
   /**
@@ -54,7 +99,7 @@ public:
    * @return True if Morton number falls within bounds of this box
    */
   bool contains(const MortonT morton) const {
-    return m_min <= morton && morton <= m_max;
+    return morton_contains(m_lowerBound, m_upperBound, morton);
   }
 
   /**
@@ -69,24 +114,32 @@ public:
    * @param splitThreshold Number of events at which a box will be further split
    * @param maxDepth Maximum box tree depth (including root box)
    */
-  void distributeEvents(size_t splitThreshold, size_t maxDepth) {
-    /* Number of child boxes to split this box into */
-    constexpr size_t numSplits = 1 << ND;
+  void distributeEvents(const size_t splitThreshold, size_t maxDepth) {
+    /* Stop iteration if we reach the maximum tree depth or have too few events
+     * in the box to split again. */
+    /* We check for maxDepth == 1 as maximum depth includes the root node, which
+     * did not decrement the max depth counter. */
+    if (maxDepth-- == 1 || eventCount() < splitThreshold) {
+      return;
+    }
+
+    /* Reserve storage for child boxes */
+    m_childBoxes.reserve(ChildBoxCount);
 
     /* Determine the "width" of this box in Morton number */
-    const MortonT thisBoxWidth = m_max - m_min;
+    const MortonT thisBoxWidth = m_upperBound - m_lowerBound;
 
     /* Determine the "width" of the child boxes in Morton number */
-    const MortonT childBoxWidth = thisBoxWidth / numSplits;
+    const MortonT childBoxWidth = thisBoxWidth / ChildBoxCount;
 
     auto eventIt = m_eventBegin;
 
     /* For each new child box */
-    for (size_t i = 0; i < numSplits; i++) {
+    for (size_t i = 0; i < ChildBoxCount; i++) {
       /* Lower child box bound is parent box lower bound plus for each previous
        * child box; box width plus offset by one (such that lower bound of box
        * i+1 is one grater than upper bound of box i) */
-      const auto boxLower = m_min + ((childBoxWidth + 1) * i);
+      const auto boxLower = m_lowerBound + ((childBoxWidth + 1) * i);
 
       /* Upper child box bound is lower plus child box width */
       const auto boxUpper = boxLower + childBoxWidth;
@@ -95,8 +148,8 @@ public:
 
       /* Iterate over event list to find the first event that should not be in
        * the current child box */
-      while (boxLower <= eventIt->spaceFillingCurveOrder() &&
-             eventIt->spaceFillingCurveOrder() <= boxUpper &&
+      while (morton_contains(boxLower, boxUpper,
+                             eventIt->spaceFillingCurveOrder()) &&
              eventIt != m_eventEnd) {
         /* Event was in the box, increment the event iterator */
         ++eventIt;
@@ -108,12 +161,7 @@ public:
       m_childBoxes.emplace_back(boxEventStart, eventIt, boxLower, boxUpper);
     }
 
-    /* Distribute events within child boxes */
-    /* Check maximum tree depth has yet to be reached: first decrement the depth
-     * counter (as we are checking for the children) and ensure it is greater
-     * than 1 (the root box is included in the tree depth but does not take part
-     * in the recursive step, therefore we stop recursion at 1). */
-    if (--maxDepth > 1) {
+/* Distribute events within child boxes */
 /* See https://en.wikibooks.org/wiki/OpenMP/Tasks */
 /* The parallel pragma enables execution of the following block by all worker
  * threads. */
@@ -121,43 +169,49 @@ public:
 /* The single nowait pragma disables execution on a single worker thread and
  * disables its barrier. */
 #pragma omp single nowait
-      {
-        for (size_t i = 0; i < m_childBoxes.size(); i++) {
-          /* Ensure there are enough events in the child to require splitting */
-          if (m_childBoxes[i].eventCount() >= splitThreshold) {
+    {
+      for (size_t i = 0; i < m_childBoxes.size(); i++) {
 
 /* Run each child box splitting as a separate task */
 #pragma omp task
-            m_childBoxes[i].distributeEvents(splitThreshold, maxDepth);
-          }
-        }
+        m_childBoxes[i].distributeEvents(splitThreshold, maxDepth);
+      }
 
 /* Wait for all tasks to be completed */
 #pragma omp taskwait
-      }
     }
   }
 
-  MortonT min() const { return m_min; }
-  MortonT max() const { return m_max; }
-
-  Children &children() { return m_childBoxes; }
-  const Children &children() const { return m_childBoxes; }
+  MortonT min() const { return m_lowerBound; }
+  MortonT max() const { return m_upperBound; }
 
   size_t eventCount() const { return std::distance(m_eventBegin, m_eventEnd); }
   ZCurveIterator eventBegin() const { return m_eventBegin; };
   ZCurveIterator eventEnd() const { return m_eventEnd; };
+
+  Children &children() { return m_childBoxes; }
+  const Children &children() const { return m_childBoxes; }
 
   /**
    * Compares MDBox using their lower bound Morton number.
    *
    * Primarily used for sorting in Z-curve order.
    */
-  bool operator<(const auto &other) const { return m_min < other.m_min; }
+  bool operator<(const auto &other) const {
+    return m_lowerBound < other.m_lowerBound;
+  }
 
 private:
-  MortonT m_min;
-  MortonT m_max;
+  /* Lower box bound, the smallest Morton number an event can have an be
+   * contained in this box. */
+  const MortonT m_lowerBound;
+
+  /* Upper box bound, the greatest Morton number an event can have and be
+   * contained in this box. */
+  const MortonT m_upperBound;
+
+  const ZCurveIterator m_eventBegin;
+  const ZCurveIterator m_eventEnd;
 
   /**
    * Vector of child boxes.
@@ -165,7 +219,4 @@ private:
    * each box.
    */
   Children m_childBoxes;
-
-  ZCurveIterator m_eventBegin;
-  ZCurveIterator m_eventEnd;
 };
