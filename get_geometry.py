@@ -40,17 +40,27 @@ hdf_file['instrument']['sample_position'] = parser.get_sample_position()
 detector_ids = []
 detector_positions = []
 
-# Iteratoe over all detector banks
-for bank in parser.get_detectors():
+def process_bank(bank):
     bank_position = bank['location']
 
     # Get bank orientation
-    bank_rot_axis = bank['orientation']['axis']
-    bank_rot_angle = np.deg2rad(bank['orientation']['angle'])
-    bank_orientation_matrix = axis_angle_to_rotation_matrix(bank_rot_axis, bank_rot_angle)
+    bank_orientation = bank.get('orientation')
+    if bank_orientation:
+        bank_rot_axis = bank_orientation['axis']
+        bank_rot_angle = np.deg2rad(bank_orientation['angle'])
+        bank_orientation_matrix = axis_angle_to_rotation_matrix(bank_rot_axis, bank_rot_angle)
+    else:
+        bank_orientation_matrix = np.array([
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0]
+        ])
 
     # Iterate over all detectors in the bank
-    for det in zip(bank['idlist'], bank['offsets']):
+    num_dets_in_bank = bank['idlist'].size
+    ids = np.reshape(bank['idlist'], (num_dets_in_bank,))
+    offsets = np.reshape(bank['offsets'], (num_dets_in_bank, 3))
+    for det in zip(ids, offsets):
         # Rotate detector offset by bank by bank orientation and add to bank
         # position to get final detector position
         det_position = bank_position + np.dot(bank_orientation_matrix, det[1])
@@ -58,6 +68,14 @@ for bank in parser.get_detectors():
         # Add detector to lists
         detector_ids.append(det[0])
         detector_positions.append(det_position)
+
+# Iterate over all detector banks
+for bank in parser.get_detectors():
+    process_bank(bank)
+
+# Iterate over all rectangular detector banks
+for bank in parser.get_rectangular_detectors():
+    process_bank(bank)
 
 # Record detectors in HDF5 file
 hdf_file['instrument']['detector_ids'] = detector_ids
