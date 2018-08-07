@@ -14,33 +14,19 @@ public:
   using Children = std::vector<MDBox<ND, IntT, MortonT>>;
   using ZCurveIterator = typename MDEvent<ND>::ZCurve::const_iterator;
 
+private:
+  using MortonTLimits = std::numeric_limits<MortonT>;
+
 public:
   /**
    * Construct a "root" MDBox, i.e. one that makes use of the full intermediate
    * integer space.
    */
-  MDBox(ZCurveIterator begin, ZCurveIterator end)
-      : m_min(std::numeric_limits<MortonT>::min()),
-        m_max(std::numeric_limits<MortonT>::max()), m_eventBegin(begin),
+  MDBox(ZCurveIterator begin, ZCurveIterator end,
+        MortonT mortonMin = MortonTLimits::min(),
+        MortonT mortonMax = MortonTLimits::max())
+      : m_min(mortonMin), m_max(mortonMax), m_eventBegin(begin),
         m_eventEnd(end) {}
-
-  /**
-   * Construct a "root" MDBox, i.e. one that makes use of the full intermediate
-   * integer space.
-   */
-  MDBox()
-      : m_min(std::numeric_limits<MortonT>::min()),
-        m_max(std::numeric_limits<MortonT>::max()) {}
-
-  /**
-   * Construct an MDBox with given integer bounds.
-   *
-   * @param min Lower bounds
-   * @param max Upper bounds
-   */
-  MDBox(IntArray<ND, IntT> min, IntArray<ND, IntT> max)
-      : m_min(interleave<ND, IntT, MortonT>(min)),
-        m_max(interleave<ND, IntT, MortonT>(max)) {}
 
   /**
    * Performs a check if an MDEvent falls within the bounds of this box.
@@ -72,79 +58,55 @@ public:
   }
 
   /**
-   * Recursively splits boxes into 2^N boxes by taking the midpoint
-   * coordinate of each axis.
-   *
-   * @param depth Maximum depth to perform splitting to (defaults to 1 (i.e.
-   * split only this box), must be greater than zero)
-   */
-  void split(size_t depth = 1) {
-    const auto lower = deinterleave<ND, IntT, MortonT>(m_min);
-    const auto upper = deinterleave<ND, IntT, MortonT>(m_max);
-
-    const auto mid = lower + ((upper - lower) / 2);
-
-    /* Iterate over permutations of coordinates (selected from bits of integers
-     * up to 2^ND) */
-    IntArray<ND, IntT> boxLower;
-    IntArray<ND, IntT> boxUpper;
-    for (size_t p = 0; p < std::pow(2, ND); p++) {
-      /* Select coordinates based on set bits */
-      for (size_t i = 0; i < ND; i++) {
-        const bool select((p >> i) & 0x1);
-        boxLower[i] = select ? lower[i] : mid[i] + 1;
-        boxUpper[i] = select ? mid[i] : upper[i];
-      }
-
-      m_childBoxes.emplace_back(boxLower, boxUpper);
-    }
-
-    /* If we are yet to reach the required depth */
-    if (--depth > 0) {
-      /* Continue to split child boxes */
-      for (auto &box : m_childBoxes) {
-        box.split(depth);
-      }
-    }
-
-    /* Sort child boxes by Morton number */
-    std::sort(m_childBoxes.begin(), m_childBoxes.end());
-  }
-
-  /**
    * Recursively splits this box into 2^N uniformly sized child boxes and
    * distributes its events within the child boxes.
+   *
+   * This assumes that the bounds of the Morton space (i.e. coordinate space
+   * once converted to the intermediate integer type) are equal and the
+   * dimensions are a power of 2.
+   * For the way boxes are constructed and split these assumptions both hold.
    *
    * @param splitThreshold Number of events at which a box will be further split
    * @param maxDepth Maximum box tree depth (including root box)
    */
   void distributeEvents(size_t splitThreshold, size_t maxDepth) {
-    /* Split this box */
-    split();
+    /* Number of child boxes to split this box into */
+    constexpr size_t numSplits = 1 << ND;
 
-    auto childIt = m_childBoxes.begin();
+    /* Determine the "width" of this box in Morton number */
+    const MortonT thisBoxWidth = m_max - m_min;
+
+    /* Determine the "width" of the child boxes in Morton number */
+    const MortonT childBoxWidth = thisBoxWidth / numSplits;
+
     auto eventIt = m_eventBegin;
 
-    /* First child always has same event begin iterator as this box */
-    childIt->m_eventBegin = m_eventBegin;
+    /* For each new child box */
+    for (size_t i = 0; i < numSplits; i++) {
+      /* Lower child box bound is parent box lower bound plus for each previous
+       * child box; box width plus offset by one (such that lower bound of box
+       * i+1 is one grater than upper bound of box i) */
+      const auto boxLower = m_min + ((childBoxWidth + 1) * i);
 
-    /* Iterate over all child boxes except the last */
-    for (; childIt != m_childBoxes.end() - 1;) {
+      /* Upper child box bound is lower plus child box width */
+      const auto boxUpper = boxLower + childBoxWidth;
+
+      const auto boxEventStart = eventIt;
+
       /* Iterate over event list to find the first event that should not be in
        * the current child box */
-      while (childIt->contains(*eventIt) && eventIt != m_eventEnd) {
+      while (boxLower <= eventIt->spaceFillingCurveOrder() &&
+             eventIt->spaceFillingCurveOrder() <= boxUpper &&
+             eventIt != m_eventEnd) {
+        /* Event was in the box, increment the event iterator */
         ++eventIt;
       }
 
-      /* Set the end event iterator of the current child box */
-      childIt->m_eventEnd = eventIt;
-
-      /* Set the start event iterator of the next child box */
-      (++childIt)->m_eventBegin = eventIt;
+      /* Add new child box. */
+      /* As we are adding as we iterate over Morton numbers and parent events
+       * child boxes are inserted in the correct sorted order. */
+      m_childBoxes.emplace_back(boxEventStart, eventIt, boxLower, boxUpper);
     }
-
-    /* Last child always has same event end iterator as this box */
-    childIt->m_eventEnd = m_eventEnd;
 
     /* Distribute events within child boxes */
     /* Check maximum tree depth has yet to be reached: first decrement the depth

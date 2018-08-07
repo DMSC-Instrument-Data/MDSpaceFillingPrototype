@@ -18,7 +18,10 @@ using Event = MDEvent<ND>;
 using Box = MDBox<ND, IntT, MortonT>;
 
 TEST(MDBoxTest, test_simple) {
-  Box root;
+  /* Dummy event list required to pass iterators to MDBox constructor */
+  std::vector<Event> dummyEventList;
+
+  Box root(dummyEventList.cbegin(), dummyEventList.cend());
 
   /* Should be full integer range */
   using intLimits = std::numeric_limits<MortonT>;
@@ -33,7 +36,11 @@ TEST(MDBoxTest, test_simple) {
 }
 
 TEST(MDBox4DTest, test_contains) {
-  Box box({5, 5, 5, 5}, {8, 8, 8, 8});
+  /* Dummy event list required to pass iterators to MDBox constructor */
+  std::vector<Event> dummyEventList;
+
+  Box box(dummyEventList.cbegin(), dummyEventList.cend(),
+          interleaveFunc({5, 5, 5, 5}), interleaveFunc({8, 8, 8, 8}));
 
   /* Event is inside box */
   EXPECT_TRUE(box.contains(Event(interleaveFunc({5, 5, 5, 5}))));
@@ -55,145 +62,6 @@ TEST(MDBox4DTest, test_contains) {
   EXPECT_FALSE(box.contains(Event(interleaveFunc({2, 7, 7, 7}))));
 }
 
-TEST(MDBox4DTest, test_split) {
-  Box root;
-  root.split();
-
-  /* Should have 2^4 children */
-  EXPECT_EQ(16, root.children().size());
-
-  /* Children should not have children */
-  for (const auto &child : root.children()) {
-    EXPECT_EQ(0, child.children().size());
-  }
-
-  /* Test dimension splitting */
-  using intLimits = std::numeric_limits<IntT>;
-  const IntT a = intLimits::min();
-  const IntT c = intLimits::max();
-  const IntT bu = c / 2;
-  const IntT bl = bu + 1;
-
-  {
-    const auto box = root.children()[0];
-    EXPECT_EQ(interleaveFunc({a, a, a, a}), box.min());
-    EXPECT_EQ(interleaveFunc({bu, bu, bu, bu}), box.max());
-  }
-
-  {
-    const auto box = root.children()[1];
-    EXPECT_EQ(interleaveFunc({bl, a, a, a}), box.min());
-    EXPECT_EQ(interleaveFunc({c, bu, bu, bu}), box.max());
-  }
-
-  {
-    const auto box = root.children()[2];
-    EXPECT_EQ(interleaveFunc({a, bl, a, a}), box.min());
-    EXPECT_EQ(interleaveFunc({bu, c, bu, bu}), box.max());
-  }
-
-  {
-    const auto box = root.children()[3];
-    EXPECT_EQ(interleaveFunc({bl, bl, a, a}), box.min());
-    EXPECT_EQ(interleaveFunc({c, c, bu, bu}), box.max());
-  }
-
-  {
-    const auto box = root.children()[4];
-    EXPECT_EQ(interleaveFunc({a, a, bl, a}), box.min());
-    EXPECT_EQ(interleaveFunc({bu, bu, c, bu}), box.max());
-  }
-
-  {
-    const auto box = root.children()[5];
-    EXPECT_EQ(interleaveFunc({bl, a, bl, a}), box.min());
-    EXPECT_EQ(interleaveFunc({c, bu, c, bu}), box.max());
-  }
-
-  {
-    const auto box = root.children()[6];
-    EXPECT_EQ(interleaveFunc({a, bl, bl, a}), box.min());
-    EXPECT_EQ(interleaveFunc({bu, c, c, bu}), box.max());
-  }
-
-  {
-    const auto box = root.children()[7];
-    EXPECT_EQ(interleaveFunc({bl, bl, bl, a}), box.min());
-    EXPECT_EQ(interleaveFunc({c, c, c, bu}), box.max());
-  }
-
-  {
-    const auto box = root.children()[8];
-    EXPECT_EQ(interleaveFunc({a, a, a, bl}), box.min());
-    EXPECT_EQ(interleaveFunc({bu, bu, bu, c}), box.max());
-  }
-
-  {
-    const auto box = root.children()[9];
-    EXPECT_EQ(interleaveFunc({bl, a, a, bl}), box.min());
-    EXPECT_EQ(interleaveFunc({c, bu, bu, c}), box.max());
-  }
-
-  {
-    const auto box = root.children()[10];
-    EXPECT_EQ(interleaveFunc({a, bl, a, bl}), box.min());
-    EXPECT_EQ(interleaveFunc({bu, c, bu, c}), box.max());
-  }
-
-  {
-    const auto box = root.children()[11];
-    EXPECT_EQ(interleaveFunc({bl, bl, a, bl}), box.min());
-    EXPECT_EQ(interleaveFunc({c, c, bu, c}), box.max());
-  }
-
-  {
-    const auto box = root.children()[12];
-    EXPECT_EQ(interleaveFunc({a, a, bl, bl}), box.min());
-    EXPECT_EQ(interleaveFunc({bu, bu, c, c}), box.max());
-  }
-
-  {
-    const auto box = root.children()[13];
-    EXPECT_EQ(interleaveFunc({bl, a, bl, bl}), box.min());
-    EXPECT_EQ(interleaveFunc({c, bu, c, c}), box.max());
-  }
-
-  {
-    const auto box = root.children()[14];
-    EXPECT_EQ(interleaveFunc({a, bl, bl, bl}), box.min());
-    EXPECT_EQ(interleaveFunc({bu, c, c, c}), box.max());
-  }
-
-  {
-    const auto box = root.children()[15];
-    EXPECT_EQ(interleaveFunc({bl, bl, bl, bl}), box.min());
-    EXPECT_EQ(interleaveFunc({c, c, c, c}), box.max());
-  }
-}
-
-TEST(MDBox4DTest, test_split_3times) {
-  Box root;
-  root.split(3);
-
-  /* Should have 2^4 children */
-  EXPECT_EQ(16, root.children().size());
-
-  /* Children should also have 2^4 children */
-  for (const auto &child : root.children()) {
-    EXPECT_EQ(16, child.children().size());
-
-    /* So should their children */
-    for (const auto &child2 : child.children()) {
-      EXPECT_EQ(16, child2.children().size());
-
-      /* But not their children */
-      for (const auto &child3 : child2.children()) {
-        EXPECT_EQ(0, child3.children().size());
-      }
-    }
-  }
-}
-
 struct ExpectedBox {
   size_t event_count;
   std::vector<ExpectedBox> children;
@@ -211,9 +79,8 @@ void recursive_box_tree_validation(const Box &box, Box::ZCurveIterator &curveIt,
     std::advance(curveIt, expected.event_count);
   } else {
     for (auto tup : boost::combine(expected.children, box.children())) {
-      ExpectedBox expectedChild;
-      Box child;
-      boost::tie(expectedChild, child) = tup;
+      auto child = boost::get<1>(tup);
+      auto expectedChild = boost::get<0>(tup);
 
       recursive_box_tree_validation(child, curveIt, expectedChild);
     }

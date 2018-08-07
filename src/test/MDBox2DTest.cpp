@@ -15,50 +15,6 @@ constexpr auto interleaveFunc = interleave<ND, IntT, MortonT>;
 using Event = MDEvent<ND>;
 using Box = MDBox<ND, IntT, MortonT>;
 
-TEST(MDBox2DTest, test_split) {
-  Box root;
-  root.split();
-
-  /* Should have 2^2 children */
-  EXPECT_EQ(4, root.children().size());
-
-  /* Children should not have children */
-  for (const auto &child : root.children()) {
-    EXPECT_EQ(0, child.children().size());
-  }
-
-  /* Test dimension splitting */
-  using intLimits = std::numeric_limits<IntT>;
-  const auto a = intLimits::min();
-  const auto c = intLimits::max();
-  const auto bu = c / 2;
-  const auto bl = bu + 1;
-
-  {
-    const auto box = root.children()[0];
-    EXPECT_EQ(interleaveFunc({a, a}), box.min());
-    EXPECT_EQ(interleaveFunc({bu, bu}), box.max());
-  }
-
-  {
-    const auto box = root.children()[1];
-    EXPECT_EQ(interleaveFunc({bl, a}), box.min());
-    EXPECT_EQ(interleaveFunc({c, bu}), box.max());
-  }
-
-  {
-    const auto box = root.children()[2];
-    EXPECT_EQ(interleaveFunc({a, bl}), box.min());
-    EXPECT_EQ(interleaveFunc({bu, c}), box.max());
-  }
-
-  {
-    const auto box = root.children()[3];
-    EXPECT_EQ(interleaveFunc({bl, bl}), box.min());
-    EXPECT_EQ(interleaveFunc({c, c}), box.max());
-  }
-}
-
 TEST(MDBox2DTest, test_fill_events) {
   /* Create test MD event Z-curve */
   Event::ZCurve curve;
