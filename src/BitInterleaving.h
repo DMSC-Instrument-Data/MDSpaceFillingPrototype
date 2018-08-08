@@ -7,6 +7,10 @@
 
 #pragma once
 
+/* Bit masks used for pad and compact operations are derived using
+ * docs/bit_padding_generator.py. */
+/* For more details see docs/bit_interleaving.md. */
+
 template <size_t N, typename Int> Int pad(Int x) {
   throw std::runtime_error("No pad() specialisation.");
 }
