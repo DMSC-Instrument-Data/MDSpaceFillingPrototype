@@ -8,6 +8,7 @@
 #include "IsisEventNexusLoader.h"
 #include "MDBox.h"
 #include "MDEvent.h"
+#include "MantidEventNexusLoader.h"
 
 class scoped_wallclock_timer {
 public:
@@ -33,25 +34,6 @@ private:
   const std::string m_counterName;
   const std::chrono::time_point<Clock> m_start;
 };
-
-void load_instrument_and_data(Instrument &instrument,
-                              std::vector<TofEvent> &tofEvents,
-                              const std::string &instrumentFilename,
-                              const std::string &dataFilename,
-                              const std::string &dataPath) {
-  /* Load instrument */
-  load_instrument(instrument, instrumentFilename);
-
-  IsisEventNexusLoader loader(dataFilename, dataPath);
-
-  /* Load spectrum to detector mapping */
-  loader.loadSpectrumDetectorMapping(instrument.spectrum_detector_mapping);
-
-  /* Load ToF events */
-  std::vector<size_t> frameIdxs(loader.frameCount());
-  std::iota(frameIdxs.begin(), frameIdxs.end(), 0);
-  loader.loadFrames(tofEvents, frameIdxs);
-}
 
 template <size_t ND, typename IntT, typename MortonT>
 void do_conversion(benchmark::State &state, const Instrument &inst,
@@ -88,16 +70,35 @@ void do_conversion(benchmark::State &state, const Instrument &inst,
   benchmark::DoNotOptimize(mdEvents);
 }
 
+/**
+ * Average duration counters (there are counter flags to do this in the latest
+ * Google Benchmark)
+ */
+void average_duration_counters(benchmark::State &state) {
+  for (const auto &timerName : {"q_conversion", "sort", "box_structure"}) {
+    state.counters[timerName] /= state.iterations();
+  }
+}
+
 template <typename IntT, typename MortonT>
-void BM_QConversion_WISH(benchmark::State &state) {
+void BM_QConversion_WISH_34509(benchmark::State &state) {
   constexpr size_t ND(3);
 
-  /* Load instrument and data */
+  /* Load instrument */
   Instrument inst;
+  load_instrument(inst, "/home/dan/wish.h5");
+
+  IsisEventNexusLoader loader("/home/dan/WISH00034509.nxs",
+                              "/raw_data_1/detector_1_events");
+
+  /* Load a mapping from the NeXus file */
+  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
+
+  /* Load ToF events */
+  std::vector<size_t> frameIdxs(loader.frameCount());
+  std::iota(frameIdxs.begin(), frameIdxs.end(), 0);
   std::vector<TofEvent> tofEventsRaw;
-  load_instrument_and_data(inst, tofEventsRaw, "/home/dan/wish.h5",
-                           "/home/dan/WISH00034509.nxs",
-                           "/raw_data_1/detector_1_events");
+  loader.loadFrames(tofEventsRaw, frameIdxs);
 
   /* Define MD space extents */
   MDSpaceBounds<ND> mdSpace;
@@ -114,15 +115,50 @@ void BM_QConversion_WISH(benchmark::State &state) {
                                      20);
   }
 
-  /* Average duration counters (there are counter flags to do this in the latest
-   * Google Benchmark) */
-  for (const auto &timerName : {"q_conversion", "sort", "box_structure"}) {
-    state.counters[timerName] /= state.iterations();
-  }
+  average_duration_counters(state);
 }
-BENCHMARK_TEMPLATE(BM_QConversion_WISH, uint16_t, uint64_t)
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
-BENCHMARK_TEMPLATE(BM_QConversion_WISH, uint32_t, uint128_t)
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+
+template <typename IntT, typename MortonT>
+void BM_QConversion_WISH_38423(benchmark::State &state) {
+  constexpr size_t ND(3);
+
+  /* Load instrument */
+  Instrument inst;
+  load_instrument(inst, "/home/dan/wish.h5");
+
+  MantidEventNexusLoader loader("/home/dan/WISH00038423_event.nxs");
+
+  /* Load a mapping from the NeXus file */
+  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
+
+  /* Load ToF events */
+  std::vector<TofEvent> tofEventsRaw;
+  loader.loadAllEvents(tofEventsRaw);
+
+  /* Define MD space extents */
+  MDSpaceBounds<ND> mdSpace;
+  // clang-format off
+  mdSpace <<
+    -10.0f, 10.0f,
+    -10.0f, 10.0f,
+    -10.0f, 10.0f;
+  // clang-format on
+
+  for (auto _ : state) {
+    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, mdSpace,
+                                     {false, Eigen::Matrix3f::Identity()}, 1000,
+                                     20);
+  }
+
+  average_duration_counters(state);
+}
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint16_t, uint64_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint32_t, uint128_t)
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN();
