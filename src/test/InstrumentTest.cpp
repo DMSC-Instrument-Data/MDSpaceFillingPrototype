@@ -69,3 +69,36 @@ TEST(InstrumentTest, test_instrument_property_getters_WISH_small) {
   EXPECT_FLOAT_EQ(deg2rad(154.6387415122f),
                   get_detector_two_theta(inst, {5400300}));
 }
+
+TEST(InstrumentTest, test_instrument_generate_1_to_1_spec_det_mapping) {
+  Instrument inst{Eigen::Vector3f(0.0f, 0.0f, 0.0f),
+                  Eigen::Vector3f(0.0f, 0.0f, -1.5f),
+                  {
+                      {10, Detector{Eigen::Vector3f(-1.0f, 0.0f, 1.0f)}},
+                      {20, Detector{Eigen::Vector3f(-0.5f, 0.0f, 1.0f)}},
+                      {30, Detector{Eigen::Vector3f(0.0f, 0.0f, 1.0f)}},
+                      {40, Detector{Eigen::Vector3f(0.5f, 0.0f, 1.0f)}},
+                      {50, Detector{Eigen::Vector3f(1.0f, 0.0f, 1.0f)}},
+                      {60, Detector{Eigen::Vector3f(0.0f, 1.0f, 1.0f)}},
+                      {70, Detector{Eigen::Vector3f(0.0f, 1.0f, 0.0f)}},
+                  }};
+
+  generate_1_to_1_spec_det_mapping(inst);
+
+  const auto specDetMap = inst.spectrum_detector_mapping;
+
+  /* Test for correct number of mappings */
+  EXPECT_EQ(7, specDetMap.size());
+
+  /* Test detector list of each spectrum number */
+  for (size_t i = 0; i < 7; i++) {
+    const auto detList(specDetMap.at(i));
+
+    /* Detector list should have a single detector ID */
+    EXPECT_EQ(1, detList.size());
+
+    /* Test detector ID */
+    const specid_t expected((i + 1) * 10);
+    EXPECT_EQ(expected, detList.at(0));
+  }
+}

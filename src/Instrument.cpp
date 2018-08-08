@@ -111,3 +111,22 @@ void load_instrument(Instrument &inst, const std::string &filename) {
         Eigen::Vector3f(*(posCoordIt++), *(posCoordIt++), *(posCoordIt++))};
   }
 }
+
+/**
+ * Generates a one to one spectrum/detector mapping for the detectors loaded
+ * into an existing instrument.
+ *
+ * @param inst Reference to instrument to modify
+ */
+void generate_1_to_1_spec_det_mapping(Instrument &inst) {
+  specid_t specNo = 0;
+
+  /* For each detector */
+  for (const auto &det : inst.detectors) {
+    /* Get detector ID */
+    const auto detId(std::get<0>(det));
+
+    /* Add entry in mapping with consecutive spectrum numbers */
+    inst.spectrum_detector_mapping[specNo++] = std::vector<detid_t>{detId};
+  }
+}

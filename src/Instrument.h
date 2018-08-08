@@ -31,3 +31,5 @@ float get_detector_two_theta(const Instrument &inst,
                              const DetectorIdList &detIds);
 
 void load_instrument(Instrument &inst, const std::string &filename);
+
+void generate_1_to_1_spec_det_mapping(Instrument &inst);
