@@ -6,9 +6,9 @@ Library(
   NAME
     MDSpaceFillingPrototype
   SOURCES
-    EventNexusLoader.cpp
     EventToMDEventConversion.cpp
     Instrument.cpp
+    IsisEventNexusLoader.cpp
   LIBRARIES
     ${CONAN_LIBS_H5CPP}
 )

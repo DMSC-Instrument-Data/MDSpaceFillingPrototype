@@ -27,9 +27,10 @@ void generate_spectrum_detector_mapping(SpectrumToDetectorMapping &mapping,
                                         const std::vector<int32_t> &spec,
                                         const std::vector<int32_t> &udet);
 
-class EventNexusLoader {
+class IsisEventNexusLoader {
 public:
-  EventNexusLoader(const std::string &filename, const std::string &dataPath);
+  IsisEventNexusLoader(const std::string &filename,
+                       const std::string &dataPath);
 
   size_t totalEventCount() const;
   size_t frameCount() const;

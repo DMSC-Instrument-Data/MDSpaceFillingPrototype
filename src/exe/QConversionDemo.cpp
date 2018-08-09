@@ -9,9 +9,9 @@
 #include <gflags/gflags.h>
 #include <h5cpp/hdf5.hpp>
 
-#include "EventNexusLoader.h"
 #include "EventToMDEventConversion.h"
 #include "Instrument.h"
+#include "IsisEventNexusLoader.h"
 #include "MDBox.h"
 
 constexpr size_t ND(3);
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
     load_instrument(inst, FLAGS_instrument);
   }
 
-  EventNexusLoader loader(FLAGS_data, FLAGS_dataset);
+  IsisEventNexusLoader loader(FLAGS_data, FLAGS_dataset);
 
   /* Load spectrum to detector mapping */
   {

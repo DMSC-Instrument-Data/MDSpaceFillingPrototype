@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "EventNexusLoader.h"
+#include "IsisEventNexusLoader.h"
 
-TEST(EventNexusLoaderTest, load_frames_all) {
-  EventNexusLoader loader("test_data/test_events.nxs",
-                          "raw_data_1/detector_1_events");
+TEST(IsisEventNexusLoaderTest, load_frames_all) {
+  IsisEventNexusLoader loader("test_data/isis_event.nxs",
+                              "raw_data_1/detector_1_events");
 
   EXPECT_EQ(15, loader.totalEventCount());
   EXPECT_EQ(4, loader.frameCount());
@@ -47,9 +47,9 @@ TEST(EventNexusLoaderTest, load_frames_all) {
   EXPECT_FLOAT_EQ(0.05f, events[14].tof);
 }
 
-TEST(EventNexusLoaderTest, load_frame_0) {
-  EventNexusLoader loader("test_data/test_events.nxs",
-                          "raw_data_1/detector_1_events");
+TEST(IsisEventNexusLoaderTest, load_frame_0) {
+  IsisEventNexusLoader loader("test_data/isis_event.nxs",
+                              "raw_data_1/detector_1_events");
 
   EXPECT_EQ(15, loader.totalEventCount());
   EXPECT_EQ(4, loader.frameCount());
@@ -70,9 +70,9 @@ TEST(EventNexusLoaderTest, load_frame_0) {
   EXPECT_FLOAT_EQ(0.013f, events[3].tof);
 }
 
-TEST(EventNexusLoaderTest, load_frame_3) {
-  EventNexusLoader loader("test_data/test_events.nxs",
-                          "raw_data_1/detector_1_events");
+TEST(IsisEventNexusLoaderTest, load_frame_3) {
+  IsisEventNexusLoader loader("test_data/isis_event.nxs",
+                              "raw_data_1/detector_1_events");
 
   EXPECT_EQ(15, loader.totalEventCount());
   EXPECT_EQ(4, loader.frameCount());
@@ -95,7 +95,7 @@ TEST(EventNexusLoaderTest, load_frame_3) {
   EXPECT_FLOAT_EQ(0.05f, events[4].tof);
 }
 
-TEST(EventNexusLoaderTest, test_generate_spectrum_detector_mapping) {
+TEST(IsisEventNexusLoaderTest, test_generate_spectrum_detector_mapping) {
   std::vector<int32_t> spec{
       1, 1, 1, 4, 4, 5, 5, 5, 6, 6, 6,
   };
@@ -132,7 +132,7 @@ TEST(EventNexusLoaderTest, test_generate_spectrum_detector_mapping) {
   }
 }
 
-TEST(EventNexusLoaderTest,
+TEST(IsisEventNexusLoaderTest,
      test_generate_spectrum_detector_mapping_non_equal_dimensions) {
   std::vector<int32_t> spec{
       1, 1, 1, 4, 4, 5, 5, 5, 6, 6, 6,

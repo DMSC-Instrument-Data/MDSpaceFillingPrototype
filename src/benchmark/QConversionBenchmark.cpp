@@ -3,9 +3,9 @@
 #include <boost/sort/sort.hpp>
 
 #include "BitInterleaving.h"
-#include "EventNexusLoader.h"
 #include "EventToMDEventConversion.h"
 #include "Instrument.h"
+#include "IsisEventNexusLoader.h"
 #include "MDBox.h"
 #include "MDEvent.h"
 
@@ -42,7 +42,7 @@ void load_instrument_and_data(Instrument &instrument,
   /* Load instrument */
   load_instrument(instrument, instrumentFilename);
 
-  EventNexusLoader loader(dataFilename, dataPath);
+  IsisEventNexusLoader loader(dataFilename, dataPath);
 
   /* Load spectrum to detector mapping */
   loader.loadSpectrumDetectorMapping(instrument.spectrum_detector_mapping);

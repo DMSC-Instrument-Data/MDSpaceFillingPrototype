@@ -1,4 +1,4 @@
-#include "EventNexusLoader.h"
+#include "IsisEventNexusLoader.h"
 
 using namespace hdf5;
 
@@ -29,8 +29,8 @@ void generate_spectrum_detector_mapping(SpectrumToDetectorMapping &mapping,
   mapping[*specLast] = std::vector<detid_t>(udetLast, udet.end());
 }
 
-EventNexusLoader::EventNexusLoader(const std::string &filename,
-                                   const std::string &dataPath)
+IsisEventNexusLoader::IsisEventNexusLoader(const std::string &filename,
+                                           const std::string &dataPath)
     : m_file(file::open(filename, file::AccessFlags::READONLY)) {
   m_datasetGroup = m_file.root()[dataPath];
   m_vmsCompatGroup = m_datasetGroup.link().parent()["isis_vms_compat"];
@@ -39,35 +39,35 @@ EventNexusLoader::EventNexusLoader(const std::string &filename,
   resize_and_read_dataset(m_eventTimeZero, m_datasetGroup["event_time_zero"]);
 }
 
-size_t EventNexusLoader::totalEventCount() const {
+size_t IsisEventNexusLoader::totalEventCount() const {
   node::Dataset dataset = m_datasetGroup["event_id"];
   const auto space = dataset.dataspace();
   return space.size();
 }
 
-size_t EventNexusLoader::frameCount() const { return m_eventIndex.size(); }
+size_t IsisEventNexusLoader::frameCount() const { return m_eventIndex.size(); }
 
-const std::vector<uint64_t> &EventNexusLoader::eventIndex() const {
+const std::vector<uint64_t> &IsisEventNexusLoader::eventIndex() const {
   return m_eventIndex;
 }
 
-const std::vector<double> &EventNexusLoader::eventTimeZero() const {
+const std::vector<double> &IsisEventNexusLoader::eventTimeZero() const {
   return m_eventTimeZero;
 }
 
-void EventNexusLoader::eventId(std::vector<uint32_t> &data, size_t start,
-                               size_t end) const {
+void IsisEventNexusLoader::eventId(std::vector<uint32_t> &data, size_t start,
+                                   size_t end) const {
   resize_and_read_dataset_range(data, m_datasetGroup["event_id"], start, end);
 }
 
-void EventNexusLoader::eventTimeOffset(std::vector<float> &data, size_t start,
-                                       size_t end) const {
+void IsisEventNexusLoader::eventTimeOffset(std::vector<float> &data,
+                                           size_t start, size_t end) const {
   resize_and_read_dataset_range(data, m_datasetGroup["event_time_offset"],
                                 start, end);
 }
 
 std::pair<size_t, size_t>
-EventNexusLoader::getFrameEventRange(size_t frameIdx) const {
+IsisEventNexusLoader::getFrameEventRange(size_t frameIdx) const {
   const auto start = m_eventIndex[frameIdx];
   const auto end = frameIdx >= m_eventIndex.size() - 1
                        ? totalEventCount()
@@ -76,8 +76,8 @@ EventNexusLoader::getFrameEventRange(size_t frameIdx) const {
   return std::make_pair(start, end - start);
 }
 
-void EventNexusLoader::loadFrames(std::vector<TofEvent> &events,
-                                  const std::vector<size_t> &frameIdxs) const {
+void IsisEventNexusLoader::loadFrames(
+    std::vector<TofEvent> &events, const std::vector<size_t> &frameIdxs) const {
   struct FrameParams {
     size_t nexusEventStart;
     size_t memoryEventStart;
@@ -139,7 +139,7 @@ void EventNexusLoader::loadFrames(std::vector<TofEvent> &events,
   }
 }
 
-void EventNexusLoader::loadSpectrumDetectorMapping(
+void IsisEventNexusLoader::loadSpectrumDetectorMapping(
     SpectrumToDetectorMapping &mapping) const {
   /* Get datasets */
   node::Dataset specDataset = m_vmsCompatGroup["SPEC"];
