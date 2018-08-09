@@ -1,5 +1,7 @@
 #include "IsisEventNexusLoader.h"
 
+#include "NexusLoaderUtils.h"
+
 using namespace hdf5;
 
 void generate_spectrum_detector_mapping(SpectrumToDetectorMapping &mapping,
@@ -134,7 +136,7 @@ void IsisEventNexusLoader::loadFrames(
 
     /* Populate events in output storage */
     for (size_t i = 0; i < params.numEvents; ++i) {
-      *(eventIt++) = {eventId[i], eventTimeOffset[i], params.timeZero};
+      *(eventIt++) = {eventId[i], eventTimeOffset[i], params.timeZero, 1.0f};
     }
   }
 }

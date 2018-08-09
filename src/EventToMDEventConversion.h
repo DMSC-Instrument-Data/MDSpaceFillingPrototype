@@ -68,10 +68,10 @@ void convert_events(std::vector<MDEvent<3, IntT, MortonT>> &mdEvents,
     std::vector<MDEvent<3, IntT, MortonT>> mdEventsForSpectrum;
     for (auto eventIt = eventIteratorStart; eventIt != eventIteratorEnd;
          ++eventIt) {
-      auto weight = 1.0f;
-
       const auto wavenumber = conversionFactor / eventIt->tof;
       const auto center = qDir * wavenumber;
+
+      auto weight = eventIt->weight;
 
       /* Ensure the event is within the bounds of the MD space */
       if (CheckCoordinatesInMDSpace(space, center)) {

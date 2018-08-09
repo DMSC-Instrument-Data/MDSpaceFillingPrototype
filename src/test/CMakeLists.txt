@@ -6,6 +6,7 @@ set(UNIT_TESTS
   EventToMDEventConversionTest
   InstrumentTest
   IsisEventNexusLoaderTest
+  MantidEventNexusLoaderTest
   MDBox2DTest
   MDBox4DTest
   MDEventTest
