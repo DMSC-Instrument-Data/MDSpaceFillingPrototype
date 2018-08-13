@@ -161,4 +161,43 @@ BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint16_t, uint64_t)
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint32_t, uint128_t)
     ->Unit(benchmark::kMillisecond);
 
+template <typename IntT, typename MortonT>
+void BM_QConversion_TOPAZ_3132(benchmark::State &state) {
+  constexpr size_t ND(3);
+
+  /* Load instrument */
+  Instrument inst;
+  load_instrument(inst, "/home/dan/topaz.h5");
+
+  MantidEventNexusLoader loader("/home/dan/TOPAZ_3132_event.nxs");
+
+  /* Load a mapping from the NeXus file */
+  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
+
+  /* Load ToF events */
+  std::vector<TofEvent> tofEventsRaw;
+  loader.loadAllEvents(tofEventsRaw);
+
+  /* Define MD space extents */
+  MDSpaceBounds<ND> mdSpace;
+  // clang-format off
+  mdSpace <<
+    0.0f, 60.0f,
+    -40.0f, 40.0f,
+    0.0f, 110.0f;
+  // clang-format on
+
+  for (auto _ : state) {
+    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, mdSpace,
+                                     {false, Eigen::Matrix3f::Identity()}, 1000,
+                                     20);
+  }
+
+  average_duration_counters(state);
+}
+BENCHMARK_TEMPLATE(BM_QConversion_TOPAZ_3132, uint16_t, uint64_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_TOPAZ_3132, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+
 BENCHMARK_MAIN();
