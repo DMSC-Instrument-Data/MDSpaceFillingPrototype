@@ -106,9 +106,9 @@ void BM_QConversion_WISH_34509(benchmark::State &state) {
   MDSpaceBounds<ND> mdSpace;
   // clang-format off
   mdSpace <<
-    -10.0f, 10.0f,
-    -10.0f, 10.0f,
-    -10.0f, 10.0f;
+    -12.0f, 12.0f,
+    -3.0f, 3.0f,
+    0.0f, 23.0f;
   // clang-format on
 
   for (auto _ : state) {
@@ -145,9 +145,9 @@ void BM_QConversion_WISH_38423(benchmark::State &state) {
   MDSpaceBounds<ND> mdSpace;
   // clang-format off
   mdSpace <<
-    -10.0f, 10.0f,
-    -10.0f, 10.0f,
-    -10.0f, 10.0f;
+    -12.0f, 12.0f,
+    -3.0f, 3.0f,
+    0.0f, 23.0f;
   // clang-format on
 
   for (auto _ : state) {
