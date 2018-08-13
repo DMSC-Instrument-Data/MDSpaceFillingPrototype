@@ -1,4 +1,4 @@
-#include <cstring>
+#include <vector>
 
 #include "BitInterleaving.h"
 #include "CoordinateConversion.h"
@@ -7,6 +7,9 @@
 #pragma once
 
 template <size_t ND> class MDEvent {
+public:
+  using ZCurve = std::vector<MDEvent<ND>>;
+
 public:
   MDEvent(uint64_t spaceFillingCurveOrder = 0, float signal = 1.0f)
       : m_spaceFillingCurveOrder(spaceFillingCurveOrder), m_signal(signal) {}
