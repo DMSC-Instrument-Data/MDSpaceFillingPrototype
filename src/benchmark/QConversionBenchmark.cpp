@@ -25,7 +25,6 @@ public:
     const auto durationSeconds =
         std::chrono::duration<double>(duration).count();
     m_state.counters[m_counterName] += durationSeconds;
-    std::cout << m_counterName << " took " << durationSeconds << " seconds.\n";
     m_state.ResumeTiming();
   }
 
@@ -54,6 +53,8 @@ void do_conversion(benchmark::State &state, const Instrument &inst,
     convert_events(mdEvents, tofEvents, convInfo, inst, mdSpace);
   }
 
+  state.counters["md_events"] += mdEvents.size();
+
   /* Sort events */
   {
     scoped_wallclock_timer timer(state, "sort");
@@ -71,12 +72,13 @@ void do_conversion(benchmark::State &state, const Instrument &inst,
 }
 
 /**
- * Average duration counters (there are counter flags to do this in the latest
- * Google Benchmark)
+ * Average counters (there are counter flags to do this in the latest Google
+ * Benchmark)
  */
-void average_duration_counters(benchmark::State &state) {
-  for (const auto &timerName : {"q_conversion", "sort", "box_structure"}) {
-    state.counters[timerName] /= state.iterations();
+void average_counters(benchmark::State &state) {
+  for (const auto &name :
+       {"q_conversion", "sort", "box_structure", "md_events"}) {
+    state.counters[name] /= state.iterations();
   }
 }
 
@@ -115,7 +117,7 @@ void BM_QConversion_WISH_34509(benchmark::State &state) {
                                      20);
   }
 
-  average_duration_counters(state);
+  average_counters(state);
 }
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
@@ -154,7 +156,7 @@ void BM_QConversion_WISH_38423(benchmark::State &state) {
                                      20);
   }
 
-  average_duration_counters(state);
+  average_counters(state);
 }
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
@@ -193,7 +195,7 @@ void BM_QConversion_TOPAZ_3132(benchmark::State &state) {
                                      20);
   }
 
-  average_duration_counters(state);
+  average_counters(state);
 }
 BENCHMARK_TEMPLATE(BM_QConversion_TOPAZ_3132, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
