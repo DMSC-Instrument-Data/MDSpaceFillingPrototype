@@ -202,4 +202,43 @@ BENCHMARK_TEMPLATE(BM_QConversion_TOPAZ_3132, uint16_t, uint64_t)
 BENCHMARK_TEMPLATE(BM_QConversion_TOPAZ_3132, uint32_t, uint128_t)
     ->Unit(benchmark::kMillisecond);
 
+template <typename IntT, typename MortonT>
+void BM_QConversion_SXD_23767(benchmark::State &state) {
+  constexpr size_t ND(3);
+
+  /* Load instrument */
+  Instrument inst;
+  load_instrument(inst, "/home/dan/sxd.h5");
+
+  MantidEventNexusLoader loader("/home/dan/SXD23767_event.nxs");
+
+  /* Load a mapping from the NeXus file */
+  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
+
+  /* Load ToF events */
+  std::vector<TofEvent> tofEventsRaw;
+  loader.loadAllEvents(tofEventsRaw);
+
+  /* Define MD space extents */
+  MDSpaceBounds<ND> mdSpace;
+  // clang-format off
+  mdSpace <<
+    -18.0f, 18.0f,
+    -7.0f, 17.0f,
+    0.0f, 34.0f;
+  // clang-format on
+
+  for (auto _ : state) {
+    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, mdSpace,
+                                     {false, Eigen::Matrix3f::Identity()}, 1000,
+                                     20);
+  }
+
+  average_counters(state);
+}
+BENCHMARK_TEMPLATE(BM_QConversion_SXD_23767, uint16_t, uint64_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_SXD_23767, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+
 BENCHMARK_MAIN();
