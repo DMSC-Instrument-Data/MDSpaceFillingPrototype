@@ -8,6 +8,8 @@ end of a range on the Z-curve (for simplicity this is referred to as
 "containing" in this document), where the start event has the lowest Morton
 number of events in the box and the end event has the highest.
 
+## Creation
+
 The structure is formed of boxes which contain events, and child boxes which
 contain a subset of the parent's events.
 
@@ -17,15 +19,14 @@ The method is as follows:
 2. Check if the box contains fewer events than the splitting threshold or that
    the maximum tree depth has yet to be reached, exit splitting the current
    box/branch if either are satisfied.
-3. Split the box in the centre of all axes, creating 2^N child boxes.
-4. Sort child boxes by their lower bound Morton number
-5. Set the start event of the first child box to that of the parent box
-6. Iterate over all child boxes
-    1. Find the next event to NOT be contained in the current child box (1)
-    2. Mark set the end of the current child box and start of next child box to
-       this event
-7. Set the end event of the last box to that of the parent box
-8. For each child box:
+3. Calculate the number of new child boxes (2^N) and their "width" in Morton
+   number.
+4. From the child widths calculate the lower and upper bounds of child boxes.
+5. Iterate over box boundaries:
+    1. Find the next event to NOT be contained in the current child box (1).
+    2. Mark this as the end event for the current child box.
+    3. Create a new child box and add it to the parent's child vector
+6. For each child box:
     1. Go to step 2
 
 Step 8 is implemented using OpenMP tasks to efficiently distribute this process
@@ -36,6 +37,37 @@ over multiple threads.
 mean an event appears in two boxes if it is exactly on a boundary, however the
 box splitting procedure will assign it to the lowest box in the axis/axes on
 which a boundary is shared with another box.
+
+The assumption that the dimensions of each axis are identical is made here. This
+is required for the even splitting of child boxes to be valid, as splitting
+happens entirely in Morton coordinates.
+
+## Implementation notes
+
+Boxes hold the following data:
+
+- Lower Morton bound
+- Upper Morton bound
+- Event start iterator
+- Event end iterator
+- Child boxes (vector sorted by lower Morton bound)
+
+Boxes do not own the events they contain. They do own their child boxes.
+
+The upper and lower bounds of a box define the inclusive range of events that
+are contained within it. When boxes are split there are effectively two
+boundaries created that are adjacent to each other in integer coordinate space.
+This is best demonstrated visually:
+
+![MD Box Splitting](./md_box_splitting.svg)
+
+This shows a 2D MD space of size 16x16 (this refers to the MD space in
+intermediate integer, not floating point coordinates) which has been split into
+four 8x8 boxes.
+
+Every event that falls within or on the boundary of a box is contained within
+that box. As these are integer coordinates, floating point error and events
+falling between boxes are not an issue.
 
 ## Benchmarks
 
@@ -49,8 +81,8 @@ The number of events is varied:
 - 10000000
 - 100000000
 - 1000000000
-- 469388241 (number of events in a WISH dataset used for benchmarking against
-  Mantid)
+- 469388241 (number of events in the large WISH dataset used for benchmarking
+  against Mantid)
 
 Command:
 
