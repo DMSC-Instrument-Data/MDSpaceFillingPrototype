@@ -38,9 +38,10 @@ mean an event appears in two boxes if it is exactly on a boundary, however the
 box splitting procedure will assign it to the lowest box in the axis/axes on
 which a boundary is shared with another box.
 
-The assumption that the dimensions of each axis are identical is made here. This
-is required for the even splitting of child boxes to be valid, as splitting
-happens entirely in Morton coordinates.
+The assumption that the dimensions of each axis (in intermediate integer
+coordinates, not floating point coordinates) are identical is made here. This is
+required for the even splitting of child boxes to be valid, as splitting happens
+entirely in Morton coordinates.
 
 ## Implementation notes
 
