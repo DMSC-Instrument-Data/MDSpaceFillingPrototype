@@ -24,7 +24,9 @@ conversion back from the interleaved coordinates. It can be run using:
 A Q conversion benchmark has been implemented for the following instruments and
 datasets:
 
-- WISH, `WISH00034509`
+- WISH, 34509
+- WISH, 38423
+- TOPAZ, 3132
 
 Command:
 ```bash
