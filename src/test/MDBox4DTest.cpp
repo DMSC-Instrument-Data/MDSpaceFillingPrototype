@@ -39,27 +39,52 @@ TEST(MDBox4DTest, test_contains) {
   /* Dummy event list required to pass iterators to MDBox constructor */
   std::vector<Event> dummyEventList;
 
+  /* Bounds of box (same for all axes) */
+  constexpr IntT lower(5);
+  constexpr IntT upper(8);
+
+  /* One coordinate value outside of bounds */
+  constexpr auto oneLower(lower - 1);
+  constexpr auto oneUpper(upper + 1);
+
+  /* A coordinate value that is inside the bounds */
+  constexpr IntT inside(7);
+
   Box box(dummyEventList.cbegin(), dummyEventList.cend(),
-          interleaveFunc({5, 5, 5, 5}), interleaveFunc({8, 8, 8, 8}));
+          interleaveFunc({lower, lower, lower, lower}),
+          interleaveFunc({upper, upper, upper, upper}));
 
   /* Event is inside box */
-  EXPECT_TRUE(box.contains(Event(interleaveFunc({5, 5, 5, 5}))));
-  EXPECT_TRUE(box.contains(Event(interleaveFunc({7, 7, 7, 7}))));
-  EXPECT_TRUE(box.contains(Event(interleaveFunc({8, 8, 8, 8}))));
+  EXPECT_TRUE(
+      box.contains(Event(interleaveFunc({lower, lower, lower, lower}))));
+  EXPECT_TRUE(
+      box.contains(Event(interleaveFunc({inside, inside, inside, inside}))));
+  EXPECT_TRUE(
+      box.contains(Event(interleaveFunc({upper, upper, upper, upper}))));
+
+  /* Event Morton number is lesser than box boundary */
+  EXPECT_FALSE(box.contains(
+      Event(interleaveFunc({oneLower, oneLower, oneLower, oneLower}))));
+  EXPECT_FALSE(
+      box.contains(Event(interleaveFunc({lower, lower, lower, oneLower}))));
+  EXPECT_FALSE(
+      box.contains(Event(interleaveFunc({lower, lower, oneLower, lower}))));
+  EXPECT_FALSE(
+      box.contains(Event(interleaveFunc({lower, oneLower, lower, lower}))));
+  EXPECT_FALSE(
+      box.contains(Event(interleaveFunc({oneLower, lower, lower, lower}))));
 
   /* Event Morton number is greater than box boundary */
-  EXPECT_FALSE(box.contains(Event(interleaveFunc({3, 3, 3, 3}))));
-  EXPECT_FALSE(box.contains(Event(interleaveFunc({7, 7, 7, 3}))));
-  EXPECT_FALSE(box.contains(Event(interleaveFunc({7, 7, 3, 7}))));
-  EXPECT_FALSE(box.contains(Event(interleaveFunc({7, 3, 7, 7}))));
-  EXPECT_FALSE(box.contains(Event(interleaveFunc({3, 7, 7, 7}))));
-
-  /* Event Morton number is less than box boundary */
-  EXPECT_FALSE(box.contains(Event(interleaveFunc({2, 2, 2, 2}))));
-  EXPECT_FALSE(box.contains(Event(interleaveFunc({7, 7, 7, 2}))));
-  EXPECT_FALSE(box.contains(Event(interleaveFunc({7, 7, 2, 7}))));
-  EXPECT_FALSE(box.contains(Event(interleaveFunc({7, 2, 7, 7}))));
-  EXPECT_FALSE(box.contains(Event(interleaveFunc({2, 7, 7, 7}))));
+  EXPECT_FALSE(box.contains(
+      Event(interleaveFunc({oneUpper, oneUpper, oneUpper, oneUpper}))));
+  EXPECT_FALSE(
+      box.contains(Event(interleaveFunc({upper, upper, upper, oneUpper}))));
+  EXPECT_FALSE(
+      box.contains(Event(interleaveFunc({upper, upper, oneUpper, upper}))));
+  EXPECT_FALSE(
+      box.contains(Event(interleaveFunc({upper, oneUpper, upper, upper}))));
+  EXPECT_FALSE(
+      box.contains(Event(interleaveFunc({oneUpper, upper, upper, upper}))));
 }
 
 struct ExpectedBox {
