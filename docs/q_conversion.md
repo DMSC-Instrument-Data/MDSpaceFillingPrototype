@@ -24,12 +24,12 @@ conversion back from the interleaved coordinates. It can be run using:
 A Q conversion benchmark has been implemented for the following instruments and
 datasets:
 
-- WISH, 34509
-- WISH, 37828
-- WISH, 37868
-- WISH, 38423
-- TOPAZ, 3132
-- SXD, 23767
+- WISH, 34509 (V/Nb rod)
+- WISH, 37828 (hexaferrite 300K 0T)
+- WISH, 37868 (hexaferrite 20K 0.4T)
+- WISH, 38423 (NaCl)
+- TOPAZ, 3132 (triphylite)
+- SXD, 23767 (NaCl sphere)
 
 Command:
 ```bash
