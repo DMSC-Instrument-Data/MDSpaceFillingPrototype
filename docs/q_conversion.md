@@ -35,6 +35,8 @@ The times taken for each stage of the workflow (Q conversion, MD event sorting,
 box structure construction) are reported individually in seconds. The number of
 MD events created is also reported.
 
+### Prototype
+
 Command:
 ```bash
 ./src/benchmark/QConversionBenchmark --benchmark_counters_tabular=true --benchmark_min_time=120
@@ -65,4 +67,48 @@ BM_QConversion_TOPAZ_3132<uint16_t, uint64_t>        1400 ms       1072 ms      
 BM_QConversion_TOPAZ_3132<uint32_t, uint128_t>       1930 ms       1257 ms        139      0.476999    9.0473M      1.29776   0.117478
 BM_QConversion_SXD_23767<uint16_t, uint64_t>          824 ms        394 ms        431      0.276481   14.3206M     0.425418  0.0891088
 BM_QConversion_SXD_23767<uint32_t, uint128_t>        1677 ms        580 ms        311      0.728931   14.3206M     0.727463     0.1754
+```
+
+### Mantid
+
+A benchmark for the equivalent operations using the `ConvertToMD` algorithm in
+Mantid was implemented in `mantid_benchmark.py`, essentially this just times the
+execution of `ConvertToMD`.
+
+Command:
+```bash
+mantidpython mantid_benchmark.py
+```
+
+Output:
+```
+Data file: /home/dan/WISH00034509.nxs
+Iteration count:  2
+Total time:  435.449289083
+Average time:  217.724644542
+
+Data file: /home/dan/WISH00037828_event.nxs
+Iteration count:  46
+Total time:  301.932240963
+Average time:  6.56374436876
+
+Data file: /home/dan/WISH00037868_event.nxs
+Iteration count:  131
+Total time:  300.174309492
+Average time:  2.29140694269
+
+Data file: /home/dan/WISH00038423_event.nxs
+Iteration count:  57
+Total time:  302.14209199
+Average time:  5.30073845596
+
+Data file: /home/dan/TOPAZ_3132_event.nxs
+Iteration count:  96
+Total time:  302.360197783
+Average time:  3.14958539357
+
+Data file: /home/dan/SXD23767_event.nxs
+Iteration count:  174
+Total time:  301.50667119
+Average time:  1.73279696086
 ```
