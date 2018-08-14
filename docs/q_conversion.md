@@ -25,6 +25,8 @@ A Q conversion benchmark has been implemented for the following instruments and
 datasets:
 
 - WISH, 34509
+- WISH, 37828
+- WISH, 37868
 - WISH, 38423
 - TOPAZ, 3132
 - SXD, 23767
