@@ -84,31 +84,31 @@ Output:
 ```
 Data file: /home/dan/WISH00034509.nxs
 Iteration count:  2
-Total time:  435.449289083
-Average time:  217.724644542
+Total time:  442.583511353
+Average time:  221.291755676
 
 Data file: /home/dan/WISH00037828_event.nxs
 Iteration count:  46
-Total time:  301.932240963
-Average time:  6.56374436876
+Total time:  302.049246311
+Average time:  6.56628796329
 
 Data file: /home/dan/WISH00037868_event.nxs
-Iteration count:  131
-Total time:  300.174309492
-Average time:  2.29140694269
+Iteration count:  132
+Total time:  302.154913902
+Average time:  2.28905237805
 
 Data file: /home/dan/WISH00038423_event.nxs
 Iteration count:  57
-Total time:  302.14209199
-Average time:  5.30073845596
+Total time:  302.740511417
+Average time:  5.31123704241
 
 Data file: /home/dan/TOPAZ_3132_event.nxs
-Iteration count:  96
-Total time:  302.360197783
-Average time:  3.14958539357
+Iteration count:  95
+Total time:  301.299777985
+Average time:  3.17157661036
 
 Data file: /home/dan/SXD23767_event.nxs
-Iteration count:  174
-Total time:  301.50667119
-Average time:  1.73279696086
+Iteration count:  173
+Total time:  300.706841946
+Average time:  1.73818983784
 ```

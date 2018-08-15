@@ -21,9 +21,6 @@ class BenchmarkDriver(object):
 
         self.iteration_times = []
 
-        self.current_iteration_total_time = None
-        self.current_iteration_start_time = None
-
     @property
     def total_time(self):
         return sum(self.iteration_times)
@@ -31,32 +28,6 @@ class BenchmarkDriver(object):
     @property
     def average_time(self):
         return self.total_time / len(self.iteration_times) if self.iteration_times else 0.0
-
-    def finish_iteration(self):
-        self.stop_timer()
-
-        if self.current_iteration_total_time is not None:
-            self.iteration_times.append(self.current_iteration_total_time)
-
-        self.current_iteration_total_time = None
-
-    def start_timer(self):
-        if self.current_iteration_start_time is not None:
-            return
-
-        self.current_iteration_start_time = time.time()
-
-    def stop_timer(self):
-        if self.current_iteration_start_time is None:
-            return
-
-        duration = time.time() - self.current_iteration_start_time
-
-        if self.current_iteration_total_time is None:
-            self.current_iteration_total_time = 0.0
-        self.current_iteration_total_time += duration
-
-        self.current_iteration_start_time = None
 
     def __enter__(self):
         return self
@@ -71,12 +42,8 @@ class BenchmarkDriver(object):
         return self
 
     def __next__(self):
-        self.finish_iteration()
-
         if self.total_time > self.min_time:
             raise StopIteration()
-
-        self.start_timer()
 
         return len(self.iteration_times) + 1
 
@@ -112,7 +79,9 @@ for ds in datasets:
                     Q3DFrames='Q_lab'
                 )
 
-            b.stop_timer()
+            # Record algorithm execution duration from Mantid workspace history
+            duration = md.getHistory().getAlgorithmHistories()[-1].executionDuration()
+            b.iteration_times.append(duration)
 
             # Remove result workspaces
             mtd.remove(md.name())
