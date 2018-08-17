@@ -112,3 +112,10 @@ Iteration count:  173
 Total time:  300.706841946
 Average time:  1.73818983784
 ```
+
+### Comparison
+
+The plot below shows the benchmark results (ordered by Mantid execution time),
+note the logarithmic time axis.
+
+![Benchmark Results](./benchmark_results.png)
