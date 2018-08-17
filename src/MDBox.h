@@ -116,6 +116,11 @@ public:
    * @param maxDepth Maximum box tree depth (including root box)
    */
   void distributeEvents(const size_t splitThreshold, size_t maxDepth) {
+    /* For some reason using ChildBoxCount directly caused a build failure in
+     * debug mode with GCC 5.4. Oddly only on the line that assigns
+     * childBoxWidth. Assigning it to a local variable works. */
+    const auto childBoxCount(ChildBoxCount);
+
     /* Stop iteration if we reach the maximum tree depth or have too few events
      * in the box to split again. */
     /* We check for maxDepth == 1 as maximum depth includes the root node, which
@@ -125,18 +130,18 @@ public:
     }
 
     /* Reserve storage for child boxes */
-    m_childBoxes.reserve(ChildBoxCount);
+    m_childBoxes.reserve(childBoxCount);
 
     /* Determine the "width" of this box in Morton number */
     const MortonT thisBoxWidth = m_upperBound - m_lowerBound;
 
     /* Determine the "width" of the child boxes in Morton number */
-    const MortonT childBoxWidth = thisBoxWidth / ChildBoxCount;
+    const MortonT childBoxWidth = thisBoxWidth / childBoxCount;
 
     auto eventIt = m_eventBegin;
 
     /* For each new child box */
-    for (size_t i = 0; i < ChildBoxCount; i++) {
+    for (size_t i = 0; i < childBoxCount; i++) {
       /* Lower child box bound is parent box lower bound plus for each previous
        * child box; box width plus offset by one (such that lower bound of box
        * i+1 is one grater than upper bound of box i) */
