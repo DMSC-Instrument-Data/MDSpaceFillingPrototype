@@ -2,8 +2,6 @@
 
 #include <limits>
 
-#include <boost/range/combine.hpp>
-
 #include "TestUtil.h"
 
 #include "MDBox.h"
@@ -85,33 +83,6 @@ TEST(MDBox4DTest, test_contains) {
       box.contains(Event(interleaveFunc({upper, oneUpper, upper, upper}))));
   EXPECT_FALSE(
       box.contains(Event(interleaveFunc({oneUpper, upper, upper, upper}))));
-}
-
-struct ExpectedBox {
-  size_t event_count;
-  std::vector<ExpectedBox> children;
-};
-
-void recursive_box_tree_validation(const Box &box, Box::ZCurveIterator &curveIt,
-                                   const ExpectedBox &expected) {
-  ASSERT_EQ(expected.event_count, box.eventCount());
-
-  EXPECT_EQ(curveIt, box.eventBegin());
-
-  ASSERT_EQ(expected.children.size(), box.children().size());
-
-  if (expected.children.empty()) {
-    std::advance(curveIt, expected.event_count);
-  } else {
-    for (auto tup : boost::combine(expected.children, box.children())) {
-      auto child = boost::get<1>(tup);
-      auto expectedChild = boost::get<0>(tup);
-
-      recursive_box_tree_validation(child, curveIt, expectedChild);
-    }
-  }
-
-  EXPECT_EQ(curveIt, box.eventEnd());
 }
 
 TEST(MDBox4DTest, test_fill_events) {
