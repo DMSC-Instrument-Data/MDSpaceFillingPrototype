@@ -54,6 +54,7 @@ data_path = '/home/dan'
 
 datasets = [
     'WISH00034509.nxs',
+    'WISH00034509_2x_larger.nxs',
     'WISH00037828_event.nxs',
     'WISH00037868_event.nxs',
     'WISH00038423_event.nxs',
