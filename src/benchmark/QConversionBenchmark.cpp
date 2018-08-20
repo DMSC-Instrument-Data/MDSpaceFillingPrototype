@@ -34,6 +34,39 @@ private:
   const std::chrono::time_point<Clock> m_start;
 };
 
+auto md_space_wish() {
+  MDSpaceBounds<3> space;
+  // clang-format off
+  space <<
+    -12.0f, 12.0f,
+    -3.0f, 3.0f,
+    0.0f, 23.0f;
+  // clang-format on
+  return space;
+}
+
+auto md_space_topaz() {
+  MDSpaceBounds<3> space;
+  // clang-format off
+  space <<
+    0.0f, 60.0f,
+    -40.0f, 40.0f,
+    0.0f, 110.0f;
+  // clang-format on
+  return space;
+}
+
+auto md_space_sxd() {
+  MDSpaceBounds<3> space;
+  // clang-format off
+  space <<
+    -18.0f, 18.0f,
+    -7.0f, 17.0f,
+    0.0f, 34.0f;
+  // clang-format on
+  return space;
+}
+
 template <size_t ND, typename IntT, typename MortonT>
 void do_conversion(benchmark::State &state, const Instrument &inst,
                    const std::vector<TofEvent> &tofEventsRaw,
@@ -71,6 +104,37 @@ void do_conversion(benchmark::State &state, const Instrument &inst,
   benchmark::DoNotOptimize(mdEvents);
 }
 
+void load_isis(Instrument &inst, std::vector<TofEvent> &events,
+               const std::string &instFile, const std::string &dataFile,
+               const std::string &dataPath) {
+  /* Load instrument */
+  load_instrument(inst, instFile);
+
+  IsisEventNexusLoader loader(dataFile, dataPath);
+
+  /* Load a mapping from the NeXus file */
+  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
+
+  /* Load ToF events */
+  std::vector<size_t> frameIdxs(loader.frameCount());
+  std::iota(frameIdxs.begin(), frameIdxs.end(), 0);
+  loader.loadFrames(events, frameIdxs);
+}
+
+void load_mantid(Instrument &inst, std::vector<TofEvent> &events,
+                 const std::string &instFile, const std::string &dataFile) {
+  /* Load instrument */
+  load_instrument(inst, instFile);
+
+  MantidEventNexusLoader loader(dataFile);
+
+  /* Load a mapping from the NeXus file */
+  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
+
+  /* Load ToF events */
+  loader.loadAllEvents(events);
+}
+
 /**
  * Average counters (there are counter flags to do this in the latest Google
  * Benchmark)
@@ -86,33 +150,13 @@ template <typename IntT, typename MortonT>
 void BM_QConversion_WISH_34509(benchmark::State &state) {
   constexpr size_t ND(3);
 
-  /* Load instrument */
   Instrument inst;
-  load_instrument(inst, "/home/dan/wish.h5");
-
-  IsisEventNexusLoader loader("/home/dan/WISH00034509.nxs",
-                              "/raw_data_1/detector_1_events");
-
-  /* Load a mapping from the NeXus file */
-  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
-
-  /* Load ToF events */
-  std::vector<size_t> frameIdxs(loader.frameCount());
-  std::iota(frameIdxs.begin(), frameIdxs.end(), 0);
   std::vector<TofEvent> tofEventsRaw;
-  loader.loadFrames(tofEventsRaw, frameIdxs);
-
-  /* Define MD space extents */
-  MDSpaceBounds<ND> mdSpace;
-  // clang-format off
-  mdSpace <<
-    -12.0f, 12.0f,
-    -3.0f, 3.0f,
-    0.0f, 23.0f;
-  // clang-format on
+  load_isis(inst, tofEventsRaw, "/home/dan/wish.h5",
+            "/home/dan/WISH00034509.nxs", "/raw_data_1/detector_1_events");
 
   for (auto _ : state) {
-    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, mdSpace,
+    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
                                      {false, Eigen::Matrix3f::Identity()}, 1000,
                                      20);
   }
@@ -128,30 +172,13 @@ template <typename IntT, typename MortonT>
 void BM_QConversion_WISH_38423(benchmark::State &state) {
   constexpr size_t ND(3);
 
-  /* Load instrument */
   Instrument inst;
-  load_instrument(inst, "/home/dan/wish.h5");
-
-  MantidEventNexusLoader loader("/home/dan/WISH00038423_event.nxs");
-
-  /* Load a mapping from the NeXus file */
-  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
-
-  /* Load ToF events */
   std::vector<TofEvent> tofEventsRaw;
-  loader.loadAllEvents(tofEventsRaw);
-
-  /* Define MD space extents */
-  MDSpaceBounds<ND> mdSpace;
-  // clang-format off
-  mdSpace <<
-    -12.0f, 12.0f,
-    -3.0f, 3.0f,
-    0.0f, 23.0f;
-  // clang-format on
+  load_mantid(inst, tofEventsRaw, "/home/dan/wish.h5",
+              "/home/dan/WISH00038423_event.nxs");
 
   for (auto _ : state) {
-    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, mdSpace,
+    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
                                      {false, Eigen::Matrix3f::Identity()}, 1000,
                                      20);
   }
@@ -167,30 +194,13 @@ template <typename IntT, typename MortonT>
 void BM_QConversion_WISH_37828(benchmark::State &state) {
   constexpr size_t ND(3);
 
-  /* Load instrument */
   Instrument inst;
-  load_instrument(inst, "/home/dan/wish.h5");
-
-  MantidEventNexusLoader loader("/home/dan/WISH00037828_event.nxs");
-
-  /* Load a mapping from the NeXus file */
-  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
-
-  /* Load ToF events */
   std::vector<TofEvent> tofEventsRaw;
-  loader.loadAllEvents(tofEventsRaw);
-
-  /* Define MD space extents */
-  MDSpaceBounds<ND> mdSpace;
-  // clang-format off
-  mdSpace <<
-    -12.0f, 12.0f,
-    -3.0f, 3.0f,
-    0.0f, 23.0f;
-  // clang-format on
+  load_mantid(inst, tofEventsRaw, "/home/dan/wish.h5",
+              "/home/dan/WISH00037828_event.nxs");
 
   for (auto _ : state) {
-    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, mdSpace,
+    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
                                      {false, Eigen::Matrix3f::Identity()}, 1000,
                                      20);
   }
@@ -206,30 +216,13 @@ template <typename IntT, typename MortonT>
 void BM_QConversion_WISH_37868(benchmark::State &state) {
   constexpr size_t ND(3);
 
-  /* Load instrument */
   Instrument inst;
-  load_instrument(inst, "/home/dan/wish.h5");
-
-  MantidEventNexusLoader loader("/home/dan/WISH00037868_event.nxs");
-
-  /* Load a mapping from the NeXus file */
-  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
-
-  /* Load ToF events */
   std::vector<TofEvent> tofEventsRaw;
-  loader.loadAllEvents(tofEventsRaw);
-
-  /* Define MD space extents */
-  MDSpaceBounds<ND> mdSpace;
-  // clang-format off
-  mdSpace <<
-    -12.0f, 12.0f,
-    -3.0f, 3.0f,
-    0.0f, 23.0f;
-  // clang-format on
+  load_mantid(inst, tofEventsRaw, "/home/dan/wish.h5",
+              "/home/dan/WISH00037868_event.nxs");
 
   for (auto _ : state) {
-    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, mdSpace,
+    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
                                      {false, Eigen::Matrix3f::Identity()}, 1000,
                                      20);
   }
@@ -245,32 +238,15 @@ template <typename IntT, typename MortonT>
 void BM_QConversion_TOPAZ_3132(benchmark::State &state) {
   constexpr size_t ND(3);
 
-  /* Load instrument */
   Instrument inst;
-  load_instrument(inst, "/home/dan/topaz.h5");
-
-  MantidEventNexusLoader loader("/home/dan/TOPAZ_3132_event.nxs");
-
-  /* Load a mapping from the NeXus file */
-  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
-
-  /* Load ToF events */
   std::vector<TofEvent> tofEventsRaw;
-  loader.loadAllEvents(tofEventsRaw);
-
-  /* Define MD space extents */
-  MDSpaceBounds<ND> mdSpace;
-  // clang-format off
-  mdSpace <<
-    0.0f, 60.0f,
-    -40.0f, 40.0f,
-    0.0f, 110.0f;
-  // clang-format on
+  load_mantid(inst, tofEventsRaw, "/home/dan/topaz.h5",
+              "/home/dan/TOPAZ_3132_event.nxs");
 
   for (auto _ : state) {
-    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, mdSpace,
-                                     {false, Eigen::Matrix3f::Identity()}, 1000,
-                                     20);
+    do_conversion<ND, IntT, MortonT>(
+        state, inst, tofEventsRaw, md_space_topaz(),
+        {false, Eigen::Matrix3f::Identity()}, 1000, 20);
   }
 
   average_counters(state);
@@ -284,30 +260,13 @@ template <typename IntT, typename MortonT>
 void BM_QConversion_SXD_23767(benchmark::State &state) {
   constexpr size_t ND(3);
 
-  /* Load instrument */
   Instrument inst;
-  load_instrument(inst, "/home/dan/sxd.h5");
-
-  MantidEventNexusLoader loader("/home/dan/SXD23767_event.nxs");
-
-  /* Load a mapping from the NeXus file */
-  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
-
-  /* Load ToF events */
   std::vector<TofEvent> tofEventsRaw;
-  loader.loadAllEvents(tofEventsRaw);
-
-  /* Define MD space extents */
-  MDSpaceBounds<ND> mdSpace;
-  // clang-format off
-  mdSpace <<
-    -18.0f, 18.0f,
-    -7.0f, 17.0f,
-    0.0f, 34.0f;
-  // clang-format on
+  load_mantid(inst, tofEventsRaw, "/home/dan/sxd.h5",
+              "/home/dan/SXD23767_event.nxs");
 
   for (auto _ : state) {
-    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, mdSpace,
+    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_sxd(),
                                      {false, Eigen::Matrix3f::Identity()}, 1000,
                                      20);
   }
