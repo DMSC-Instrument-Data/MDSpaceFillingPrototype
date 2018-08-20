@@ -216,8 +216,6 @@ TEST(EventDistribution2DTest, test_pattern_1) {
   Box root(events.cbegin(), events.cend());
   root.distributeEvents(10, 5);
 
-  EXPECT_EQ(107, root.eventCount());
-
   /* Expected box structure */
   ExpectedBox expectedRoot{
       107,
@@ -254,6 +252,55 @@ TEST(EventDistribution2DTest, test_pattern_1) {
                {4, {}}, {3, {}}, {9, {}}, {8, {}},
            }},
       }};
+
+  /* Validate structure */
+  Box::ZCurveIterator curveIt = events.cbegin();
+  recursive_box_tree_validation(root, curveIt, expectedRoot);
+}
+
+TEST(EventDistribution2DTest, test_events_are_not_lost_on_edges) {
+  std::vector<Event> events;
+
+  /* Define MD space */
+  Space space;
+  // clang-format off
+  space <<
+    -10.0f, 10.0f,
+    -10.0f, 10.0f;
+  // clang-format on
+
+  /* Fill events for even splitting */
+  for (size_t i = 0; i < 8; i++) {
+    events.emplace_back(Coord{-5.0f, -5.0f}, space, 0.1);
+    events.emplace_back(Coord{5.0f, -5.0f}, space, 0.2);
+    events.emplace_back(Coord{-5.0f, 5.0f}, space, 0.3);
+    events.emplace_back(Coord{5.0f, 5.0f}, space, 0.4);
+  }
+
+  /* Add some events on the edges */
+  events.emplace_back(Coord{0.0f, 0.0f}, space, 0.1);
+  events.emplace_back(Coord{10.0f, -10.0f}, space, 0.2);
+  events.emplace_back(Coord{-10.0f, 10.0f}, space, 0.3);
+  events.emplace_back(Coord{10.0f, 10.0f}, space, 0.4);
+
+  /* Randomly shuffle event list */
+  std::random_shuffle(events.begin(), events.end());
+
+  /* Sanity check */
+  EXPECT_EQ(36, events.size());
+
+  /* Sort events */
+  boost::sort::block_indirect_sort(events.begin(), events.end());
+
+  /* Create box structure */
+  Box root(events.cbegin(), events.cend());
+  root.distributeEvents(10, 5);
+
+  /* Expected box structure */
+  ExpectedBox expectedRoot{36,
+                           {
+                               {9, {}}, {9, {}}, {9, {}}, {9, {}},
+                           }};
 
   /* Validate structure */
   Box::ZCurveIterator curveIt = events.cbegin();
