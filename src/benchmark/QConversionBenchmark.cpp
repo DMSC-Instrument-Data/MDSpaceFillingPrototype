@@ -40,7 +40,7 @@ void do_conversion(benchmark::State &state, const Instrument &inst,
                    const MDSpaceBounds<ND> &mdSpace,
                    const ConversionInfo &convInfo, const size_t splitThreshold,
                    const size_t maxBoxTreeDepth) {
-  /* Copy raw ToF events form loaded events (needed as convert_events() sorts
+  /* Copy raw ToF events from loaded events (needed as convert_events() sorts
    * the vector) */
   state.PauseTiming();
   std::vector<TofEvent> tofEvents(tofEventsRaw);
