@@ -10,6 +10,8 @@
 #include "MDEvent.h"
 #include "MantidEventNexusLoader.h"
 
+const std::string dataDirPath("..");
+
 class scoped_wallclock_timer {
 public:
   using Clock = std::chrono::high_resolution_clock;
@@ -152,8 +154,8 @@ void BM_QConversion_WISH_34509(benchmark::State &state) {
 
   Instrument inst;
   std::vector<TofEvent> tofEventsRaw;
-  load_isis(inst, tofEventsRaw, "/home/dan/wish.h5",
-            "/home/dan/WISH00034509.nxs", "/raw_data_1/detector_1_events");
+  load_isis(inst, tofEventsRaw, dataDirPath + "/wish.h5",
+            dataDirPath + "/WISH00034509.nxs", "/raw_data_1/detector_1_events");
 
   for (auto _ : state) {
     do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
@@ -174,8 +176,8 @@ void BM_QConversion_WISH_34509_2x(benchmark::State &state) {
 
   Instrument inst;
   std::vector<TofEvent> tofEventsRaw;
-  load_isis(inst, tofEventsRaw, "/home/dan/wish.h5",
-            "/home/dan/WISH00034509_2x_larger.nxs",
+  load_isis(inst, tofEventsRaw, dataDirPath + "/wish.h5",
+            dataDirPath + "/WISH00034509_2x_larger.nxs",
             "/raw_data_1/detector_1_events");
 
   for (auto _ : state) {
@@ -197,8 +199,8 @@ void BM_QConversion_WISH_38423(benchmark::State &state) {
 
   Instrument inst;
   std::vector<TofEvent> tofEventsRaw;
-  load_mantid(inst, tofEventsRaw, "/home/dan/wish.h5",
-              "/home/dan/WISH00038423_event.nxs");
+  load_mantid(inst, tofEventsRaw, dataDirPath + "/wish.h5",
+              dataDirPath + "/WISH00038423_event.nxs");
 
   for (auto _ : state) {
     do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
@@ -219,8 +221,8 @@ void BM_QConversion_WISH_37828(benchmark::State &state) {
 
   Instrument inst;
   std::vector<TofEvent> tofEventsRaw;
-  load_mantid(inst, tofEventsRaw, "/home/dan/wish.h5",
-              "/home/dan/WISH00037828_event.nxs");
+  load_mantid(inst, tofEventsRaw, dataDirPath + "/wish.h5",
+              dataDirPath + "/WISH00037828_event.nxs");
 
   for (auto _ : state) {
     do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
@@ -241,8 +243,8 @@ void BM_QConversion_WISH_37868(benchmark::State &state) {
 
   Instrument inst;
   std::vector<TofEvent> tofEventsRaw;
-  load_mantid(inst, tofEventsRaw, "/home/dan/wish.h5",
-              "/home/dan/WISH00037868_event.nxs");
+  load_mantid(inst, tofEventsRaw, dataDirPath + "/wish.h5",
+              dataDirPath + "/WISH00037868_event.nxs");
 
   for (auto _ : state) {
     do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
@@ -263,8 +265,8 @@ void BM_QConversion_TOPAZ_3132(benchmark::State &state) {
 
   Instrument inst;
   std::vector<TofEvent> tofEventsRaw;
-  load_mantid(inst, tofEventsRaw, "/home/dan/topaz.h5",
-              "/home/dan/TOPAZ_3132_event.nxs");
+  load_mantid(inst, tofEventsRaw, dataDirPath + "/topaz.h5",
+              dataDirPath + "/TOPAZ_3132_event.nxs");
 
   for (auto _ : state) {
     do_conversion<ND, IntT, MortonT>(
@@ -285,8 +287,8 @@ void BM_QConversion_SXD_23767(benchmark::State &state) {
 
   Instrument inst;
   std::vector<TofEvent> tofEventsRaw;
-  load_mantid(inst, tofEventsRaw, "/home/dan/sxd.h5",
-              "/home/dan/SXD23767_event.nxs");
+  load_mantid(inst, tofEventsRaw, dataDirPath + "/sxd.h5",
+              dataDirPath + "/SXD23767_event.nxs");
 
   for (auto _ : state) {
     do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_sxd(),
