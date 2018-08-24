@@ -83,4 +83,9 @@ function(Library)
     SHARED
     ${TARGET_SOURCES}
   )
+
+  target_link_libraries(
+    ${TARGET_NAME}
+    ${TARGET_LIBRARIES}
+  )
 endfunction()

@@ -31,7 +31,7 @@ template <> struct morton_to_pad_compact_int<uint32_t> {
 
 /**
  * Pad an integer with 1 padding bit between integer bits.
- * Maximum input width is 32 bit.
+ * Maximum input width is 16 bit.
  */
 template <> uint64_t pad<1, uint64_t>(uint64_t x) {
   x &= 0xffff;
@@ -45,7 +45,7 @@ template <> uint64_t pad<1, uint64_t>(uint64_t x) {
 /**
  * Compacts (removes padding) an integer with 1 padding bit between integer
  * bits.
- * Maximum output bit width is 32 bit.
+ * Maximum output bit width is 16 bit.
  */
 template <> uint64_t compact<1, uint64_t>(uint64_t x) {
   x &= 0x55555555;
@@ -115,6 +115,68 @@ template <> uint64_t compact<3, uint64_t>(uint64_t x) {
 }
 
 using uint128_t = boost::multiprecision::uint128_t;
+
+/**
+ * Pad an integer with 1 padding bit between integer bits.
+ * Maximum input width is 32 bit.
+ */
+template <> uint128_t pad<1, uint128_t>(uint128_t x) {
+  using namespace boost::multiprecision::literals;
+  x &= 0xffffffff_cppui128;
+  x = (x | x << 16) & 0xffff0000ffff_cppui128;
+  x = (x | x << 8) & 0xff00ff00ff00ff_cppui128;
+  x = (x | x << 4) & 0xf0f0f0f0f0f0f0f_cppui128;
+  x = (x | x << 2) & 0x3333333333333333_cppui128;
+  x = (x | x << 1) & 0x5555555555555555_cppui128;
+  return x;
+}
+
+/**
+ * Compacts (removes padding) an integer with 1 padding bit between integer
+ * bits.
+ * Maximum output bit width is 32 bit.
+ */
+template <> uint128_t compact<1, uint128_t>(uint128_t x) {
+  using namespace boost::multiprecision::literals;
+  x &= 0x5555555555555555_cppui128;
+  x = (x | x >> 1) & 0x3333333333333333_cppui128;
+  x = (x | x >> 2) & 0xf0f0f0f0f0f0f0f_cppui128;
+  x = (x | x >> 4) & 0xff00ff00ff00ff_cppui128;
+  x = (x | x >> 8) & 0xffff0000ffff_cppui128;
+  x = (x | x >> 16) & 0xffffffff_cppui128;
+  return x;
+}
+
+/**
+ * Pad an integer with 2 padding bits between integer bits.
+ * Maximum input width is 32 bit.
+ */
+template <> uint128_t pad<2, uint128_t>(uint128_t x) {
+  using namespace boost::multiprecision::literals;
+  x &= 0xffffffff_cppui128;
+  x = (x | x << 32) & 0xffff00000000ffff_cppui128;
+  x = (x | x << 16) & 0xff0000ff0000ff0000ff_cppui128;
+  x = (x | x << 8) & 0xf00f00f00f00f00f00f00f_cppui128;
+  x = (x | x << 4) & 0xc30c30c30c30c30c30c30c3_cppui128;
+  x = (x | x << 2) & 0x249249249249249249249249_cppui128;
+  return x;
+}
+
+/**
+ * Compacts (removes padding) an integer with 2 padding bits between integer
+ * bits.
+ * Maximum output bit width is 32 bit.
+ */
+template <> uint128_t compact<2, uint128_t>(uint128_t x) {
+  using namespace boost::multiprecision::literals;
+  x &= 0x249249249249249249249249_cppui128;
+  x = (x | x >> 2) & 0xc30c30c30c30c30c30c30c3_cppui128;
+  x = (x | x >> 4) & 0xf00f00f00f00f00f00f00f_cppui128;
+  x = (x | x >> 8) & 0xff0000ff0000ff0000ff_cppui128;
+  x = (x | x >> 16) & 0xffff00000000ffff_cppui128;
+  x = (x | x >> 32) & 0xffffffff_cppui128;
+  return x;
+}
 
 /**
  * Pad an integer with 3 padding bits between integer bits.

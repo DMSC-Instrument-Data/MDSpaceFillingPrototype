@@ -3,10 +3,14 @@ set(UNIT_TESTS
   BitInterleavingEigenTest
   BitInterleavingTest
   CoordinateConversionTest
+  EventDistribution2DTest
+  EventToMDEventConversionTest
+  InstrumentTest
+  IsisEventNexusLoaderTest
+  MantidEventNexusLoaderTest
   MDBox2DTest
   MDBox4DTest
   MDEventTest
-  EventNexusLoaderTest
   TestUtilTest
 )
 

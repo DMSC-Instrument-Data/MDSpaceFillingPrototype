@@ -16,3 +16,10 @@ foreach(BENCHMARK ${BENCHMARKS})
     HEADERS ${CMAKE_SOURCE_DIR}/src
   )
 endforeach(BENCHMARK)
+
+Benchmark(
+  NAME QConversionBenchmark
+  SOURCES QConversionBenchmark.cpp
+  HEADERS ${CMAKE_SOURCE_DIR}/src
+  LIBRARIES ${CONAN_LIBS} MDSpaceFillingPrototype
+)

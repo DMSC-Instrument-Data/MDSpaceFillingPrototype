@@ -1,3 +1,7 @@
+# Data files
+*.h5
+*.nxs
+
 # Build directory
 build/
 

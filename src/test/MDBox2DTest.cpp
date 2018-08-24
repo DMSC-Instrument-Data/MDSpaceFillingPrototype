@@ -12,7 +12,7 @@ using IntT = uint16_t;
 using MortonT = uint32_t;
 constexpr auto interleaveFunc = interleave<ND, IntT, MortonT>;
 
-using Event = MDEvent<ND>;
+using Event = MDEvent<ND, IntT, MortonT>;
 using Box = MDBox<ND, IntT, MortonT>;
 
 TEST(MDBox2DTest, test_fill_events) {

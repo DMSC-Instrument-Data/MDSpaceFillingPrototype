@@ -6,8 +6,8 @@ Executable(
 )
 
 Executable(
-  NAME NexusParserDemo
-  SOURCES NexusParserDemo
+  NAME QConversionDemo
+  SOURCES QConversionDemo.cpp
   HEADERS ${CMAKE_SOURCE_DIR}/src
   LIBRARIES ${CONAN_LIBS} MDSpaceFillingPrototype
 )

@@ -45,6 +45,22 @@ template <size_t ND> void ExpandBounds(MDSpaceBounds<ND> &bounds) {
 }
 
 /**
+ * Checks that a coordinate is within the extents of an MD space.
+ */
+bool CheckCoordinatesInMDSpace(const auto &bounds, const auto &coord) {
+  for (size_t i = 0; i < coord.rows(); i++) {
+    const auto coordValue = coord(i, 0);
+    const auto coordBounds = bounds.row(i);
+
+    if (coordValue < coordBounds[0] || coordValue > coordBounds[1]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
  * Converts a point to integer range given a range of floating point
  * coordinates.
  */
