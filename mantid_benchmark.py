@@ -50,7 +50,7 @@ class BenchmarkDriver(object):
     next = __next__
 
 
-data_path = '/home/dan'
+data_path = '/media/scratch/md_data/'
 
 datasets = [
     'WISH00034509.nxs',
