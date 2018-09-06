@@ -165,9 +165,13 @@ void BM_QConversion_WISH_34509(benchmark::State &state) {
 
   average_counters(state);
 }
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint8_t, uint32_t)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint64_t, uint256_t)
     ->Unit(benchmark::kMillisecond);
 
 template <typename IntT, typename MortonT>
@@ -188,9 +192,13 @@ void BM_QConversion_WISH_34509_2x(benchmark::State &state) {
 
   average_counters(state);
 }
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint8_t, uint32_t)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint64_t, uint256_t)
     ->Unit(benchmark::kMillisecond);
 
 template <typename IntT, typename MortonT>
@@ -210,9 +218,13 @@ void BM_QConversion_WISH_38423(benchmark::State &state) {
 
   average_counters(state);
 }
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint8_t, uint32_t)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint64_t, uint256_t)
     ->Unit(benchmark::kMillisecond);
 
 template <typename IntT, typename MortonT>
@@ -232,9 +244,13 @@ void BM_QConversion_WISH_37828(benchmark::State &state) {
 
   average_counters(state);
 }
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint8_t, uint32_t)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint64_t, uint256_t)
     ->Unit(benchmark::kMillisecond);
 
 template <typename IntT, typename MortonT>
@@ -254,9 +270,13 @@ void BM_QConversion_WISH_37868(benchmark::State &state) {
 
   average_counters(state);
 }
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint8_t, uint32_t)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint64_t, uint256_t)
     ->Unit(benchmark::kMillisecond);
 
 template <typename IntT, typename MortonT>
@@ -276,9 +296,13 @@ void BM_QConversion_TOPAZ_3132(benchmark::State &state) {
 
   average_counters(state);
 }
+BENCHMARK_TEMPLATE(BM_QConversion_TOPAZ_3132, uint8_t, uint32_t)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_TOPAZ_3132, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_TOPAZ_3132, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_TOPAZ_3132, uint64_t, uint256_t)
     ->Unit(benchmark::kMillisecond);
 
 template <typename IntT, typename MortonT>
@@ -298,9 +322,13 @@ void BM_QConversion_SXD_23767(benchmark::State &state) {
 
   average_counters(state);
 }
+BENCHMARK_TEMPLATE(BM_QConversion_SXD_23767, uint8_t, uint32_t)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_SXD_23767, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_SXD_23767, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_SXD_23767, uint64_t, uint256_t)
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN();

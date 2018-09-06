@@ -76,6 +76,23 @@ template <> uint16_t compact<1, uint16_t, uint64_t>(uint64_t x) {
   return (uint16_t)x;
 }
 
+template <> uint32_t pad<2, uint8_t, uint32_t>(uint8_t v) {
+  uint32_t x(v);
+  x &= 0xff;
+  x = (x | x << 8) & 0xf00f;
+  x = (x | x << 4) & 0xc30c3;
+  x = (x | x << 2) & 0x249249;
+  return x;
+}
+
+template <> uint8_t compact<2, uint8_t, uint32_t>(uint32_t x) {
+  x &= 0x249249;
+  x = (x | x >> 2) & 0xc30c3;
+  x = (x | x >> 4) & 0xf00f;
+  x = (x | x >> 8) & 0xff;
+  return (uint8_t)x;
+}
+
 template <> uint64_t pad<2, uint16_t, uint64_t>(uint16_t v) {
   uint64_t x(v);
   x &= 0xffff;
@@ -194,6 +211,32 @@ template <> uint32_t compact<3, uint32_t, uint128_t>(uint128_t x) {
 }
 
 using uint256_t = boost::multiprecision::uint256_t;
+
+template <> uint256_t pad<2, uint64_t, uint256_t>(uint64_t v) {
+  using namespace boost::multiprecision::literals;
+  uint256_t x(v);
+  x &= 0xffffffffffffffff_cppui256;
+  x = (x | x << 64) & 0xffffffff0000000000000000ffffffff_cppui256;
+  x = (x | x << 32) & 0xffff00000000ffff00000000ffff00000000ffff_cppui256;
+  x = (x | x << 16) & 0xff0000ff0000ff0000ff0000ff0000ff0000ff0000ff_cppui256;
+  x = (x | x << 8) & 0xf00f00f00f00f00f00f00f00f00f00f00f00f00f00f00f_cppui256;
+  x = (x | x << 4) & 0xc30c30c30c30c30c30c30c30c30c30c30c30c30c30c30c3_cppui256;
+  x = (x | x << 2) &
+      0x249249249249249249249249249249249249249249249249_cppui256;
+  return x;
+}
+
+template <> uint64_t compact<2, uint64_t, uint256_t>(uint256_t x) {
+  using namespace boost::multiprecision::literals;
+  x &= 0x249249249249249249249249249249249249249249249249_cppui256;
+  x = (x | x >> 2) & 0xc30c30c30c30c30c30c30c30c30c30c30c30c30c30c30c3_cppui256;
+  x = (x | x >> 4) & 0xf00f00f00f00f00f00f00f00f00f00f00f00f00f00f00f_cppui256;
+  x = (x | x >> 8) & 0xff0000ff0000ff0000ff0000ff0000ff0000ff0000ff_cppui256;
+  x = (x | x >> 16) & 0xffff00000000ffff00000000ffff00000000ffff_cppui256;
+  x = (x | x >> 32) & 0xffffffff0000000000000000ffffffff_cppui256;
+  x = (x | x >> 64) & 0xffffffffffffffff_cppui256;
+  return (uint64_t)x;
+}
 
 template <> uint256_t pad<3, uint64_t, uint256_t>(uint64_t v) {
   using namespace boost::multiprecision::literals;
