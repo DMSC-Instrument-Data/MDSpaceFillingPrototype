@@ -38,5 +38,5 @@ ctest -L UnitTest
 
 To run benchmarks (that are not dependant on data files):
 ```bash
-ctest -V -L Benchmark
+ctest -V -L Benchmark -LE Data
 ```
