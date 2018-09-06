@@ -1,5 +1,6 @@
 set(UNIT_TESTS
   BitInterleaving128BitTest
+  BitInterleaving256BitTest
   BitInterleavingEigenTest
   BitInterleavingTest
   CoordinateConversionTest

@@ -1,5 +1,6 @@
 set(BENCHMARKS
   BitInterleaving128bitBenchmark
+  BitInterleaving256bitBenchmark
   BitInterleaving64bitBenchmark
   CoordinateConversionBenchmark
   EventCreationBenchmark
