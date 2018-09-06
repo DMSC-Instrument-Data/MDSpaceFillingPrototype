@@ -9,4 +9,4 @@ conan install ${HOME}/src/conanfile.txt -s build_type=Release -s compiler.libcxx
 cmake -DCMAKE_BUILD_TYPE=Release ${HOME}/src
 make -j4
 
-ctest -V
+ctest -V -L UnitTest

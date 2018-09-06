@@ -30,3 +30,13 @@ the only tested OS.
 4. `conan install /path/to/src/dir/conanfile.txt -s build_type=[Release/Debug] -s compiler.libcxx=libstdc++11 --build missing`
 5. `cmake /path/to/src/dir -DCMAKE_BUILD_TYPE=[Release/Debug]`
 6. `make`
+
+To run unit tests:
+```bash
+ctest -L UnitTest
+```
+
+To run benchmarks (that are not dependant on data files):
+```bash
+ctest -V -L Benchmark
+```

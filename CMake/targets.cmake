@@ -19,6 +19,7 @@ function(UnitTest)
     ${TARGET_SOURCES}
   )
   add_test(${TARGET_NAME} ${TARGET_NAME})
+  set_tests_properties(${TARGET_NAME} PROPERTIES LABELS "UnitTest")
 
   target_include_directories(
     ${TARGET_NAME}
@@ -40,6 +41,7 @@ function(Benchmark)
     ${TARGET_NAME}
     ${TARGET_SOURCES}
   )
+  add_test(${TARGET_NAME} ${TARGET_NAME})
 
   target_include_directories(
     ${TARGET_NAME}
