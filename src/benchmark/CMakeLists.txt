@@ -5,7 +5,6 @@ set(BENCHMARKS
   EventCreationBenchmark
   MDBoxBenchmark
   SortBenchmark
-  SortEventBenchmark
 )
 
 foreach(BENCHMARK ${BENCHMARKS})
