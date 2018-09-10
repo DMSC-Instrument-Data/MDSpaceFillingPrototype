@@ -22,12 +22,14 @@
 
 #include <boost/sort/sort.hpp>
 
+#include "BitInterleaving.h"
 #include "MDBox.h"
 #include "MDEvent.h"
 
 const size_t ND(4);
 using IntT = uint16_t;
 using MortonT = uint64_t;
+constexpr auto interleaveFunc = interleave<ND, IntT, MortonT>;
 
 using Event = MDEvent<ND, IntT, MortonT>;
 using Box = MDBox<ND, IntT, MortonT>;
@@ -68,5 +70,34 @@ BENCHMARK(BM_MDBox_fill)
     ->Args({469388241, 1000, 20})
     /* ->Args({75000000000, 1000, 20}) */
     ->Unit(benchmark::kMillisecond);
+
+void BM_MDBox_get_events(benchmark::State &state) {
+  constexpr size_t numEvents(1000000000);
+
+  /* Generate test event Z-curve */
+  std::mt19937 gen;
+  std::uniform_int_distribution<MortonT> dist;
+  Event::ZCurve curve;
+  for (size_t i = 0; i < numEvents; i++) {
+    curve.emplace_back(dist(gen));
+  }
+  boost::sort::block_indirect_sort(curve.begin(), curve.end());
+
+  /* Create root box and perform splitting/distribution */
+  Box root(curve.cbegin(), curve.cend());
+  root.distributeEvents(1000, 20);
+
+  constexpr auto tenpc = std::numeric_limits<IntT>::max() / 10;
+  const auto lower(
+      interleaveFunc({tenpc * 2, tenpc * 3, tenpc * 5, tenpc * 1}));
+  const auto upper(
+      interleaveFunc({tenpc * 4, tenpc * 9, tenpc * 8, tenpc * 7}));
+
+  for (auto _ : state) {
+    std::vector<Box::EventRange> ranges;
+    root.getEventsInBoundingBox(ranges, lower, upper);
+  }
+}
+BENCHMARK(BM_MDBox_get_events)->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN();

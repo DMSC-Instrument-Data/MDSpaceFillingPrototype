@@ -47,6 +47,102 @@ void BM_CalculateRequiredCoordinateIntegerWidth_4(benchmark::State &state) {
 }
 BENCHMARK(BM_CalculateRequiredCoordinateIntegerWidth_4);
 
+void BM_GenerateFloatToIntTransformation(benchmark::State &state) {
+  MDCoordinate<4> coord;
+  coord << 1.0f, 6.0f, 5.0f, 12.5f;
+
+  MDSpaceBounds<4> bounds;
+  // clang-format off
+  bounds <<
+    0.0f, 2.0f,
+    5.0f, 10.0f,
+    3.0f, 7.0f,
+    5.0f, 15.0f;
+  // clang-format on
+
+  for (auto _ : state) {
+    const AffineND<float, 4> transform =
+        GenerateFloatToIntTransformation<float, 4, uint16_t>(bounds);
+    benchmark::DoNotOptimize(transform);
+  }
+}
+BENCHMARK(BM_GenerateFloatToIntTransformation);
+
+template <typename T>
+void BM_ApplyFloatToIntTransformation(benchmark::State &state) {
+  MDCoordinate<4> coord;
+  coord << 1.0f, 6.0f, 5.0f, 12.5f;
+
+  MDSpaceBounds<4> bounds;
+  // clang-format off
+  bounds <<
+    0.0f, 2.0f,
+    5.0f, 10.0f,
+    3.0f, 7.0f,
+    5.0f, 15.0f;
+  // clang-format on
+
+  const AffineND<float, 4> transform =
+      GenerateIntToFloatTransformation<float, 4, uint16_t>(bounds);
+
+  for (auto _ : state) {
+    const IntArray<4, T> result = MDCoordinate<4>(transform * coord).cast<T>();
+    benchmark::DoNotOptimize(result);
+  }
+}
+BENCHMARK_TEMPLATE(BM_ApplyFloatToIntTransformation, uint8_t);
+BENCHMARK_TEMPLATE(BM_ApplyFloatToIntTransformation, uint16_t);
+BENCHMARK_TEMPLATE(BM_ApplyFloatToIntTransformation, uint32_t);
+BENCHMARK_TEMPLATE(BM_ApplyFloatToIntTransformation, uint64_t);
+
+void BM_GenerateIntToFloatTransformation(benchmark::State &state) {
+  MDCoordinate<4> coord;
+  coord << 1.0f, 6.0f, 5.0f, 12.5f;
+
+  MDSpaceBounds<4> bounds;
+  // clang-format off
+  bounds <<
+    0.0f, 2.0f,
+    5.0f, 10.0f,
+    3.0f, 7.0f,
+    5.0f, 15.0f;
+  // clang-format on
+
+  for (auto _ : state) {
+    const AffineND<float, 4> transform =
+        GenerateIntToFloatTransformation<float, 4, uint16_t>(bounds);
+    benchmark::DoNotOptimize(transform);
+  }
+}
+BENCHMARK(BM_GenerateIntToFloatTransformation);
+
+template <typename T>
+void BM_ApplyIntToFloatTransformation(benchmark::State &state) {
+  IntArray<4, T> coord;
+  coord << 100, 10, 50, 200;
+
+  MDSpaceBounds<4> bounds;
+  // clang-format off
+  bounds <<
+    0.0f, 2.0f,
+    5.0f, 10.0f,
+    3.0f, 7.0f,
+    5.0f, 15.0f;
+  // clang-format on
+
+  const AffineND<float, 4> transform =
+      GenerateFloatToIntTransformation<float, 4, uint16_t>(bounds);
+
+  for (auto _ : state) {
+    const MDCoordinate<4> result = transform * coord.template cast<float>();
+    benchmark::DoNotOptimize(result);
+  }
+}
+BENCHMARK_TEMPLATE(BM_ApplyIntToFloatTransformation, uint8_t);
+BENCHMARK_TEMPLATE(BM_ApplyIntToFloatTransformation, uint16_t);
+BENCHMARK_TEMPLATE(BM_ApplyIntToFloatTransformation, uint32_t);
+BENCHMARK_TEMPLATE(BM_ApplyIntToFloatTransformation, uint64_t);
+
 template <typename T>
 void BM_ConvertCoordinatesToIntegerRange(benchmark::State &state) {
   MDCoordinate<4> coord;

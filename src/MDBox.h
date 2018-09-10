@@ -22,10 +22,36 @@
 #include <omp.h>
 
 #include "BitInterleaving.h"
+#include "Constants.h"
 #include "MDEvent.h"
 #include "Types.h"
 
 #pragma once
+
+/**
+ * Performs a dimension-wise comparison on two Morton numbers by masking the
+ * bits of each interleaved integer.
+ *
+ * @param a Left hand operand
+ * @param b Right hand operand
+ * @return True if comparison passes for all dimensions
+ */
+template <size_t ND, typename IntT, typename MortonT>
+bool masked_morton_lte(const MortonT a, const MortonT b) {
+  using MMask = MortonMask<ND, IntT, MortonT>;
+
+  /* For each dimension */
+  for (size_t i = 0; i < ND; i++) {
+    /* Perform comparison on masked morton numbers */
+    if ((a | MMask::mask[i]) > (b | MMask::mask[i])) {
+      /* Return on the first failed comparison */
+      return false;
+    }
+  }
+
+  /* All comparisons passed */
+  return true;
+}
 
 /**
  * Checks if a point defined by a Morton number is within the box bounds (as
@@ -77,20 +103,29 @@ public:
   using Children = std::vector<MDBox<ND, IntT, MortonT>>;
   using ZCurveIterator =
       typename MDEvent<ND, IntT, MortonT>::ZCurve::const_iterator;
+  using EventRange = std::pair<ZCurveIterator, ZCurveIterator>;
 
 private:
-  using MortonTLimits = std::numeric_limits<MortonT>;
+  MortonT CalculateDefaultBound(IntT intBound) {
+    IntArray<ND, IntT> minCoord;
+    minCoord.fill(intBound);
+    return interleave<ND, IntT, MortonT>(minCoord);
+  }
 
 public:
+  MDBox(ZCurveIterator begin, ZCurveIterator end, MortonT mortonMin,
+        MortonT mortonMax)
+      : m_lowerBound(mortonMin), m_upperBound(mortonMax), m_eventBegin(begin),
+        m_eventEnd(end) {}
+
   /**
    * Construct a "root" MDBox, i.e. one that makes use of the full intermediate
    * integer space.
    */
-  MDBox(ZCurveIterator begin, ZCurveIterator end,
-        MortonT mortonMin = MortonTLimits::min(),
-        MortonT mortonMax = MortonTLimits::max())
-      : m_lowerBound(mortonMin), m_upperBound(mortonMax), m_eventBegin(begin),
-        m_eventEnd(end) {}
+  MDBox(ZCurveIterator begin, ZCurveIterator end)
+      : m_lowerBound(CalculateDefaultBound(std::numeric_limits<IntT>::min())),
+        m_upperBound(CalculateDefaultBound(std::numeric_limits<IntT>::max())),
+        m_eventBegin(begin), m_eventEnd(end) {}
 
   /**
    * Performs a check if an MDEvent falls within the bounds of this box.
@@ -203,6 +238,65 @@ public:
 
 /* Wait for all tasks to be completed */
 #pragma omp taskwait
+    }
+  }
+
+  /**
+   * Gets events that are within a defined bounding box.
+   *
+   * @param eventRanges Ranges of events that are withing the bounding box
+   * @param lower Lower bound in Morton number
+   * @param upper Upper bound in Morton number
+   */
+  void getEventsInBoundingBox(std::vector<EventRange> &eventRanges,
+                              const MortonT lower, const MortonT upper) const {
+    const auto less_than_equal = masked_morton_lte<ND, IntT, MortonT>;
+
+    /* Test for full intersection. */
+    if (less_than_equal(lower, m_lowerBound) &&
+        less_than_equal(m_upperBound, upper)) {
+      /* All events in this box are relevant. */
+      eventRanges.emplace_back(m_eventBegin, m_eventEnd);
+    }
+    /* Test for partial intersection */
+    else if (less_than_equal(m_lowerBound, upper) &&
+             less_than_equal(lower, m_upperBound)) {
+      /* There is partial intersection with this box. */
+      if (m_childBoxes.empty()) {
+        /* This MDBox has no children. Need to resolve based on Morton number of
+         * individual events. */
+        ZCurveIterator startOfCurrentRange(m_eventBegin);
+        bool currentlyInARange(false);
+        for (auto eventIt = m_eventBegin; eventIt != m_eventEnd; ++eventIt) {
+          /* Check if the event is within the bounding box */
+          bool eventInBoundingBox(
+              less_than_equal(lower, eventIt->mortonNumber()) &&
+              less_than_equal(eventIt->mortonNumber(), upper));
+
+          if (eventInBoundingBox && !currentlyInARange) {
+            /* Record the start event iterator for this range of events that
+             * fall within the bounding box */
+            startOfCurrentRange = eventIt;
+            currentlyInARange = true;
+          } else if (!eventInBoundingBox && currentlyInARange) {
+            /* Record the end of the current range of events that fall within a
+             * bounding box */
+            eventRanges.emplace_back(startOfCurrentRange, eventIt);
+            currentlyInARange = false;
+          }
+        }
+
+        /* Handle an unfinished event range if we run out of events in the box
+         */
+        if (currentlyInARange) {
+          eventRanges.emplace_back(startOfCurrentRange, m_eventEnd);
+        }
+      } else {
+        /* This MDBox has children. They can resolve the intersection. */
+        for (auto &child : m_childBoxes) {
+          child.getEventsInBoundingBox(eventRanges, lower, upper);
+        }
+      }
     }
   }
 

@@ -6,6 +6,7 @@ Library(
   NAME
     MDSpaceFillingPrototype
   SOURCES
+    Constants.cpp
     EventToMDEventConversion.cpp
     Instrument.cpp
     IsisEventNexusLoader.cpp

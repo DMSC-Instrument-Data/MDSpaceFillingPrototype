@@ -43,8 +43,12 @@ public:
   size_t dimensions() const { return ND; }
 
   MDCoordinate<ND> coordinates(const MDSpaceBounds<ND> &space) const {
-    const auto intCoord = deinterleave<ND, IntT, MortonT>(m_morton);
-    return ConvertCoordinatesFromIntegerRange<ND, IntT>(space, intCoord);
+    return ConvertCoordinatesFromIntegerRange<ND, IntT>(space,
+                                                        integerCoordinates());
+  }
+
+  IntArray<ND, IntT> integerCoordinates() const {
+    return deinterleave<ND, IntT, MortonT>(m_morton);
   }
 
   MortonT mortonNumber() const { return m_morton; }

@@ -51,7 +51,7 @@ float get_l2(const Instrument &inst, const DetectorIdList &detIds) {
  * @param inst Instrument
  */
 Eigen::Vector3f get_beam_direction(const Instrument &inst) {
-  const auto &beamline = inst.sample_position - inst.source_position;
+  const Eigen::Vector3f &beamline = inst.sample_position - inst.source_position;
   return beamline / beamline.norm();
 }
 
@@ -64,7 +64,7 @@ Eigen::Vector3f get_detector_direction(const Instrument &inst,
                                        const DetectorIdList &detIds) {
   Eigen::Vector3f pos(Eigen::Vector3f::Zero());
   for (const auto detId : detIds) {
-    const auto &detPos =
+    const Eigen::Vector3f &detPos =
         inst.detectors.at(detId).position - inst.sample_position;
     pos += (detPos / detPos.norm());
   }
@@ -80,8 +80,8 @@ Eigen::Vector3f get_detector_direction(const Instrument &inst,
  */
 float get_detector_two_theta(const Instrument &inst,
                              const DetectorIdList &detIds) {
-  const auto beamDir = get_beam_direction(inst);
-  const auto detectorDir = get_detector_direction(inst, detIds);
+  const Eigen::Vector3f beamDir = get_beam_direction(inst);
+  const Eigen::Vector3f detectorDir = get_detector_direction(inst, detIds);
   return acos(beamDir.dot(detectorDir));
 }
 

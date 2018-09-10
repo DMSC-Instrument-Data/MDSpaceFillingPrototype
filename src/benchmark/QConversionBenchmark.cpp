@@ -56,7 +56,7 @@ private:
   const std::chrono::time_point<Clock> m_start;
 };
 
-auto md_space_wish() {
+MDSpaceBounds<3> md_space_wish() {
   MDSpaceBounds<3> space;
   // clang-format off
   space <<
@@ -67,7 +67,7 @@ auto md_space_wish() {
   return space;
 }
 
-auto md_space_topaz() {
+MDSpaceBounds<3> md_space_topaz() {
   MDSpaceBounds<3> space;
   // clang-format off
   space <<
@@ -78,7 +78,7 @@ auto md_space_topaz() {
   return space;
 }
 
-auto md_space_sxd() {
+MDSpaceBounds<3> md_space_sxd() {
   MDSpaceBounds<3> space;
   // clang-format off
   space <<

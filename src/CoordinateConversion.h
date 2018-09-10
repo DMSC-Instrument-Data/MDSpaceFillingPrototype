@@ -65,10 +65,12 @@ template <size_t ND> void ExpandBounds(MDSpaceBounds<ND> &bounds) {
 /**
  * Checks that a coordinate is within the extents of an MD space.
  */
-bool CheckCoordinatesInMDSpace(const auto &bounds, const auto &coord) {
+template <size_t ND>
+bool CheckCoordinatesInMDSpace(const MDSpaceBounds<ND> &bounds,
+                               const MDCoordinate<ND> &coord) {
   for (size_t i = 0; i < coord.rows(); i++) {
-    const auto coordValue = coord(i, 0);
-    const auto coordBounds = bounds.row(i);
+    const float coordValue = coord(i, 0);
+    const Eigen::Matrix<float, 1, 2> coordBounds = bounds.row(i);
 
     if (coordValue < coordBounds[0] || coordValue > coordBounds[1]) {
       return false;
@@ -76,6 +78,35 @@ bool CheckCoordinatesInMDSpace(const auto &bounds, const auto &coord) {
   }
 
   return true;
+}
+
+template <typename CoordT, size_t ND, typename IntT>
+AffineND<CoordT, ND>
+GenerateFloatToIntTransformation(const MDSpaceBounds<ND> &bounds) {
+  using Array = Eigen::Array<CoordT, ND, 1>;
+  using Vector = Eigen::Matrix<CoordT, ND, 1>;
+
+  const MDSpaceDimensions<ND> mdSpaceSize = bounds.col(1) - bounds.col(0);
+
+  Array scale(Array::Constant(std::numeric_limits<IntT>::max()) / mdSpaceSize);
+
+  return Eigen::Translation<float, ND>(Array(-bounds.col(0) * scale)) *
+         Eigen::Scaling(Vector(scale));
+}
+
+template <typename CoordT, size_t ND, typename IntT>
+AffineND<CoordT, ND>
+GenerateIntToFloatTransformation(const MDSpaceBounds<ND> &bounds) {
+  using Array = Eigen::Array<CoordT, ND, 1>;
+  using Vector = Eigen::Matrix<CoordT, ND, 1>;
+
+  const MDSpaceDimensions<ND> mdSpaceSize = bounds.col(1) - bounds.col(0);
+
+  Array scale(Array::Constant(std::numeric_limits<IntT>::max()) / mdSpaceSize);
+
+  return Eigen::Translation<float, ND>(Array(bounds.col(0))) *
+         Eigen::Scaling(Vector(
+             mdSpaceSize / Array::Constant(std::numeric_limits<IntT>::max())));
 }
 
 /**

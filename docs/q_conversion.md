@@ -94,7 +94,7 @@ execution of `ConvertToMD`.
 
 Command:
 ```bash
-mantidpython mantid_benchmark.py
+mantidpython scripts/mantid_benchmark_converttomd.py
 ```
 
 Output:
@@ -137,7 +137,8 @@ Average time: 1.58368553488
 
 ### Comparison
 
-The plot below shows the benchmark results (ordered by 128bit prototype
-execution time), note the logarithmic time axis.
+The plot below shows the benchmark results (ordered by Mantid execution time),
+note the logarithmic time axis. The time for each variant of the prototype is
+shown as a factor of the Mantid execution time at the top of each bar.
 
 ![Benchmark Results](./benchmark_results.png)
