@@ -56,26 +56,46 @@ def barplot(ax, dpoints):
 
 data = np.array([
     ['Mantid', 'WISH_34509', 214820],
-    ['Prototype 64bit', 'WISH_34509', 48130],
-    ['Prototype 128bit', 'WISH_34509', 74236],
+    ['Prototype 32bit', 'WISH_34509', 54290],
+    ['Prototype 64bit', 'WISH_34509', 42710],
+    ['Prototype 128bit', 'WISH_34509', 76505],
+    ['Prototype 256bit', 'WISH_34509', 155937],
+
     ['Mantid', 'WISH_34509_2x', 486264],
-    ['Prototype 64bit', 'WISH_34509_2x', 84967],
-    ['Prototype 128bit', 'WISH_34509_2x', 151640],
+    ['Prototype 32bit', 'WISH_34509_2x', 87575],
+    ['Prototype 64bit', 'WISH_34509_2x', 87186],
+    ['Prototype 128bit', 'WISH_34509_2x', 152652],
+    ['Prototype 256bit', 'WISH_34509_2x', 309423],
+
     ['Mantid', 'WISH_38423', 5809],
-    ['Prototype 64bit', 'WISH_38423', 1089],
-    ['Prototype 128bit', 'WISH_38423', 1995],
+    ['Prototype 32bit', 'WISH_38423', 676],
+    ['Prototype 64bit', 'WISH_38423', 1024],
+    ['Prototype 128bit', 'WISH_38423', 1917],
+    ['Prototype 256bit', 'WISH_38423', 4495],
+
     ['Mantid', 'WISH_37828', 6451],
-    ['Prototype 64bit', 'WISH_37828', 1461],
-    ['Prototype 128bit', 'WISH_37828', 2747],
+    ['Prototype 32bit', 'WISH_37828', 911],
+    ['Prototype 64bit', 'WISH_37828', 1383],
+    ['Prototype 128bit', 'WISH_37828', 2646],
+    ['Prototype 256bit', 'WISH_37828', 6897],
+
     ['Mantid', 'WISH_37868', 2213],
+    ['Prototype 32bit', 'WISH_37868', 445],
     ['Prototype 64bit', 'WISH_37868', 621],
-    ['Prototype 128bit', 'WISH_37868', 1041],
+    ['Prototype 128bit', 'WISH_37868', 1047],
+    ['Prototype 256bit', 'WISH_37868', 2399],
+
     ['Mantid', 'TOPAZ_3132', 3185],
-    ['Prototype 64bit', 'TOPAZ_3132', 1391],
-    ['Prototype 128bit', 'TOPAZ_3132', 1921],
+    ['Prototype 32bit', 'TOPAZ_3132', 1239],
+    ['Prototype 64bit', 'TOPAZ_3132', 1388],
+    ['Prototype 128bit', 'TOPAZ_3132', 1942],
+    ['Prototype 256bit', 'TOPAZ_3132', 3391],
+
     ['Mantid', 'SXD_23767', 1584],
-    ['Prototype 64bit', 'SXD_23767', 825],
-    ['Prototype 128bit', 'SXD_23767', 1706],
+    ['Prototype 32bit', 'SXD_23767', 497],
+    ['Prototype 64bit', 'SXD_23767', 812],
+    ['Prototype 128bit', 'SXD_23767', 1674],
+    ['Prototype 256bit', 'SXD_23767', 4107],
 ])
 
 fig = plt.figure()
