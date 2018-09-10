@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 # Plotting code mostly taken from: http://emptypipes.org/2013/11/09/matplotlib-multicategory-barchart/
 
 import matplotlib.pyplot as plt
