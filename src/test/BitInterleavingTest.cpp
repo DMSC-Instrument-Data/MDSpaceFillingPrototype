@@ -24,7 +24,27 @@ TEST(BitInterleavingTest, Deinterleave2) {
   EXPECT_EQ(bit_string_to_int<uint8_t>("00001111"), result[1]);
 }
 
-TEST(BitInterleavingTest, Interleave3) {
+TEST(BitInterleavingTest, Interleave3_32) {
+  const uint8_t a = bit_string_to_int<uint8_t>("10101010");
+  const uint8_t b = bit_string_to_int<uint8_t>("00001111");
+  const uint8_t c = bit_string_to_int<uint8_t>("11110000");
+
+  const uint32_t res = interleave<3, uint8_t, uint32_t>({a, b, c});
+
+  EXPECT_EQ(bit_string_to_int<uint32_t>("101100101100011010011010"), res);
+}
+
+TEST(BitInterleavingTest, Deinterleave3_32) {
+  const uint32_t i = bit_string_to_int<uint32_t>("101100101100011010011010");
+
+  const auto result = deinterleave<3, uint8_t, uint32_t>(i);
+
+  EXPECT_EQ(bit_string_to_int<uint8_t>("10101010"), result[0]);
+  EXPECT_EQ(bit_string_to_int<uint8_t>("00001111"), result[1]);
+  EXPECT_EQ(bit_string_to_int<uint8_t>("11110000"), result[2]);
+}
+
+TEST(BitInterleavingTest, Interleave3_64) {
   const uint16_t a = bit_string_to_int<uint8_t>("10101010");
   const uint16_t b = bit_string_to_int<uint8_t>("00001111");
   const uint16_t c = bit_string_to_int<uint8_t>("11110000");
@@ -34,7 +54,7 @@ TEST(BitInterleavingTest, Interleave3) {
   EXPECT_EQ(bit_string_to_int<uint32_t>("101100101100011010011010"), res);
 }
 
-TEST(BitInterleavingTest, Deinterleave3) {
+TEST(BitInterleavingTest, Deinterleave3_64) {
   const uint32_t i = bit_string_to_int<uint32_t>("101100101100011010011010");
 
   const auto result = deinterleave<3, uint16_t, uint64_t>(i);

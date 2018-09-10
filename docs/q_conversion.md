@@ -45,7 +45,7 @@ Command:
 
 Output:
 ```
-2018-08-23 08:18:26
+2018-09-07 09:15:32
 Running ./src/benchmark/QConversionBenchmark
 Run on (32 X 3700 MHz CPU s)
 CPU Caches:
@@ -56,20 +56,34 @@ CPU Caches:
 ------------------------------------------------------------------------------------------------------------------------------------------
 Benchmark                                                  Time           CPU Iterations box_structure  md_events q_conversion       sort
 ------------------------------------------------------------------------------------------------------------------------------------------
-BM_QConversion_WISH_34509<uint16_t, uint64_t>          48130 ms       7461 ms         25       12.7169   469.388M      30.4936     4.2343
-BM_QConversion_WISH_34509<uint32_t, uint128_t>         74236 ms      11534 ms         10       25.6299   469.388M      37.0523    10.6647
-BM_QConversion_WISH_34509_2x<uint16_t, uint64_t>       84967 ms      13443 ms         13         24.85   938.776M      50.3328    8.53741
-BM_QConversion_WISH_34509_2x<uint32_t, uint128_t>     151640 ms      23313 ms          8       61.2421   938.776M      71.8354    16.7043
-BM_QConversion_WISH_38423<uint16_t, uint64_t>           1089 ms        600 ms        290      0.318792   15.1266M     0.637013  0.0962045
-BM_QConversion_WISH_38423<uint32_t, uint128_t>          1995 ms        812 ms        206      0.810601   15.1266M     0.949199   0.188244
-BM_QConversion_WISH_37828<uint16_t, uint64_t>           1461 ms        700 ms        229      0.478626   21.5551M     0.801098   0.135775
-BM_QConversion_WISH_37828<uint32_t, uint128_t>          2747 ms        937 ms        185       1.15113   21.5551M       1.2623   0.270921
-BM_QConversion_WISH_37868<uint16_t, uint64_t>            621 ms        414 ms        395      0.137485   7.12883M     0.414525  0.0489385
-BM_QConversion_WISH_37868<uint32_t, uint128_t>          1041 ms        500 ms        347      0.367568   7.12883M     0.565563  0.0822997
-BM_QConversion_TOPAZ_3132<uint16_t, uint64_t>           1391 ms       1069 ms        158      0.217483    9.0473M      1.07949  0.0643299
-BM_QConversion_TOPAZ_3132<uint32_t, uint128_t>          1921 ms       1164 ms        142      0.504137    9.0473M       1.2653   0.113824
-BM_QConversion_SXD_23767<uint16_t, uint64_t>             825 ms        393 ms        435      0.274257   14.3206M      0.43106  0.0880714
-BM_QConversion_SXD_23767<uint32_t, uint128_t>           1706 ms        570 ms        299      0.753159   14.3206M     0.735778   0.174364
+BM_QConversion_WISH_34509<uint8_t, uint32_t>           54290 ms       5100 ms        134       7.74917   469.388M      44.0332    1.78158
+BM_QConversion_WISH_34509<uint16_t, uint64_t>          42710 ms       7412 ms        119        12.012   469.388M      25.8097    4.18067
+BM_QConversion_WISH_34509<uint32_t, uint128_t>         76505 ms      13129 ms         74       29.3902   469.388M      37.2557    8.85433
+BM_QConversion_WISH_34509<uint64_t, uint256_t>        155937 ms      27939 ms         35       77.7357   469.388M      60.2583    16.2917
+BM_QConversion_WISH_34509_2x<uint8_t, uint32_t>        87575 ms       9697 ms         91       15.9132   938.776M      66.4573    3.72813
+BM_QConversion_WISH_34509_2x<uint16_t, uint64_t>       87186 ms      14488 ms         56       29.4277   938.776M      47.2738    8.94684
+BM_QConversion_WISH_34509_2x<uint32_t, uint128_t>     152652 ms      26680 ms         32       63.5278   938.776M      70.7808    16.2892
+BM_QConversion_WISH_34509_2x<uint64_t, uint256_t>     309423 ms     111975 ms         11       154.378   938.776M      119.956     32.458
+BM_QConversion_WISH_38423<uint8_t, uint32_t>             676 ms        444 ms       1902       0.16447   15.1266M     0.428759  0.0604724
+BM_QConversion_WISH_38423<uint16_t, uint64_t>           1024 ms        546 ms       1551      0.305405   15.1266M     0.590429     0.1016
+BM_QConversion_WISH_38423<uint32_t, uint128_t>          1917 ms        750 ms       1126      0.797096   15.1266M       0.8988   0.184287
+BM_QConversion_WISH_38423<uint64_t, uint256_t>          4495 ms       1238 ms        711       2.39661   15.1266M      1.67321    0.37245
+BM_QConversion_WISH_37828<uint8_t, uint32_t>             911 ms        523 ms       1621      0.254508   21.5551M     0.548894  0.0769294
+BM_QConversion_WISH_37828<uint16_t, uint64_t>           1383 ms        647 ms       1322      0.428129   21.5551M     0.775506   0.143844
+BM_QConversion_WISH_37828<uint32_t, uint128_t>          2646 ms        912 ms        868       1.10838   21.5551M      1.22068   0.271042
+BM_QConversion_WISH_37828<uint64_t, uint256_t>          6897 ms       1371 ms        643       3.26455   21.5551M      2.99088   0.574269
+BM_QConversion_WISH_37868<uint8_t, uint32_t>             445 ms        346 ms       2430     0.0747615   7.12883M     0.319725  0.0365689
+BM_QConversion_WISH_37868<uint16_t, uint64_t>            602 ms        397 ms       2126      0.142938   7.12883M     0.391129   0.052382
+BM_QConversion_WISH_37868<uint32_t, uint128_t>          1047 ms        510 ms       1680      0.387877   7.12883M     0.553058  0.0864097
+BM_QConversion_WISH_37868<uint64_t, uint256_t>          2399 ms        601 ms       1333       1.08678   7.12883M      1.11325   0.170448
+BM_QConversion_TOPAZ_3132<uint8_t, uint32_t>            1239 ms       1038 ms        868      0.139032    9.0473M      1.02354   0.054263
+BM_QConversion_TOPAZ_3132<uint16_t, uint64_t>           1388 ms       1048 ms        790      0.219784    9.0473M      1.07745  0.0661694
+BM_QConversion_TOPAZ_3132<uint32_t, uint128_t>          1942 ms       1193 ms        700      0.514687    9.0473M       1.2817   0.115007
+BM_QConversion_TOPAZ_3132<uint64_t, uint256_t>          3391 ms       1405 ms        593       1.38127    9.0473M      1.74924   0.220363
+BM_QConversion_SXD_23767<uint8_t, uint32_t>              497 ms        281 ms       2980      0.142586   14.3206M     0.270753  0.0591994
+BM_QConversion_SXD_23767<uint16_t, uint64_t>             812 ms        375 ms       2269      0.272478   14.3206M     0.418178  0.0932486
+BM_QConversion_SXD_23767<uint32_t, uint128_t>           1674 ms        563 ms       1503      0.748064   14.3206M     0.713701   0.174947
+BM_QConversion_SXD_23767<uint64_t, uint256_t>           4107 ms       1097 ms        756       2.26912   14.3206M      1.43561    0.35243
 ```
 
 ### Mantid
