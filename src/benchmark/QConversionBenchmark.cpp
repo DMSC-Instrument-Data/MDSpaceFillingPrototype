@@ -18,6 +18,8 @@
 
 #include <benchmark/benchmark.h>
 
+#include <numeric>
+
 #include <boost/sort/sort.hpp>
 
 #include "BitInterleaving.h"

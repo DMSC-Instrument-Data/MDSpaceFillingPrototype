@@ -19,6 +19,7 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
+#include <numeric>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/join.hpp>
