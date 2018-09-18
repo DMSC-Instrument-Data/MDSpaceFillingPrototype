@@ -7,5 +7,5 @@ eigen/3.3.4@conan/stable
 TBB/4.4.4@conan/stable
 gtest/1.8.0@bincrafters/stable
 gflags/2.2.1@bincrafters/stable
-h5cpp/0.0.7-dm1@ess-dmsc/stable
+h5cpp/0.0.9@ess-dmsc/testing
 google-benchmark/4c2af07-dm3@ess-dmsc/stable
