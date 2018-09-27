@@ -1,5 +1,6 @@
 #!/bin/sh
 
+conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
 conan remote add ess-dmsc https://api.bintray.com/conan/ess-dmsc/conan
 
 mkdir -p build

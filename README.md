@@ -26,10 +26,11 @@ the only tested OS.
 
 1. `mkdir build`
 2. `cd build`
-3. `conan remote add ess-dmsc https://api.bintray.com/conan/ess-dmsc/conan`
-4. `conan install /path/to/src/dir/conanfile.txt -s build_type=[Release/Debug] -s compiler.libcxx=libstdc++11 --build missing`
-5. `cmake /path/to/src/dir -DCMAKE_BUILD_TYPE=[Release/Debug]`
-6. `make`
+3. `conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan`
+4. `conan remote add ess-dmsc https://api.bintray.com/conan/ess-dmsc/conan`
+5. `conan install /path/to/src/dir/conanfile.txt -s build_type=[Release/Debug] -s compiler.libcxx=libstdc++11 --build missing`
+6. `cmake /path/to/src/dir -DCMAKE_BUILD_TYPE=[Release/Debug]`
+7. `make`
 
 To run unit tests:
 ```bash
