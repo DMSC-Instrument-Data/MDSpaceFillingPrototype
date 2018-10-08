@@ -73,6 +73,7 @@ static void BM_AccessCoordinates(benchmark::State &state) {
       benchmark::DoNotOptimize(coords);
     }
   }
+  state.SetItemsProcessed(state.iterations() * numEvents);
 }
 BENCHMARK_TEMPLATE(BM_AccessCoordinates, uint16_t, uint64_t)
     ->Args({1000000000})
@@ -88,16 +89,18 @@ BENCHMARK_TEMPLATE(BM_AccessCoordinates, uint32_t, uint128_t)
 template <typename IntT, typename MortonT>
 static void BM_MaskedMortonLessThanEqual(benchmark::State &state) {
   constexpr size_t ND(4);
+  const size_t numComparisons(state.range(0));
 
   MortonT a;
   MortonT b;
 
   for (auto _ : state) {
-    for (int i = 0; i < state.range(0); i++) {
+    for (int i = 0; i < numComparisons; i++) {
       bool result = masked_morton_lte<ND, IntT, MortonT>(a, b);
       benchmark::DoNotOptimize(result);
     }
   }
+  state.SetItemsProcessed(state.iterations() * numComparisons);
 }
 BENCHMARK_TEMPLATE(BM_MaskedMortonLessThanEqual, uint16_t, uint64_t)->Arg(100);
 BENCHMARK_TEMPLATE(BM_MaskedMortonLessThanEqual, uint32_t, uint128_t)->Arg(100);
@@ -152,6 +155,7 @@ void BM_ApplyBinningTransform_BinMD(benchmark::State &state) {
       benchmark::DoNotOptimize(transformed);
     }
   }
+  state.SetItemsProcessed(state.iterations() * numEvents);
 }
 BENCHMARK(BM_ApplyBinningTransform_BinMD)
     ->Arg(1000000000)
@@ -198,6 +202,7 @@ void BM_ApplyBinningTransform_Prototype(benchmark::State &state) {
       benchmark::DoNotOptimize(result);
     }
   }
+  state.SetItemsProcessed(state.iterations() * numEvents);
 }
 BENCHMARK_TEMPLATE(BM_ApplyBinningTransform_Prototype, 3, uint16_t, uint64_t)
     ->Arg(1000000000)

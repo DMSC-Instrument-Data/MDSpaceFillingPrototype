@@ -29,12 +29,14 @@ public:
   using ZCurve = std::vector<MDEvent<ND, IntT, MortonT>>;
 
 public:
-  MDEvent(MortonT mortonNumber = 0, float signal = 1.0f)
-      : m_morton(mortonNumber), m_signal(signal) {}
+  MDEvent(MortonT mortonNumber = 0, float signal = 1.0f,
+          float errorSquared = 0.0f)
+      : m_morton(mortonNumber), m_signal(signal), m_errorSquared(errorSquared) {
+  }
 
   MDEvent(const MDCoordinate<ND> &coord, const MDSpaceBounds<ND> &space,
-          float signal = 1.0f)
-      : m_signal(signal) {
+          float signal = 1.0f, float errorSquared = 0.0f)
+      : m_signal(signal), m_errorSquared(errorSquared) {
     const auto intCoord =
         ConvertCoordinatesToIntegerRange<ND, IntT>(space, coord);
     m_morton = interleave<ND, IntT, MortonT>(intCoord);
@@ -53,6 +55,7 @@ public:
 
   MortonT mortonNumber() const { return m_morton; }
   float signal() const { return m_signal; }
+  float errorSquared() const { return m_errorSquared; }
 
   bool operator<(const MDEvent<ND, IntT, MortonT> &other) const {
     return m_morton < other.m_morton;
@@ -60,5 +63,7 @@ public:
 
 private:
   float m_signal;
+  float m_errorSquared;
+
   MortonT m_morton;
 };

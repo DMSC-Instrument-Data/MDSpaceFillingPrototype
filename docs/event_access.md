@@ -36,7 +36,7 @@ Command:
 
 Output:
 ```
-2018-09-25 09:58:07
+2018-10-08 11:55:39
 Running ./src/benchmark/EventAccessBenchmark
 Run on (32 X 3700 MHz CPU s)
 CPU Caches:
@@ -44,15 +44,15 @@ CPU Caches:
   L1 Instruction 32K (x16)
   L2 Unified 1024K (x16)
   L3 Unified 25344K (x2)
----------------------------------------------------------------------------------------------------
-Benchmark                                                            Time           CPU Iterations
----------------------------------------------------------------------------------------------------
-BM_AccessCoordinates<uint16_t, uint64_t>/1000000000              11276 ms      11275 ms          8
-BM_AccessCoordinates<uint16_t, uint64_t>/469388241                4585 ms       4585 ms         19
-BM_AccessCoordinates<uint16_t, uint64_t>/100000000                 939 ms        939 ms         89
-BM_AccessCoordinates<uint32_t, uint128_t>/1000000000             40836 ms      40835 ms          2
-BM_AccessCoordinates<uint32_t, uint128_t>/469388241              17337 ms      17337 ms          5
-BM_AccessCoordinates<uint32_t, uint128_t>/100000000               3791 ms       3788 ms         22
+--------------------------------------------------------------------------------------------
+Benchmark                                                     Time           CPU Iterations
+--------------------------------------------------------------------------------------------
+BM_AccessCoordinates<uint16_t, uint64_t>/1000000000       10020 ms      10020 ms          9   95.1792M items/s
+BM_AccessCoordinates<uint16_t, uint64_t>/469388241         4560 ms       4560 ms         19   98.1642M items/s
+BM_AccessCoordinates<uint16_t, uint64_t>/100000000          947 ms        947 ms         89   100.682M items/s
+BM_AccessCoordinates<uint32_t, uint128_t>/1000000000      42050 ms      42050 ms          2   22.6795M items/s
+BM_AccessCoordinates<uint32_t, uint128_t>/469388241       18186 ms      18186 ms          5   24.6147M items/s
+BM_AccessCoordinates<uint32_t, uint128_t>/100000000        3630 ms       3630 ms         23    26.271M items/s
 ```
 
 This shows roughly, the expected linear increase in time with the number of
@@ -95,7 +95,7 @@ Command:
 
 Output:
 ```
-2018-09-25 13:57:20
+2018-10-08 12:28:57
 Running ./src/benchmark/EventAccessBenchmark
 Run on (32 X 3700 MHz CPU s)
 CPU Caches:
@@ -106,10 +106,10 @@ CPU Caches:
 ---------------------------------------------------------------------------------
 Benchmark                                          Time           CPU Iterations
 ---------------------------------------------------------------------------------
-BM_GenerateBinningTransform_BinMD                 15 ns         15 ns 1000000000
-BM_ApplyBinningTransform_BinMD/1000000000       3005 ms       3005 ms         28
-BM_ApplyBinningTransform_BinMD/469388241        1419 ms       1419 ms         60
-BM_ApplyBinningTransform_BinMD/100000000         302 ms        302 ms        279
+BM_GenerateBinningTransform_BinMD                 12 ns         12 ns 1000000000
+BM_ApplyBinningTransform_BinMD/1000000000       2989 ms       2989 ms         28   319.085M items/s
+BM_ApplyBinningTransform_BinMD/469388241        1402 ms       1402 ms         60   319.345M items/s
+BM_ApplyBinningTransform_BinMD/100000000         299 ms        299 ms        281   319.144M items/s
 ```
 
 ### Benchmark: Prototype
@@ -127,7 +127,7 @@ Command:
 
 Output:
 ```
-2018-09-25 09:58:07
+2018-10-08 12:42:58
 Running ./src/benchmark/EventAccessBenchmark
 Run on (32 X 3700 MHz CPU s)
 CPU Caches:
@@ -135,25 +135,25 @@ CPU Caches:
   L1 Instruction 32K (x16)
   L2 Unified 1024K (x16)
   L3 Unified 25344K (x2)
----------------------------------------------------------------------------------------------------
-Benchmark                                                            Time           CPU Iterations
----------------------------------------------------------------------------------------------------
-BM_GenerateBinningTransform<3, uint16_t, uint64_t>                  15 ns         15 ns 1000000000
-BM_GenerateBinningTransform<3, uint32_t, uint128_t>                 15 ns         15 ns 1000000000
-BM_GenerateBinningTransform<4, uint16_t, uint64_t>                 116 ns        116 ns  727022006
-BM_GenerateBinningTransform<4, uint32_t, uint128_t>                104 ns        104 ns  807302263
-BM_ApplyBinningTransform<3, uint16_t, uint64_t>/1000000000        3180 ms       3179 ms         27
-BM_ApplyBinningTransform<3, uint16_t, uint64_t>/469388241         1536 ms       1536 ms         56
-BM_ApplyBinningTransform<3, uint16_t, uint64_t>/100000000          327 ms        327 ms        259
-BM_ApplyBinningTransform<3, uint32_t, uint128_t>/1000000000       3314 ms       3311 ms         26
-BM_ApplyBinningTransform<3, uint32_t, uint128_t>/469388241        1536 ms       1536 ms         55
-BM_ApplyBinningTransform<3, uint32_t, uint128_t>/100000000         330 ms        330 ms        263
-BM_ApplyBinningTransform<4, uint16_t, uint64_t>/1000000000        5314 ms       5314 ms         16
-BM_ApplyBinningTransform<4, uint16_t, uint64_t>/469388241         2524 ms       2522 ms         34
-BM_ApplyBinningTransform<4, uint16_t, uint64_t>/100000000          536 ms        536 ms        158
-BM_ApplyBinningTransform<4, uint32_t, uint128_t>/1000000000       5339 ms       5338 ms         16
-BM_ApplyBinningTransform<4, uint32_t, uint128_t>/469388241        2539 ms       2537 ms         33
-BM_ApplyBinningTransform<4, uint32_t, uint128_t>/100000000         532 ms        532 ms        158
+-------------------------------------------------------------------------------------------------------------
+Benchmark                                                                      Time           CPU Iterations
+-------------------------------------------------------------------------------------------------------------
+BM_GenerateBinningTransform_Prototype<3, uint16_t, uint64_t>                 223 ns        223 ns  376900904
+BM_GenerateBinningTransform_Prototype<3, uint32_t, uint128_t>                131 ns        131 ns  640184881
+BM_GenerateBinningTransform_Prototype<4, uint16_t, uint64_t>                 234 ns        234 ns  359512675
+BM_GenerateBinningTransform_Prototype<4, uint32_t, uint128_t>                221 ns        221 ns  379534938
+BM_ApplyBinningTransform_Prototype<3, uint16_t, uint64_t>/1000000000        3164 ms       3164 ms         27    301.42M items/s
+BM_ApplyBinningTransform_Prototype<3, uint16_t, uint64_t>/469388241         1485 ms       1485 ms         57   301.418M items/s
+BM_ApplyBinningTransform_Prototype<3, uint16_t, uint64_t>/100000000          316 ms        316 ms        266   301.438M items/s
+BM_ApplyBinningTransform_Prototype<3, uint32_t, uint128_t>/1000000000       3164 ms       3164 ms         27   301.438M items/s
+BM_ApplyBinningTransform_Prototype<3, uint32_t, uint128_t>/469388241        1485 ms       1485 ms         57   301.429M items/s
+BM_ApplyBinningTransform_Prototype<3, uint32_t, uint128_t>/100000000         316 ms        316 ms        265   301.443M items/s
+BM_ApplyBinningTransform_Prototype<4, uint16_t, uint64_t>/1000000000        5516 ms       5516 ms         15   172.878M items/s
+BM_ApplyBinningTransform_Prototype<4, uint16_t, uint64_t>/469388241         2589 ms       2589 ms         32   172.872M items/s
+BM_ApplyBinningTransform_Prototype<4, uint16_t, uint64_t>/100000000          552 ms        552 ms        152   172.842M items/s
+BM_ApplyBinningTransform_Prototype<4, uint32_t, uint128_t>/1000000000       5526 ms       5526 ms         15   172.595M items/s
+BM_ApplyBinningTransform_Prototype<4, uint32_t, uint128_t>/469388241        2589 ms       2589 ms         32   172.918M items/s
+BM_ApplyBinningTransform_Prototype<4, uint32_t, uint128_t>/100000000         554 ms        554 ms        152    172.03M items/s
 ```
 
 ### BinMD equivalent benchmark
