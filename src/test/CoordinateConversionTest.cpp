@@ -61,7 +61,9 @@ TEST(CoordinateConversionTest, ExpandBounds) {
 }
 
 TEST(CoordinateConversionTest, CheckCoordinatesInMDSpace) {
-  MDSpaceBounds<2> bounds;
+  constexpr size_t ND(2);
+
+  MDSpaceBounds<ND> bounds;
   // clang-format off
   bounds <<
     1.0f, 8.0f,
@@ -69,25 +71,63 @@ TEST(CoordinateConversionTest, CheckCoordinatesInMDSpace) {
   // clang-format on
 
   {
-    MDCoordinate<2> coord;
+    MDCoordinate<ND> coord;
     coord << 5.0f, 5.5f;
 
-    EXPECT_TRUE(CheckCoordinatesInMDSpace(bounds, coord));
+    EXPECT_TRUE(CheckCoordinatesInMDSpace<ND>(bounds, coord));
   }
 
   {
-    MDCoordinate<2> coord;
+    MDCoordinate<ND> coord;
     coord << 0.5f, 5.5f;
 
-    EXPECT_FALSE(CheckCoordinatesInMDSpace(bounds, coord));
+    EXPECT_FALSE(CheckCoordinatesInMDSpace<ND>(bounds, coord));
   }
 
   {
-    MDCoordinate<2> coord;
+    MDCoordinate<ND> coord;
     coord << 5.0f, 7.0f;
 
-    EXPECT_FALSE(CheckCoordinatesInMDSpace(bounds, coord));
+    EXPECT_FALSE(CheckCoordinatesInMDSpace<ND>(bounds, coord));
   }
+}
+
+TEST(CoordinateConversionTest, GenerateSpaceTransformation) {
+  constexpr size_t ND(4);
+  using IntT = uint8_t;
+
+  MDSpaceBounds<ND> bounds;
+  // clang-format off
+  bounds <<
+    0.0f, 2.0f,
+    0.0f, 10.0f,
+    3.0f, 7.0f,
+    5.0f, 15.0f;
+  // clang-format on
+
+  MDCoordinate<ND> floatCoord;
+  floatCoord << 1.5f, 10.0f, 5.0f, 5.0f;
+
+  const AffineND<float, ND> floatToInt =
+      GenerateFloatToIntTransformation<float, ND, IntT>(bounds);
+  const AffineND<float, ND> intToFloat =
+      GenerateIntToFloatTransformation<float, ND, IntT>(bounds);
+
+  const IntArray<ND, IntT> convertedToInteger =
+      (floatToInt * floatCoord).cast<IntT>();
+
+  EXPECT_EQ(191, convertedToInteger[0]);
+  EXPECT_EQ(255, convertedToInteger[1]);
+  EXPECT_EQ(127, convertedToInteger[2]);
+  EXPECT_EQ(0, convertedToInteger[3]);
+
+  const MDCoordinate<ND> convertedBackToFloat =
+      intToFloat * convertedToInteger.cast<float>();
+
+  EXPECT_NEAR(1.5f, convertedBackToFloat[0], 0.1f);
+  EXPECT_NEAR(10.0f, convertedBackToFloat[1], 0.1f);
+  EXPECT_NEAR(5.0f, convertedBackToFloat[2], 0.1f);
+  EXPECT_NEAR(5.0f, convertedBackToFloat[3], 0.1f);
 }
 
 TEST(CoordinateConversionTest, ConvertFloatCoordsTo8BitInteger) {

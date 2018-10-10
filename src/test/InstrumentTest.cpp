@@ -45,14 +45,14 @@ TEST(InstrumentTest, test_instrument_property_getters) {
   EXPECT_FLOAT_EQ(std::sqrt(2), get_l2(inst, {50}));
 
   {
-    const auto &dir = get_detector_direction(inst, {10});
+    const Eigen::Vector3f &dir = get_detector_direction(inst, {10});
     EXPECT_FLOAT_EQ(-std::sqrt(2) / 2.0f, dir[0]);
     EXPECT_FLOAT_EQ(0.0f, dir[1]);
     EXPECT_FLOAT_EQ(std::sqrt(2) / 2.0f, dir[2]);
   }
 
   {
-    const auto &dir = get_detector_direction(inst, {50});
+    const Eigen::Vector3f &dir = get_detector_direction(inst, {50});
     EXPECT_FLOAT_EQ(std::sqrt(2) / 2.0f, dir[0]);
     EXPECT_FLOAT_EQ(0.0f, dir[1]);
     EXPECT_FLOAT_EQ(std::sqrt(2) / 2.0f, dir[2]);

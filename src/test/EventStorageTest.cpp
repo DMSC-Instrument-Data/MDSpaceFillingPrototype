@@ -25,6 +25,7 @@
 
 #include "TestUtil.h"
 
+#include "CoordinateConversion.h"
 #include "MDBox.h"
 #include "MDEvent.h"
 
@@ -210,7 +211,7 @@ void fill_events_for_pattern_1(std::vector<Event> &events, const Space &space) {
   std::random_shuffle(events.begin(), events.end());
 }
 
-TEST(EventDistribution2DTest, test_pattern_1) {
+TEST(EventStorageTest, test_pattern_1) {
   std::vector<Event> events;
 
   /* Define MD space */
@@ -276,7 +277,7 @@ TEST(EventDistribution2DTest, test_pattern_1) {
   recursive_box_tree_validation(root, curveIt, expectedRoot);
 }
 
-TEST(EventDistribution2DTest, test_events_are_not_lost_on_edges) {
+TEST(EventStorageTest, test_events_are_not_lost_on_edges) {
   std::vector<Event> events;
 
   /* Define MD space */
@@ -323,4 +324,168 @@ TEST(EventDistribution2DTest, test_events_are_not_lost_on_edges) {
   /* Validate structure */
   Box::ZCurveIterator curveIt = events.cbegin();
   recursive_box_tree_validation(root, curveIt, expectedRoot);
+}
+
+TEST(EventStorageTest, test_access_pattern_1) {
+  std::vector<Event> events;
+
+  /* Define MD space */
+  Space space;
+  // clang-format off
+  space <<
+    -10.0f, 10.0f,
+    -5.0f, 5.0f;
+  // clang-format on
+
+  /* Fill events with known positions */
+  fill_events_for_pattern_1(events, space);
+
+  /* Sort events */
+  boost::sort::block_indirect_sort(events.begin(), events.end());
+
+  /* Create box structure */
+  Box root(events.cbegin(), events.cend());
+  root.distributeEvents(10, 5);
+
+  /* Bottom right quadrant of the first layer of boxes. */
+  {
+    std::vector<Box::EventRange> ranges;
+
+    const auto lower(interleaveFunc(
+        ConvertCoordinatesToIntegerRange<ND, IntT>(space, Coord{0.0f, 0.0f})));
+    const auto upper(interleaveFunc(
+        ConvertCoordinatesToIntegerRange<ND, IntT>(space, Coord{10.0f, 5.0f})));
+
+    root.getEventsInBoundingBox(ranges, lower, upper);
+
+    EXPECT_EQ(1, ranges.size());
+
+    /* Lower right box on first layer down */
+    {
+      const auto &box(root.children()[3]);
+      EXPECT_EQ(box.eventBegin(), ranges[0].first);
+      EXPECT_EQ(box.eventEnd(), ranges[0].second);
+    }
+  }
+
+  /* Top right quadrant of first layer and upper half of lower right quadrant of
+   * first layer. */
+  {
+    std::vector<Box::EventRange> ranges;
+
+    const auto lower(interleaveFunc(
+        ConvertCoordinatesToIntegerRange<ND, IntT>(space, Coord{0.0f, -5.0f})));
+    const auto upper(interleaveFunc(
+        ConvertCoordinatesToIntegerRange<ND, IntT>(space, Coord{10.0f, 2.5f})));
+
+    root.getEventsInBoundingBox(ranges, lower, upper);
+
+    EXPECT_EQ(3, ranges.size());
+
+    /* Upper right box on first layer down */
+    {
+      const auto &box(root.children()[1]);
+      EXPECT_EQ(box.eventBegin(), ranges[0].first);
+      EXPECT_EQ(box.eventEnd(), ranges[0].second);
+    }
+
+    /* Upper left box of lower right box on first layer down */
+    {
+      const auto &box(root.children()[3].children()[0]);
+      EXPECT_EQ(box.eventBegin(), ranges[1].first);
+      EXPECT_EQ(box.eventEnd(), ranges[1].second);
+    }
+
+    /* Upper right box of lower right box on first layer down */
+    {
+      const auto &box(root.children()[3].children()[1]);
+      EXPECT_EQ(box.eventBegin(), ranges[2].first);
+      EXPECT_EQ(box.eventEnd(), ranges[2].second);
+    }
+  }
+
+  /* Half of the top right quadrant of first layer and upper half of lower
+   * right quadrant of first layer. */
+  {
+    std::vector<Box::EventRange> ranges;
+
+    const auto lower(interleaveFunc(
+        ConvertCoordinatesToIntegerRange<ND, IntT>(space, Coord{0.0f, -2.5f})));
+    const auto upper(interleaveFunc(
+        ConvertCoordinatesToIntegerRange<ND, IntT>(space, Coord{10.0f, 2.5f})));
+
+    root.getEventsInBoundingBox(ranges, lower, upper);
+
+    EXPECT_EQ(3, ranges.size());
+
+    /* Upper right box on first layer down */
+    {
+      const auto &box(root.children()[1]);
+      EXPECT_EQ(box.eventBegin() + 3, ranges[0].first);
+      EXPECT_EQ(box.eventEnd(), ranges[0].second);
+    }
+
+    /* Upper left box of lower right box on first layer down */
+    {
+      const auto &box(root.children()[3].children()[0]);
+      EXPECT_EQ(box.eventBegin(), ranges[1].first);
+      EXPECT_EQ(box.eventEnd(), ranges[1].second);
+    }
+
+    /* Upper right box of lower right box on first layer down */
+    {
+      const auto &box(root.children()[3].children()[1]);
+      EXPECT_EQ(box.eventBegin(), ranges[2].first);
+      EXPECT_EQ(box.eventEnd(), ranges[2].second);
+    }
+  }
+
+  {
+    std::vector<Box::EventRange> ranges;
+
+    const auto lower(interleaveFunc(ConvertCoordinatesToIntegerRange<ND, IntT>(
+        space, Coord{-2.5f, -5.0f})));
+    const auto upper(interleaveFunc(
+        ConvertCoordinatesToIntegerRange<ND, IntT>(space, Coord{5.0f, 0.0f})));
+
+    root.getEventsInBoundingBox(ranges, lower, upper);
+
+    EXPECT_EQ(6, ranges.size());
+
+    {
+      const auto &box(root.children()[0].children()[1].children()[1]);
+      EXPECT_EQ(box.eventBegin(), ranges[0].first);
+      EXPECT_EQ(box.eventEnd(), ranges[0].second);
+    }
+
+    {
+      const auto &box(root.children()[0].children()[1].children()[3]);
+      EXPECT_EQ(box.eventBegin(), ranges[1].first);
+      EXPECT_EQ(box.eventEnd(), ranges[1].second);
+    }
+
+    {
+      const auto &box(root.children()[0].children()[3]);
+      EXPECT_EQ(box.eventBegin() + 1, ranges[2].first);
+      EXPECT_EQ(box.eventBegin() + 2, ranges[2].second);
+    }
+
+    {
+      const auto &box(root.children()[0].children()[3]);
+      EXPECT_EQ(box.eventBegin() + 4, ranges[3].first);
+      EXPECT_EQ(box.eventEnd(), ranges[3].second);
+    }
+
+    {
+      const auto &box(root.children()[1]);
+      EXPECT_EQ(box.eventBegin(), ranges[4].first);
+      EXPECT_EQ(box.eventBegin() + 2, ranges[4].second);
+    }
+
+    {
+      const auto &box(root.children()[1]);
+      EXPECT_EQ(box.eventBegin() + 3, ranges[5].first);
+      EXPECT_EQ(box.eventBegin() + 4, ranges[5].second);
+    }
+  }
 }

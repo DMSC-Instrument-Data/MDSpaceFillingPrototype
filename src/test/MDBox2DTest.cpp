@@ -33,6 +33,14 @@ constexpr auto interleaveFunc = interleave<ND, IntT, MortonT>;
 using Event = MDEvent<ND, IntT, MortonT>;
 using Box = MDBox<ND, IntT, MortonT>;
 
+TEST(MDBox2DTest, test_morton_mask_comparison) {
+  const auto morton1 = interleaveFunc({20, 30});
+  const auto morton2 = interleaveFunc({21, 30});
+
+  const bool res = masked_morton_lte<ND, IntT, MortonT>(morton1, morton2);
+  EXPECT_TRUE(res);
+}
+
 TEST(MDBox2DTest, test_fill_events) {
   /* Create test MD event Z-curve */
   Event::ZCurve curve;

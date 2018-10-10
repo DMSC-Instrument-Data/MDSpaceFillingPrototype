@@ -51,7 +51,7 @@ void convert_events(std::vector<MDEvent<3, IntT, MortonT>> &mdEvents,
   const auto eventInfo = preprocess_events(tofEvents);
 
   /* Get common instrument parameters */
-  const auto beamDirection = get_beam_direction(inst);
+  const Eigen::Vector3f beamDirection = get_beam_direction(inst);
   const auto l1 = get_l1(inst);
 
 #pragma omp parallel for
@@ -67,9 +67,9 @@ void convert_events(std::vector<MDEvent<3, IntT, MortonT>> &mdEvents,
 
     /* Get common detector parameters */
     const auto neutronFlightPath = l1 + get_l2(inst, detectorsForSpectrum);
-    const auto qDirLabFrame =
+    const Eigen::Vector3f qDirLabFrame =
         beamDirection - get_detector_direction(inst, detectorsForSpectrum);
-    const auto qDir = convInfo.ub_matrix * qDirLabFrame;
+    const Eigen::Vector3f qDir = convInfo.ub_matrix * qDirLabFrame;
 
     const auto conversionFactor =
         (NeutronMass * neutronFlightPath * 1e-10) / (1e-6 * h_bar);
@@ -87,12 +87,12 @@ void convert_events(std::vector<MDEvent<3, IntT, MortonT>> &mdEvents,
     for (auto eventIt = eventIteratorStart; eventIt != eventIteratorEnd;
          ++eventIt) {
       const auto wavenumber = conversionFactor / eventIt->tof;
-      const auto center = qDir * wavenumber;
+      const Eigen::Vector3f center = qDir * wavenumber;
 
       auto weight = eventIt->weight;
 
       /* Ensure the event is within the bounds of the MD space */
-      if (CheckCoordinatesInMDSpace(space, center)) {
+      if (CheckCoordinatesInMDSpace<3>(space, center)) {
         /* Lorentz correction */
         if (convInfo.lorentz_correction) {
           const auto corr = sinThetaSquared * wavenumber * wavenumber *

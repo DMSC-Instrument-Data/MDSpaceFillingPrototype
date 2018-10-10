@@ -16,23 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cmath>
-#include <cstddef>
+#include "Constants.h"
 
-#pragma once
+#include <cinttypes>
 
-/** Planck constant in J*s. Taken from <http://physics.nist.gov/cuu/Constants>
-    on 2007-10-31 and confirmed again on 2010-12-28. */
-static constexpr double h = 6.62606896e-34;
+template <>
+const uint32_t MortonMask<2, uint16_t, uint32_t>::mask[] = {
+    0x55555555, 0xaaaaaaaa,
+};
 
-/** Planck constant in J*s, divided by 2 PI. */
-static constexpr double h_bar = h / (2 * M_PI);
+template <>
+const uint64_t MortonMask<3, uint16_t, uint64_t>::mask[] = {
+    0x249249249249, 0x492492492492, 0x924924924924,
+};
 
-/** Mass of the neutron in kg. Taken from
- * <http://physics.nist.gov/cuu/Constants> on 30/10/2007. */
-static constexpr double NeutronMass = 1.674927211e-27;
+template <>
+const uint32_t MortonMask<4, uint8_t, uint32_t>::mask[] = {
+    0x11111111, 0x22222222, 0x44444444, 0x88888888,
+};
 
-template <size_t ND, typename IntT, typename MortonT> class MortonMask {
-public:
-  const static MortonT mask[];
+template <>
+const uint64_t MortonMask<4, uint16_t, uint64_t>::mask[] = {
+    0x1111111111111111, 0x2222222222222222, 0x4444444444444444,
+    0x8888888888888888,
 };
