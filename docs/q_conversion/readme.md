@@ -140,4 +140,4 @@ The plot below shows the benchmark results (ordered by Mantid execution time),
 note the logarithmic time axis. The time for each variant of the prototype is
 shown as a factor of the Mantid execution time at the top of each bar.
 
-![Benchmark Results](./benchmark_results.png)
+![Benchmark Results](./results.png)
