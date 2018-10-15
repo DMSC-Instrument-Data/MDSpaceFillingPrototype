@@ -9,117 +9,106 @@ import operator as o
 import numpy as np
 
 
-data = np.array([
-    ['Mantid', 'WISH_34509', 214820],
-    ['Prototype 32bit', 'WISH_34509', 32200],
-    ['Prototype 64bit', 'WISH_34509', 29133],
-    ['Prototype 128bit', 'WISH_34509', 50431],
-    ['Prototype 256bit', 'WISH_34509', 82654],
+datasets = [
+    'WISH_34509',
+    'WISH_34509_2x',
+    'WISH_38423',
+    'WISH_37828',
+    'WISH_37868',
+    'TOPAZ_3132',
+    'SXD_23767',
+]
 
-    ['Mantid', 'WISH_34509_2x', 486264],
-    ['Prototype 32bit', 'WISH_34509_2x', 57877],
-    ['Prototype 64bit', 'WISH_34509_2x', 61581],
-    ['Prototype 128bit', 'WISH_34509_2x', 0],
-    ['Prototype 256bit', 'WISH_34509_2x', 0],
+data_mantid = np.array([
+    214820,
+    486264,
+    5809,
+    6451,
+    2213,
+    3185,
+    1584,
+], dtype=np.float)
 
-    ['Mantid', 'WISH_38423', 5809],
-    ['Prototype 32bit', 'WISH_38423', 717],
-    ['Prototype 64bit', 'WISH_38423', 820],
-    ['Prototype 128bit', 'WISH_38423', 1327],
-    ['Prototype 256bit', 'WISH_38423', 2535],
+data_prototype_32bit = np.array([
+    32200,
+    57877,
+    717,
+    930,
+    468,
+    1195,
+    546,
+], dtype=np.float)
 
-    ['Mantid', 'WISH_37828', 6451],
-    ['Prototype 32bit', 'WISH_37828', 930],
-    ['Prototype 64bit', 'WISH_37828', 1127],
-    ['Prototype 128bit', 'WISH_37828', 2003],
-    ['Prototype 256bit', 'WISH_37828', 4432],
+data_prototype_64bit = np.array([
+    29133,
+    61581,
+    820,
+    1127,
+    510,
+    1232,
+    635,
+], dtype=np.float)
 
-    ['Mantid', 'WISH_37868', 2213],
-    ['Prototype 32bit', 'WISH_37868', 468],
-    ['Prototype 64bit', 'WISH_37868', 510],
-    ['Prototype 128bit', 'WISH_37868', 736],
-    ['Prototype 256bit', 'WISH_37868', 1507],
+data_prototype_128bit = np.array([
+    50431,
+    0,
+    1327,
+    2003,
+    736,
+    1559,
+    1146,
+], dtype=np.float)
 
-    ['Mantid', 'TOPAZ_3132', 3185],
-    ['Prototype 32bit', 'TOPAZ_3132', 1195],
-    ['Prototype 64bit', 'TOPAZ_3132', 1232],
-    ['Prototype 128bit', 'TOPAZ_3132', 1559],
-    ['Prototype 256bit', 'TOPAZ_3132', 2371],
+data_prototype_256bit = np.array([
+    82654,
+    0,
+    2535,
+    4432,
+    1507,
+    2371,
+    2286,
+], dtype=np.float)
 
-    ['Mantid', 'SXD_23767', 1584],
-    ['Prototype 32bit', 'SXD_23767', 546],
-    ['Prototype 64bit', 'SXD_23767', 635],
-    ['Prototype 128bit', 'SXD_23767', 1146],
-    ['Prototype 256bit', 'SXD_23767', 2286],
-])
+# Normalise all data to Mantid execution times
+data_prototype_32bit /= data_mantid
+data_prototype_64bit /= data_mantid
+data_prototype_128bit /= data_mantid
+data_prototype_256bit /= data_mantid
 
 # Create figure
 fig = plt.figure()
-ax = fig.add_subplot(111)
 
-# The order we want benchmarks to appear in
-benchmarks = [
-    'Prototype 32bit',
-    'Prototype 64bit',
-    'Prototype 128bit',
-    'Prototype 256bit',
-    'Mantid',
-]
+def show_data(pos, ds, title):
+    ax = fig.add_subplot(pos)
 
-# Sort datasets by Mantid execution time
-datasets = [(c, np.mean(data[data[:,1] == c][0,2].astype(float)))
-              for c in np.unique(data[:,1])]
-datasets = [c[0] for c in sorted(datasets, key=o.itemgetter(1))]
+    p = ax.bar(datasets, ds)
 
-data = np.array(sorted(data, key=lambda x: datasets.index(x[1])))
+    # Show label at top of bars
+    for b in p.patches:
+        height = b.get_height()
+        ax.text(b.get_x() + b.get_width()/2., 1.05*height,
+                '{0:.2f}'.format(height), ha='center', va='bottom', rotation='vertical')
 
-# The space between each set of bars
-space = 0.3
-width = (1 - space) / (len(benchmarks))
+    # Set the x-axis tick labels to be equal to the datasets
+    ax.set_xticklabels(datasets)
+    for tick in ax.get_xticklabels():
+        tick.set_rotation(30)
 
-# Create a set of bars at each position
-bars = []
-for i, cond in enumerate(benchmarks):
-    indeces = range(1, len(datasets) + 1)
-    vals = data[data[:,0] == cond][:,2].astype(np.float)
-    pos = [j - (1 - space) / 2.0 + i * width for j in indeces]
-    bars.append(ax.bar(pos, vals, width=width, label=cond,
-                       color=cm.Accent(float(i) / len(benchmarks))))
-bars = np.array(bars)
+    # Axis labels
+    ax.set_ylabel("Factor of Mantid execution time")
+    ax.set_xlabel("Dataset")
 
-# Show factor of Mantid execution time at top of bars
-for i in range(len(datasets)):
-    ds_bars = bars[:, i]
+    # Grid lines
+    ax.grid(b=True, axis='y', which='major', color='r', linestyle='-')
 
-    # Normalise bar heights to Mantid execution time (assumes Mantid is last in
-    # benchmarks list)
-    heights = np.array([r.get_height() for r in ds_bars])
-    heights /= heights[-1]
+    # Set graph title
+    ax.set_title(title)
 
-    # Plot text at top of bars
-    for (rect, v) in zip(ds_bars, heights):
-        height = rect.get_height()
-        ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-                '{0:.2f}'.format(v), ha='center', va='bottom', rotation='vertical')
+show_data(221, data_prototype_32bit, '32bit Morton coordinates')
+show_data(222, data_prototype_64bit, '64bit Morton coordinates')
+show_data(223, data_prototype_128bit, '128bit Morton coordinates')
+show_data(224, data_prototype_256bit, '256bit Morton coordinates')
 
-# Set the x-axis tick labels to be equal to the datasets
-ax.set_xticks(indeces)
-ax.set_xticklabels(datasets)
-plt.setp(plt.xticks()[1], rotation=90)
-
-# Add a legend
-handles, labels = ax.get_legend_handles_labels()
-ax.legend(handles[::-1], labels[::-1], loc='upper left')
-
-# Logarithmic time axis
-ax.set_yscale('log')
-
-# Axis labels
-ax.set_ylabel("Execution Time (ms)")
-ax.set_xlabel("Dataset")
-
-# Grid lines
-ax.grid(b=True, which='major', color='b', linestyle='-')
-ax.grid(b=True, which='minor', color='y', linestyle='--')
-
-plt.show()
+plt.subplots_adjust(hspace=0.4, wspace=0.4)
+fig.set_size_inches(15, 15)
+plt.savefig('results.png')
