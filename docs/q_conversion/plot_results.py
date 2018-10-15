@@ -81,7 +81,7 @@ fig = plt.figure()
 def show_data(pos, ds, title):
     ax = fig.add_subplot(pos)
 
-    p = ax.bar(datasets, ds)
+    p = ax.bar(datasets, ds)#np.concatenate((ds, np.array([1.0]))))
 
     # Show label at top of bars
     for b in p.patches:
@@ -100,6 +100,9 @@ def show_data(pos, ds, title):
 
     # Grid lines
     ax.grid(b=True, axis='y', which='major', color='r', linestyle='-')
+
+    ax.axhline(y=1.0, color='r', linestyle='-', linewidth=3)
+    ax.annotate('Mantid baseline\n', xy=(0, 1.0), color='r', verticalalignment='baseline', linespacing=0)
 
     # Set graph title
     ax.set_title(title)
