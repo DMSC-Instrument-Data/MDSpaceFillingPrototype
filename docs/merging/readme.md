@@ -13,6 +13,16 @@ The box structures of the original curves are discarded and a new box structure
 for the merged curve is then created. There is no convenient way to reuse an
 existing box structure.
 
+Merging in the prototype was implemented with both `std::merge` and
+`std::inplace_merge`. In the first case the size of the two event curves being
+merged must be allocated again to store the merged event curve.
+
+In the latter case, ideally only the size of the second curve must be allocated
+(this additional space is reserved in the `std::vector` holding the first
+curve), additional overhead will result if the allocation causes events to be
+moved in memory. For this reason it would be preferable to use the non-inplace
+version if system memory allows.
+
 ## Benchmarks
 
 The datasets used in these benchmarks are from an angular scan. The full dataset
