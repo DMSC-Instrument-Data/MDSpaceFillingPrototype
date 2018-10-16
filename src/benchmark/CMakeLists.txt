@@ -28,6 +28,7 @@ set_tests_properties(SortDatasetBenchmark PROPERTIES LABELS "DataBenchmark")
 set(DATA_BENCHMARKS
   EventAccessBenchmark
   MDBoxBenchmark
+  MergeBenchmark
   QConversionBenchmark
 )
 

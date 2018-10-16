@@ -13,6 +13,7 @@ set(UNIT_TESTS
   MDBox3DTest
   MDBox4DTest
   MDEventTest
+  MergeTest
   RebinTest
   TestUtilTest
 )
