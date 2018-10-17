@@ -29,32 +29,9 @@
 #include "MDBox.h"
 #include "MDEvent.h"
 #include "MantidEventNexusLoader.h"
+#include "scoped_wallclock_timer.hpp"
 
 const std::string dataDirPath("..");
-
-class scoped_wallclock_timer {
-public:
-  using Clock = std::chrono::high_resolution_clock;
-
-public:
-  scoped_wallclock_timer(benchmark::State &state,
-                         const std::string &counterName)
-      : m_state(state), m_counterName(counterName), m_start(Clock::now()) {}
-
-  ~scoped_wallclock_timer() {
-    const auto duration = Clock::now() - m_start;
-    m_state.PauseTiming();
-    const auto durationSeconds =
-        std::chrono::duration<double>(duration).count();
-    m_state.counters[m_counterName] += durationSeconds;
-    m_state.ResumeTiming();
-  }
-
-private:
-  benchmark::State &m_state;
-  const std::string m_counterName;
-  const std::chrono::time_point<Clock> m_start;
-};
 
 MDSpaceBounds<3> md_space_wish() {
   MDSpaceBounds<3> space;

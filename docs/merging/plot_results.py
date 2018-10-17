@@ -10,63 +10,32 @@ import numpy as np
 
 
 datasets = [
-    'WISH_34509',
-    'WISH_34509_2x',
-    'WISH_38423',
-    'WISH_37828',
-    'WISH_37868',
-    'TOPAZ_3132',
-    'SXD_23767',
+    'merge',
+    'inplace_merge',
 ]
 
 data_mantid = np.array([
-    214.820,
-    486.264,
-    5.809,
-    6.451,
-    2.213,
-    3.185,
-    1.584,
+    35.69,
 ])
 
 data_prototype_32bit = np.array([
-    32.200,
-    57.877,
-    0.717,
-    0.930,
-    0.468,
-    1.195,
-    0.546,
+    1.744,
+    2.795,
 ])
 
 data_prototype_64bit = np.array([
-    29.133,
-    61.581,
-    0.820,
-    1.127,
-    0.510,
-    1.232,
-    0.635,
+    2.058,
+    3.294,
 ])
 
 data_prototype_128bit = np.array([
-    50.431,
-    0.0,
-    1.327,
-    2.003,
-    0.736,
-    1.559,
-    1.146,
+    3.856,
+    6.134,
 ])
 
 data_prototype_256bit = np.array([
-    82.654,
-    0.0,
-    2.535,
-    4.432,
-    1.507,
-    2.371,
-    2.286,
+    8.372,
+    13.24,
 ])
 
 # Normalise all data to Mantid execution times
@@ -96,7 +65,7 @@ def show_data(pos, ds, title):
 
     # Axis labels
     ax.set_ylabel('Factor of Mantid execution time')
-    ax.set_xlabel('Dataset')
+    ax.set_xlabel('Merge method')
 
     # Grid lines
     ax.grid(b=True, axis='y', which='major', color='r', linestyle='-')
