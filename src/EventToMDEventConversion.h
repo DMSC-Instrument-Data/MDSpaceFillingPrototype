@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <tuple>
 #include <vector>
 
@@ -107,7 +108,8 @@ void convert_events(std::vector<MDEvent<3, IntT, MortonT>> &mdEvents,
       }
     }
 
-    if (mdEventsForSpectrum.size() == 4 * 1024) {
+    if (mdEventsForSpectrum.size() >=
+        std::max(mdEventsForSpectrum.capacity() / 2, 4 * 1024)) {
 #pragma omp critical
       {
         /* Add to event list */
