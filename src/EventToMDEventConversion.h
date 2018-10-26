@@ -54,6 +54,8 @@ void convert_events(std::vector<MDEvent<3, IntT, MortonT>> &mdEvents,
   const Eigen::Vector3f beamDirection = get_beam_direction(inst);
   const auto l1 = get_l1(inst);
 
+  std::vector<std::vector<MDEvent<3, IntT, MortonT>>> threadMdEventsForSpectrum(
+      omp_get_max_threads());
 #pragma omp parallel for
   /* Iterate over spectra */
   for (size_t i = 0; i < eventInfo.spectrum_to_events.size(); i++) {
@@ -83,7 +85,7 @@ void convert_events(std::vector<MDEvent<3, IntT, MortonT>> &mdEvents,
     }
 
     /* Iterate over events for detector */
-    std::vector<MDEvent<3, IntT, MortonT>> mdEventsForSpectrum;
+    auto &mdEventsForSpectrum = threadMdEventsForSpectrum[omp_get_thread_num()];
     for (auto eventIt = eventIteratorStart; eventIt != eventIteratorEnd;
          ++eventIt) {
       const auto wavenumber = conversionFactor / eventIt->tof;
@@ -105,11 +107,17 @@ void convert_events(std::vector<MDEvent<3, IntT, MortonT>> &mdEvents,
       }
     }
 
+    if (mdEventsForSpectrum.size() == 4 * 1024) {
 #pragma omp critical
-    {
-      /* Add to event list */
-      mdEvents.insert(mdEvents.cend(), mdEventsForSpectrum.begin(),
-                      mdEventsForSpectrum.end());
+      {
+        /* Add to event list */
+        mdEvents.insert(mdEvents.cend(), mdEventsForSpectrum.begin(),
+                        mdEventsForSpectrum.end());
+      }
+      mdEventsForSpectrum.clear();
     }
   }
+  // Final cleanup step dealing with events that the critical section skipped.
+  for (const auto &events : threadMdEventsForSpectrum)
+    mdEvents.insert(mdEvents.cend(), events.begin(), events.end());
 }
