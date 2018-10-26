@@ -109,7 +109,7 @@ void convert_events(std::vector<MDEvent<3, IntT, MortonT>> &mdEvents,
     }
 
     if (mdEventsForSpectrum.size() >=
-        std::max(mdEventsForSpectrum.capacity() / 2, 4 * 1024)) {
+        std::max<size_t>(mdEventsForSpectrum.capacity() / 2, 4 * 1024)) {
 #pragma omp critical
       {
         /* Add to event list */
