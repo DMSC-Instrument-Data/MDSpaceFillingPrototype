@@ -73,8 +73,9 @@ def process_bank(bank):
         ])
 
     # Iterate over all detectors in the bank
-    num_dets_in_bank = bank['idlist'].size
-    ids = np.reshape(bank['idlist'], (num_dets_in_bank,))
+    arr = np.array(bank['idlist'])
+    num_dets_in_bank = arr.size
+    ids = np.reshape(arr, (num_dets_in_bank,))
     offsets = np.reshape(bank['offsets'], (num_dets_in_bank, 3))
     for det in zip(ids, offsets):
         # Rotate detector offset by bank by bank orientation and add to bank
