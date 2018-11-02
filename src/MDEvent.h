@@ -62,8 +62,10 @@ public:
   }
 
 private:
+  MortonT m_morton;
+
   float m_signal;
   float m_errorSquared;
+  double padding; // padding to make this event similar to MDEvent in Mantid
 
-  MortonT m_morton;
 };

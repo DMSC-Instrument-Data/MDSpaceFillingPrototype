@@ -137,15 +137,49 @@ int main(int argc, char **argv) {
     space(2, 1) = extents[5];
   }
 
-  /* Convert to Q space */
+
   std::vector<MDEvent<ND, IntT, MortonT>> mdEvents;
-  {
-    scoped_wallclock_timer timer("Convert to Q space");
+  if(0) {
+    /* Convert to Q space */
+    {
+      scoped_wallclock_timer timer("Convert to Q space");
 
-    ConversionInfo convInfo{false, Eigen::Matrix3f::Identity()};
+      ConversionInfo convInfo{false, Eigen::Matrix3f::Identity()};
 
-    convert_events(mdEvents, events, convInfo, inst, space);
-    std::cout << " (" << mdEvents.size() << " MD events created)\n";
+      convert_events(mdEvents, events, convInfo, inst, space);
+      std::cout << " (" << mdEvents.size() << " MD events created)\n";
+    }
+  }
+
+
+  /* Do preprocessing */
+  auto eventInfo = preprocess_events(events);
+  auto eventList = getMantidNativeEventList(eventInfo);
+
+  if(1) {
+    /* Convert to Q space native */
+    mdEvents.clear();
+    {
+      scoped_wallclock_timer timer("Convert to Q space native");
+
+      ConversionInfo convInfo{false, Eigen::Matrix3f::Identity()};
+
+      convert_events_native(mdEvents, eventList, convInfo, inst, space);
+      std::cout << " (" << mdEvents.size() << " MD events created)\n";
+    }
+  }
+
+  if(0) {
+    /* Convert to Q space native 1*/
+    mdEvents.clear();
+    {
+      scoped_wallclock_timer timer("Convert to Q space native 1");
+
+      ConversionInfo convInfo{false, Eigen::Matrix3f::Identity()};
+
+      convert_events_native_1(mdEvents, eventList, convInfo, inst, space);
+      std::cout << " (" << mdEvents.size() << " MD events created)\n";
+    }
   }
 
   /* Sort events */
