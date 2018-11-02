@@ -43,3 +43,21 @@ PreprocessedEventInfo preprocess_events(TofEventList &tofEvents) {
 
   return eventInfo;
 }
+
+
+// provide the structure similar to mantid fo loading events
+MantidNativeEventList getMantidNativeEventList(PreprocessedEventInfo& pi) {
+  MantidNativeEventList res;
+  std::vector<MantidNativeWeightedEvent> emptyVector(0);
+  for(auto& info: pi.spectrum_to_events) {
+    while(res.size() != std::get<1>(info)->id)
+      res.emplace_back(new std::vector<MantidNativeWeightedEvent>(emptyVector));
+
+    res.emplace_back(new std::vector<MantidNativeWeightedEvent >);
+    auto& v = *(*res.rbegin());
+    for(auto iter = std::get<1>(info); iter != std::get<2>(info); ++ iter) {
+      v.emplace_back(MantidNativeWeightedEvent(iter->tof, iter->pulse_time, iter->weight, 0));
+    }
+  }
+  return res;
+}
