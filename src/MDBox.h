@@ -18,6 +18,8 @@
 
 #include <functional>
 #include <vector>
+#include <iterator>
+#include <iostream>
 
 #include <omp.h>
 
@@ -27,6 +29,9 @@
 #include "Types.h"
 
 #pragma once
+
+//store events on tree leafs
+//#define STORING_EVENTS
 
 /**
  * Performs a dimension-wise comparison on two Morton numbers by masking the
@@ -179,6 +184,9 @@ public:
     /* We check for maxDepth == 1 as maximum depth includes the root node, which
      * did not decrement the max depth counter. */
     if (maxDepth-- == 1 || eventCount() < splitThreshold) {
+#ifdef STORING_EVENTS
+      m_events.insert(m_events.end(), m_eventBegin, m_eventEnd);
+#endif // STORING_EVENTS
       return;
     }
 
@@ -331,6 +339,10 @@ private:
   const ZCurveIterator m_eventBegin;
   const ZCurveIterator m_eventEnd;
 
+#ifdef STORING_EVENTS
+  using EventType = typename std::iterator_traits<ZCurveIterator >::value_type;
+  std::vector<EventType> m_events;
+#endif //STORING_EVENTS
   /**
    * Vector of child boxes.
    * Must be kept sorted by Morton number (either lower or upper will work) of

@@ -103,6 +103,64 @@ void do_conversion(benchmark::State &state, const Instrument &inst,
   benchmark::DoNotOptimize(mdEvents);
 }
 
+
+template <size_t ND, typename IntT, typename MortonT>
+void do_conversion_native(benchmark::State &state, const Instrument &inst,
+                          const std::vector<TofEvent> &tofEventsRaw,
+                          const MDSpaceBounds<ND> &mdSpace,
+                          const ConversionInfo &convInfo, const size_t splitThreshold,
+                          const size_t maxBoxTreeDepth) {
+  /* Copy raw ToF events from loaded events (needed as convert_events() sorts
+   * the vector) */
+  state.PauseTiming();
+  std::vector<TofEvent> tofEvents(tofEventsRaw);
+  /* Do preprocessing */
+  auto eventInfo = preprocess_events(tofEvents);
+  auto eventList = getMantidNativeEventList(eventInfo);
+  state.ResumeTiming();
+
+  /* Convert to Q space */
+  std::vector<MDEvent<ND, IntT, MortonT>> mdEvents;
+  {
+    scoped_wallclock_timer timer(state, "q_conversion");
+    convert_events_native(mdEvents, eventList, convInfo, inst, mdSpace);
+  }
+
+  state.counters["md_events"] += mdEvents.size();
+
+  /* Sort events */
+  {
+    scoped_wallclock_timer timer(state, "sort");
+    boost::sort::block_indirect_sort(mdEvents.begin(), mdEvents.end());
+  }
+
+  /* Construct box structure */
+  MDBox<ND, IntT, MortonT> rootMdBox(mdEvents.cbegin(), mdEvents.cend());
+  {
+    scoped_wallclock_timer timer(state, "box_structure");
+    rootMdBox.distributeEvents(splitThreshold, maxBoxTreeDepth);
+  }
+
+  benchmark::DoNotOptimize(mdEvents);
+}
+
+void load_isis(Instrument &inst, std::vector<TofEvent> &events,
+               const std::string &instFile, const std::string &dataFile,
+               const std::string &dataPath) {
+  /* Load instrument */
+  load_instrument(inst, instFile);
+
+  IsisEventNexusLoader loader(dataFile, dataPath);
+
+  /* Load a mapping from the NeXus file */
+  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
+
+  /* Load ToF events */
+  std::vector<size_t> frameIdxs(loader.frameCount());
+  std::iota(frameIdxs.begin(), frameIdxs.end(), 0);
+  loader.loadFrames(events, frameIdxs);
+}
+
 void load_isis(Instrument &inst, std::vector<TofEvent> &events,
                const std::string &instFile, const std::string &dataFile,
                const std::string &dataPath) {
