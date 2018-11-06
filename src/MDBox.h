@@ -20,6 +20,7 @@
 #include <vector>
 #include <iterator>
 #include <iostream>
+#include <atomic>
 
 #include <omp.h>
 
@@ -31,7 +32,7 @@
 #pragma once
 
 //store events on tree leafs
-#define STORING_EVENTS
+//#define STORING_EVENTS
 
 /**
  * Performs a dimension-wise comparison on two Morton numbers by masking the
@@ -187,9 +188,9 @@ public:
 #ifdef STORING_EVENTS
       if(m_events.begin() != m_eventBegin) {
         m_events.insert(m_events.end(), m_eventBegin, m_eventEnd);
-        m_eventBegin = m_events.begin();
-        m_eventEnd = m_events.end();
       }
+      m_eventBegin = m_events.begin();
+      m_eventEnd = m_events.end();
 #endif // STORING_EVENTS
       return;
     }
@@ -331,17 +332,39 @@ public:
     return m_lowerBound < other.m_lowerBound;
   }
 
+  struct Leaf {
+    unsigned level;
+    MDBox<ND, IntT, MortonT >& box;
+  };
+
+  void leafs(std::vector<Leaf>& lf, unsigned& level) {
+    if(m_childBoxes.empty())
+      lf.emplace_back(Leaf{level, *this});
+    else {
+      ++level;
+      for(auto& child: m_childBoxes)
+        child.leafs(lf, level);
+      --level;
+    }
+  }
+
+  std::vector<Leaf> leafs() {
+    std::vector<Leaf> leafBoxes;
+    unsigned level = 0;
+    leafs(leafBoxes, level);
+    return leafBoxes;
+  }
+
 #ifdef STORING_EVENTS
   void distributeEventsSingleThread(const size_t splitThreshold, size_t maxDepth) {
     const auto childBoxCount(ChildBoxCount);
 
     if (maxDepth-- == 1 || eventCount() < splitThreshold) {
-
       if(m_events.begin() != m_eventBegin) {
         m_events.insert(m_events.end(), m_eventBegin, m_eventEnd);
-        m_eventBegin = m_events.begin();
-        m_eventEnd = m_events.end();
       }
+      m_eventBegin = m_events.begin();
+      m_eventEnd = m_events.end();
       return;
     }
 
@@ -369,29 +392,6 @@ public:
     for (size_t i = 0; i < m_childBoxes.size(); i++) {
       m_childBoxes[i].distributeEventsSingleThread(splitThreshold, maxDepth);
     }
-  }
-
-  struct Leaf {
-      unsigned level;
-      MDBox<ND, IntT, MortonT >& box;
-    };
-
-  void leafs(std::vector<Leaf>& lf, unsigned& level) {
-    if(m_childBoxes.empty())
-      lf.emplace_back(Leaf{level, *this});
-    else {
-      ++level;
-      for(auto& child: m_childBoxes)
-        child.leafs(lf, level);
-      --level;
-    }
-  }
-
-  std::vector<Leaf> leafs() {
-    std::vector<Leaf> leafBoxes;
-    unsigned level = 0;
-    leafs(leafBoxes, level);
-    return leafBoxes;
   }
 
   size_t totalEvents() {
@@ -429,7 +429,7 @@ public:
     };
     std::vector<task> tasks;
     for(auto& lbox: leafBoxes) {
-      while(it2->mortonNumber() < lbox.box.m_upperBound && it2 != newEvents.end())
+      while(it2->mortonNumber() <= lbox.box.m_upperBound && it2 != newEvents.end())
         ++it2;
 
       if(it1 != it2) {
@@ -447,9 +447,40 @@ public:
       const task& tsk = tasks[i];
       tsk.leaf.box.appendEvents(tsk.it1, tsk.it2, splitThreshold, maxDepth - tsk.leaf.level);
     }
-
   }
 #endif // STORING_EVENTS
+
+  struct BoxStructure {
+    friend std::ostream &operator<<(std::ostream &os, const BoxStructure &structure) {
+      os << structure.lowerBound << " " << structure.upperBound << " " << structure.count;
+      return os;
+    }
+    MortonT lowerBound;
+    MortonT upperBound;
+    std::size_t count;
+  };
+
+  using Structure = std::vector<BoxStructure>;
+  static void print(std::ostream &os, const Structure &structure) {
+    for(auto& bstruct: structure)
+      os << bstruct << "\n";
+  }
+
+  void structure(Structure& res) {
+#ifdef STORING_EVENTS
+    res.emplace_back(BoxStructure{m_lowerBound, m_upperBound, totalEvents()});
+#else // STORING_EVENTS
+    res.emplace_back(BoxStructure{m_lowerBound, m_upperBound, m_eventEnd - m_eventBegin});
+#endif //STORING_EVENTS
+    for(auto& ch: m_childBoxes)
+      structure(res);
+  }
+
+  Structure structure() {
+    Structure res;
+    structure(res);
+    return res;
+  }
 
 private:
   /* Lower box bound, the smallest Morton number an event can have an be
