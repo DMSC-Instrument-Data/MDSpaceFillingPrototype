@@ -7,6 +7,7 @@
 #include <vector>
 #include <numeric>
 #include <random>
+#include <fstream>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -96,8 +97,6 @@ int main(int argc, char **argv) {
     std::cout << " (" << events.size() << " ToF events loaded)\n";
   }
 
-  events.resize(1000000); // TODO tmp
-
   /* Parse MD space */
   MDSpaceBounds<3> space;
   {
@@ -112,10 +111,6 @@ int main(int argc, char **argv) {
     space(2, 1) = extents[5];
   }
 
-
-
-
-
   /* Do preprocessing */
   auto eventInfo = preprocess_events(events);
   auto eventList = getMantidNativeEventList(eventInfo);
@@ -129,13 +124,15 @@ int main(int argc, char **argv) {
     convert_events_native(mdEvents, eventList, convInfo, inst, space);
     std::cout << " (" << mdEvents.size() << " MD events created)\n";
   }
+  events.resize(0);
+  events.shrink_to_fit();
 
   std::size_t merge_size = mdEvents.size() / 100 * FLAGS_merge_percentage;
   std::vector<MDEvent<ND, IntT, MortonT>> mdEventsToMerge;
   mdEventsToMerge.reserve(merge_size);
   std::vector<MDEvent<ND, IntT, MortonT>> mdEventsBase;
   mdEventsBase.reserve(mdEvents.size() - merge_size);
-  auto idx_to_merge = determ_indexes(events.size(), merge_size);
+  auto idx_to_merge = determ_indexes(mdEvents.size(), merge_size);
   /*Prepare data for merge*/
   {
     scoped_wallclock_timer timer("Prepare data fo merging");
@@ -157,7 +154,10 @@ int main(int argc, char **argv) {
     }
   }
 
-  std::cerr << "Events to merge: " << mdEventsToMerge.size() << " ; Events in basic MDWS" << mdEventsBase.size() << "\n";
+  // Save memory
+  mdEvents.resize(0);
+  mdEvents.shrink_to_fit();
+  std::cout << "Events to merge: " << mdEventsToMerge.size() << " ; Events in basic MDWS: " << mdEventsBase.size() << "\n";
 
   /* Sort events */
   {
@@ -185,16 +185,33 @@ int main(int argc, char **argv) {
     scoped_wallclock_timer timer("Append events");
     rootMdBox.appendEvents(mdEventsToMerge, FLAGS_split_threshold, FLAGS_max_box_depth);
   }
+  std::string structureFileName = "structure_storing.txt";
+  std::cout << "Total events: " << rootMdBox.totalEvents() << "\n";
+  std::fstream fs;
+  fs.open(structureFileName.c_str(), std::ios::out);
+  for(auto& leaf: rootMdBox.leafs()) {
+    leaf.box.print(fs, leaf.box.structure());
+  }
 #else // STORING_EVENTS
+  decltype(mdEvents) curve;
   /*Merging zcurves*/
   {
-    decltype(mdEvents) curve;
-    scoped_wallclock_timer timer( "Merging zcurves");
-    merge_event_curves<MDEvent<ND, IntT, MortonT>>(curve, mdEvents, mdEventsToMerge);
-
+    scoped_wallclock_timer timer("Merging zcurves");
+    merge_event_curves<MDEvent<ND, IntT, MortonT>>(curve, mdEventsBase, mdEventsToMerge);
+  }
     /* Construct box structure */
-    MDBox<ND, IntT, MortonT> rootMdBox(curve.cbegin(), curve.cend());
-    rootMdBox.distributeEvents(FLAGS_split_threshold, FLAGS_max_box_depth);
+  MDBox<ND, IntT, MortonT> rootMdBoxNew(curve.cbegin(), curve.cend());
+  {
+    scoped_wallclock_timer timer("Constructing new box");
+    rootMdBoxNew.distributeEvents(FLAGS_split_threshold, FLAGS_max_box_depth);
+  }
+  std::cout << "Total events: " << rootMdBoxNew.eventCount() << "\n";
+  std::string structureFileName = "structure_no_storing.txt";
+  std::fstream fs;
+  fs.open(structureFileName.c_str(), std::ios::out);
+  for(auto& leaf: rootMdBoxNew.leafs()) {
+    leaf.box.print(fs, leaf.box.structure());
   }
 #endif// STORING_EVENTS
+
 }
