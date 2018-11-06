@@ -16,22 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <chrono>
 #include <iostream>
 #include <vector>
 #include <numeric>
 
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/split.hpp>
+
 #include <boost/sort/sort.hpp>
-#include <gflags/gflags.h>
 #include <h5cpp/hdf5.hpp>
 
 #include "EventToMDEventConversion.h"
 #include "Instrument.h"
 #include "IsisEventNexusLoader.h"
 #include "MDBox.h"
+#include "ArgumentsParsing.h"
+#include "scoped_wallclock_timer.h"
 
 constexpr size_t ND(3);
 using IntT = uint16_t;
@@ -46,45 +44,6 @@ DEFINE_string(frames, "0", "Frames to load.");
 DEFINE_string(space, "-10,10,-10,10,-10,10", "Q space dimensions.");
 DEFINE_uint64(split_threshold, 1000, "Box splitting threshold.");
 DEFINE_uint64(max_box_depth, 20, "Maximum box structure tree depth.");
-
-void parse_integer_string_array(std::vector<size_t> &numbers,
-                                const std::string &str) {
-  std::vector<std::string> subStrings;
-  boost::algorithm::split(subStrings, str, boost::algorithm::is_any_of(","));
-  for (const auto &p : subStrings) {
-    numbers.push_back(std::stol(p));
-  }
-}
-
-void parse_float_string_array(std::vector<float> &numbers,
-                              const std::string &str) {
-  std::vector<std::string> subStrings;
-  boost::algorithm::split(subStrings, str, boost::algorithm::is_any_of(","));
-  for (const auto &p : subStrings) {
-    numbers.push_back(std::stof(p));
-  }
-}
-
-class scoped_wallclock_timer {
-public:
-  using Clock = std::chrono::high_resolution_clock;
-
-public:
-  scoped_wallclock_timer(const std::string &name)
-      : m_name(name), m_start(Clock::now()) {
-    std::cout << "TIMER: " << m_name << " started...\n";
-  }
-
-  ~scoped_wallclock_timer() {
-    const auto duration = Clock::now() - m_start;
-    std::cout << "TIMER: " << m_name << " complete in "
-              << std::chrono::duration<float>(duration).count() << " seconds\n";
-  }
-
-private:
-  const std::string m_name;
-  const std::chrono::time_point<Clock> m_start;
-};
 
 int main(int argc, char **argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
