@@ -71,10 +71,10 @@ struct ExpectedBox {
   std::vector<ExpectedBox> children;
 };
 
-void recursive_box_tree_validation(const auto &box, auto &curveIt,
+void recursive_box_tree_validation(auto &box, auto &curveIt,
                                    const ExpectedBox &expected,
                                    size_t level = 0, size_t boxIdx = 0) {
-  ASSERT_EQ(expected.event_count, box.eventCount())
+  ASSERT_EQ(expected.event_count, box.totalEvents())
       << "in box " << boxIdx << " at tree level " << level;
 
   /* EXPECT_EQ(curveIt, box.eventBegin()); */

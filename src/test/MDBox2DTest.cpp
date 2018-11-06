@@ -76,8 +76,10 @@ TEST(MDBox2DTest, test_fill_events) {
   Box::ZCurveIterator curveIt = curve.cbegin();
   for (auto &child : root.children()) {
     EXPECT_EQ(1, child.eventCount());
+#ifndef STORING_EVENTS // lose iterators of initial vector if STORING_EVENTS
     EXPECT_EQ(curveIt, child.eventBegin());
     EXPECT_EQ(++curveIt, child.eventEnd());
+#endif // STORING_EVENTS
 
     /* Ensure child has correct Morton "size"/"width" */
     EXPECT_EQ(std::numeric_limits<MortonT>::max() / 4,

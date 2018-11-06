@@ -161,23 +161,6 @@ void load_isis(Instrument &inst, std::vector<TofEvent> &events,
   loader.loadFrames(events, frameIdxs);
 }
 
-void load_isis(Instrument &inst, std::vector<TofEvent> &events,
-               const std::string &instFile, const std::string &dataFile,
-               const std::string &dataPath) {
-  /* Load instrument */
-  load_instrument(inst, instFile);
-
-  IsisEventNexusLoader loader(dataFile, dataPath);
-
-  /* Load a mapping from the NeXus file */
-  loader.loadSpectrumDetectorMapping(inst.spectrum_detector_mapping);
-
-  /* Load ToF events */
-  std::vector<size_t> frameIdxs(loader.frameCount());
-  std::iota(frameIdxs.begin(), frameIdxs.end(), 0);
-  loader.loadFrames(events, frameIdxs);
-}
-
 void load_mantid(Instrument &inst, std::vector<TofEvent> &events,
                  const std::string &instFile, const std::string &dataFile) {
   /* Load instrument */
