@@ -31,7 +31,7 @@
 #pragma once
 
 //store events on tree leafs
-//#define STORING_EVENTS
+#define STORING_EVENTS
 
 /**
  * Performs a dimension-wise comparison on two Morton numbers by masking the
@@ -185,7 +185,11 @@ public:
      * did not decrement the max depth counter. */
     if (maxDepth-- == 1 || eventCount() < splitThreshold) {
 #ifdef STORING_EVENTS
-      m_events.insert(m_events.end(), m_eventBegin, m_eventEnd);
+      if(m_events.begin() != m_eventBegin) {
+        m_events.insert(m_events.end(), m_eventBegin, m_eventEnd);
+        m_eventBegin = m_events.begin();
+        m_eventEnd = m_events.end();
+      }
 #endif // STORING_EVENTS
       return;
     }
@@ -327,6 +331,75 @@ public:
     return m_lowerBound < other.m_lowerBound;
   }
 
+#ifdef STORING_EVENTS
+  struct Leaf {
+      unsigned level;
+      MDBox<ND, IntT, MortonT >& box;
+    };
+
+  void leafs(std::vector<Leaf>& lf, unsigned& level) {
+    if(m_childBoxes.empty())
+      lf.emplace_back(Leaf{level, *this});
+    else {
+      ++level;
+      for(auto& child: m_childBoxes)
+        child.leafs(lf, level);
+      --level;
+    }
+  }
+
+  std::vector<Leaf> leafs() {
+    std::vector<Leaf> leafBoxes;
+    unsigned level = 0;
+    leafs(leafBoxes, level);
+    return leafBoxes;
+  }
+
+  size_t totalEvents() {
+    std::size_t count = 0;
+    for(auto& leaf: leafs())
+      count += leaf.box.m_events.size();
+    return count;
+  }
+
+  void appendEvents(ZCurveIterator from, ZCurveIterator to, const size_t splitThreshold, size_t maxDepth) {
+
+    auto oldSz = m_events.size();
+    m_events.insert(m_events.cend(), from, to);
+    auto middle = m_events.begin() + oldSz;
+
+    std::inplace_merge(m_events.begin(), middle, m_events.end());
+
+    m_eventBegin = m_events.begin();
+    m_eventEnd = m_events.end();
+    distributeEvents(splitThreshold, maxDepth);
+    if(!m_childBoxes.empty()) {
+      m_events.resize(0);
+      m_events.shrink_to_fit();
+    }
+  }
+
+  void appendEvents(typename MDEvent<ND, IntT, MortonT>::ZCurve newEvents, const size_t splitThreshold, size_t maxDepth) {
+    auto leafBoxes = leafs();
+    ZCurveIterator it1 = newEvents.begin();
+    ZCurveIterator it2 = newEvents.begin();
+    for(auto& lbox: leafBoxes) {
+      while(it2->mortonNumber() < lbox.box.m_upperBound && it2 != newEvents.end())
+        ++it2;
+
+      if(it1 != it2) {
+        lbox.box.appendEvents(it1, it2, splitThreshold, maxDepth - lbox.level + 1);
+        it1 = it2;
+      }
+      else
+        continue;
+
+      if(it2 == newEvents.end())
+        break;
+    }
+  }
+#endif // STORING_EVENTS
+
 private:
   /* Lower box bound, the smallest Morton number an event can have an be
    * contained in this box. */
@@ -336,8 +409,8 @@ private:
    * contained in this box. */
   const MortonT m_upperBound;
 
-  const ZCurveIterator m_eventBegin;
-  const ZCurveIterator m_eventEnd;
+  ZCurveIterator m_eventBegin;
+  ZCurveIterator m_eventEnd;
 
 #ifdef STORING_EVENTS
   using EventType = typename std::iterator_traits<ZCurveIterator >::value_type;
