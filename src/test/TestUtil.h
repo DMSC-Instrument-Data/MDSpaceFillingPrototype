@@ -23,6 +23,8 @@
 
 #include <boost/range/combine.hpp>
 
+#include "MDBox.h"
+
 /* Reverse wrapper taken from: https://stackoverflow.com/a/28139075 */
 
 template <typename T> struct reversion_wrapper { T &iterable; };
@@ -74,9 +76,13 @@ struct ExpectedBox {
 void recursive_box_tree_validation(auto &box, auto &curveIt,
                                    const ExpectedBox &expected,
                                    size_t level = 0, size_t boxIdx = 0) {
+#ifdef STORING_EVENTS
   ASSERT_EQ(expected.event_count, box.totalEvents())
       << "in box " << boxIdx << " at tree level " << level;
-
+#else // STORING_EVENTS
+  ASSERT_EQ(expected.event_count, box.eventCount())
+              << "in box " << boxIdx << " at tree level " << level;
+#endif //STORING_EVENTS
   /* EXPECT_EQ(curveIt, box.eventBegin()); */
 
   ASSERT_EQ(expected.children.size(), box.children().size())

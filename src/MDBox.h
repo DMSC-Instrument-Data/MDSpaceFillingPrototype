@@ -332,6 +332,45 @@ public:
   }
 
 #ifdef STORING_EVENTS
+  void distributeEventsSingleThread(const size_t splitThreshold, size_t maxDepth) {
+    const auto childBoxCount(ChildBoxCount);
+
+    if (maxDepth-- == 1 || eventCount() < splitThreshold) {
+
+      if(m_events.begin() != m_eventBegin) {
+        m_events.insert(m_events.end(), m_eventBegin, m_eventEnd);
+        m_eventBegin = m_events.begin();
+        m_eventEnd = m_events.end();
+      }
+      return;
+    }
+
+    m_childBoxes.reserve(childBoxCount);
+    const MortonT thisBoxWidth = m_upperBound - m_lowerBound;
+    const MortonT childBoxWidth = thisBoxWidth / childBoxCount;
+    auto eventIt = m_eventBegin;
+
+    for (size_t i = 0; i < childBoxCount; i++) {
+      const auto boxLower = m_lowerBound + ((childBoxWidth + 1) * i);
+
+      const auto boxUpper = boxLower + childBoxWidth;
+
+      const auto boxEventStart = eventIt;
+
+      while (morton_contains<MortonT>(boxLower, boxUpper,
+                                      eventIt->mortonNumber()) &&
+          eventIt != m_eventEnd) {
+        ++eventIt;
+      }
+
+      m_childBoxes.emplace_back(boxEventStart, eventIt, boxLower, boxUpper);
+    }
+
+    for (size_t i = 0; i < m_childBoxes.size(); i++) {
+      m_childBoxes[i].distributeEventsSingleThread(splitThreshold, maxDepth);
+    }
+  }
+
   struct Leaf {
       unsigned level;
       MDBox<ND, IntT, MortonT >& box;
@@ -372,7 +411,7 @@ public:
 
     m_eventBegin = m_events.begin();
     m_eventEnd = m_events.end();
-    distributeEvents(splitThreshold, maxDepth);
+    distributeEventsSingleThread(splitThreshold, maxDepth);
     if(!m_childBoxes.empty()) {
       m_events.resize(0);
       m_events.shrink_to_fit();
@@ -383,12 +422,18 @@ public:
     auto leafBoxes = leafs();
     ZCurveIterator it1 = newEvents.begin();
     ZCurveIterator it2 = newEvents.begin();
+    struct task {
+      ZCurveIterator it1;
+      ZCurveIterator it2;
+      const Leaf& leaf;
+    };
+    std::vector<task> tasks;
     for(auto& lbox: leafBoxes) {
       while(it2->mortonNumber() < lbox.box.m_upperBound && it2 != newEvents.end())
         ++it2;
 
       if(it1 != it2) {
-        lbox.box.appendEvents(it1, it2, splitThreshold, maxDepth - lbox.level + 1);
+        tasks.emplace_back(task{it1, it2, lbox});
         it1 = it2;
       }
       else
@@ -397,6 +442,12 @@ public:
       if(it2 == newEvents.end())
         break;
     }
+#pragma omp parallel for
+    for(unsigned i = 0; i < tasks.size(); ++i) {
+      const task& tsk = tasks[i];
+      tsk.leaf.box.appendEvents(tsk.it1, tsk.it2, splitThreshold, maxDepth - tsk.leaf.level);
+    }
+
   }
 #endif // STORING_EVENTS
 
