@@ -1,4 +1,5 @@
 set(UNIT_TESTS
+  AppendEventsTest
   BitInterleaving128BitTest
   BitInterleaving256BitTest
   BitInterleavingEigenTest
