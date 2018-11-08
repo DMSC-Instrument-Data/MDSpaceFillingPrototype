@@ -16,7 +16,7 @@ include(OpenMP)
 
 enable_testing()
 
-# Workaround new default flags (emil RUNPATH instead of RPATH) and issues with
+# Workaround new default flags (emit RUNPATH instead of RPATH) and issues with
 # finding shared libraries in RUNPATH
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--disable-new-dtags")
 
