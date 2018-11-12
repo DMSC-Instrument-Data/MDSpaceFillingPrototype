@@ -26,7 +26,7 @@ Here we can see two issues:
 1. One by one event adding, in fact one by one pushing back in the std::vector.  
 2. Locking the box during the adding of single events.
 
-### Design solution
+### Proposed implementation
 
 The natural solution to solve this issues is some kind of ordering or groupping events. Due to optimizing memory
 utilizing and cache usage the best way is to have the continuous in terms of memory chunks with events corresponding
@@ -51,3 +51,10 @@ And adding new portion of events:
 2. Limited precision of the box hierarchy (the depth of tree): N/n for N bit Morton number and n dimensions.
 3. Fixed global box, the initial box can't grow with adding next portion of events, the boundaries should be defined
 once from instrument  or sample geometry. 
+
+### Optimization notes
+
+The main bottleneck of the approach is memory access to MDEvent object. The best optimization for this is to make the
+MDEvent object as small as possible. Due to this the floating point coordinates can be thrown out the MDEvent structure 
+and retrieved then it is needed from the Morton number of the MDEvent. Also the Morton number can be chosen small enough 
+to provide acceptable accuracy to increase performance.
