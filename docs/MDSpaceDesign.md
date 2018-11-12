@@ -37,11 +37,18 @@ indexes. Then we can sort the events using index and get the continuous chunks o
 The most simple space filling curve is Z-curve or Morton curve and the 1d space index is called Morton number in this
 case. 
 
-Using this additional indexing the workspace creation could be like on this scheme:
+*2D Z-curve picture from wikipedia:*
+
+![MD workspace structure](Z-curve.png)
+
+
+*Using this additional indexing the workspace creation could be like on this scheme:*
+
 
 ![MD workspace structure](MDSpace.png)
 
-And adding new portion of events:  
+
+*And adding new portion of events:*  
 
 ![Merging thw new portion](merging_md_space.png) 
 
