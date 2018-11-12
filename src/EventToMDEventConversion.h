@@ -131,7 +131,7 @@ void convert_events(std::vector<MDEvent<3, IntT, MortonT>> &mdEvents,
 // function that more similar to what we have in Mantid
 template <typename IntT, typename MortonT>
 void convert_events_native(std::vector<MDEvent<3, IntT, MortonT>> &mdEvents,
-                    MantidNativeEventList& events, const ConversionInfo &convInfo,
+                    const MantidNativeEventList& events, const ConversionInfo &convInfo,
                     const Instrument &inst, const MDSpaceBounds<3> &space) {
   std::size_t sz = 0;
   for(auto& it: events)
