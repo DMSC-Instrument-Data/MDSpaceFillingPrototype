@@ -31,7 +31,7 @@
 #include "MantidEventNexusLoader.h"
 #include "scoped_wallclock_timer.hpp"
 
-const std::string dataDirPath("..");
+const std::string dataDirPath("/home/igudich/work/MDSpaceFillingPrototype/Data/");
 
 MDSpaceBounds<3> md_space_wish() {
   MDSpaceBounds<3> space;
@@ -76,13 +76,16 @@ void do_conversion(benchmark::State &state, const Instrument &inst,
    * the vector) */
   state.PauseTiming();
   std::vector<TofEvent> tofEvents(tofEventsRaw);
+  auto eventInfo = preprocess_events(tofEvents);
+  auto eventList = getMantidNativeEventList(eventInfo);
+  tofEvents.clear();
   state.ResumeTiming();
 
   /* Convert to Q space */
   std::vector<MDEvent<ND, IntT, MortonT>> mdEvents;
   {
     scoped_wallclock_timer timer(state, "q_conversion");
-    convert_events(mdEvents, tofEvents, convInfo, inst, mdSpace);
+    convert_events_native(mdEvents, eventList, convInfo, inst, mdSpace);
   }
 
   state.counters["md_events"] += mdEvents.size();
