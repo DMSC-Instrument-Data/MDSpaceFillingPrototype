@@ -336,7 +336,7 @@ public:
   };
 
   void leafs(std::vector<Leaf>& lf, unsigned& level) {
-    if(m_childBoxes.empty())
+    if(isLeaf())
       lf.emplace_back(Leaf{level, *this});
     else {
       ++level;
@@ -398,8 +398,7 @@ public:
     return count;
   }
 
-  void appendEvents(ZCurveIterator from, ZCurveIterator to, const size_t splitThreshold, size_t maxDepth) {
-
+  void merge_z_curve(const ZCurveIterator &from, const ZCurveIterator &to) {
     auto oldSz = m_events.size();
     m_events.insert(m_events.cend(), from, to);
     auto middle = m_events.begin() + oldSz;
@@ -408,10 +407,86 @@ public:
 
     m_eventBegin = m_events.begin();
     m_eventEnd = m_events.end();
+  }
+
+  void appendEvents(ZCurveIterator from, ZCurveIterator to, const size_t splitThreshold, size_t maxDepth) {
+
+    merge_z_curve(from, to);
+
     distributeEventsSingleThread(splitThreshold, maxDepth);
-    if(!m_childBoxes.empty()) {
+    if(!isLeaf()) {
       m_events.resize(0);
       m_events.shrink_to_fit();
+    }
+  }
+
+
+  template <typename LeafIter>
+  void leaf_merge_leafs(LeafIter start, LeafIter finish, const size_t splitThreshold, size_t maxDepth) {
+    for(auto it = start; it != finish; ++it)
+      merge_z_curve(it->box.m_events.begin(), it->box.m_events.end());
+
+    distributeEventsSingleThread(splitThreshold, maxDepth);
+    if(!isLeaf()) {
+      m_events.resize(0);
+      m_events.shrink_to_fit();
+    }
+  }
+
+  template <typename LeafIter>
+  static void leafs_merge_leaf(LeafIter start, LeafIter finish,
+      ZCurveIterator from, ZCurveIterator to, const size_t splitThreshold, size_t maxDepth) {
+    auto i1 = from;
+    auto i2 = from;
+    for(auto iter = start; iter < finish; ++iter) {
+      auto& box = iter->box;
+      const auto& level = iter->level;
+      while(1) {
+        if(i2 == to)
+          break;
+        if(!box.contains(*i2))
+          break;
+        ++i2;
+      }
+      box.appendEvents(i1, i2, splitThreshold, maxDepth - level);
+      if(i2 == to)
+        break;
+      i1 = i2;
+    }
+  }
+
+  void merge(MDBox& other, const size_t splitThreshold, size_t maxDepth) {
+    auto leafsBase = leafs();
+    auto leafsOther = other.leafs();
+    auto iterBase1 = leafsBase.begin();
+    auto iterBase2 = leafsBase.end();
+    auto iterOther1 = leafsOther.begin();
+    auto iterOther2 = leafsOther.end();
+
+    while(1) {
+      if(iterBase1->box.m_upperBound >= iterOther1->box.m_upperBound) {
+        while(iterOther2->box.m_upperBound <= iterBase1->box.m_upperBound)
+          ++iterOther2;
+
+        iterBase1->box.leaf_merge_leafs(iterOther1, iterOther2, splitThreshold, maxDepth - iterBase1->level);
+        if(iterOther2 == leafsOther.end())
+          break;
+        ++iterBase1;
+        iterBase2 = iterBase1;
+        iterOther1 = iterOther2;
+      }
+      else {
+        auto& events = iterOther1->box.m_events;
+        while(iterBase2->box.m_upperBound <+ iterOther1->box.m_upperBound)
+          ++iterBase2;
+        leafs_merge_leaf(iterBase1, iterBase2, iterOther1->box.m_events.begin(), iterOther1->box.m_events.end(),
+            splitThreshold, maxDepth);
+        if(iterBase2 == leafsBase.end())
+          break;
+        ++iterOther1;
+        iterOther2 = iterOther1;
+        iterBase1 = iterBase2;
+      }
     }
   }
 
@@ -473,6 +548,8 @@ public:
     structure(res);
     return res;
   }
+
+  bool isLeaf() { return m_childBoxes.empty(); }
 
 private:
   /* Lower box bound, the smallest Morton number an event can have an be
