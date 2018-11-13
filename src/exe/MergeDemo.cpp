@@ -179,7 +179,6 @@ int main(int argc, char **argv) {
     boost::sort::block_indirect_sort(mdEventsToMerge.begin(), mdEventsToMerge.end());
   }
 
-#ifdef STORING_EVENTS
   /*Append events*/
   {
     scoped_wallclock_timer timer("Append events");
@@ -192,26 +191,4 @@ int main(int argc, char **argv) {
   for(auto& leaf: rootMdBox.leafs()) {
     leaf.box.print(fs, leaf.box.structure());
   }
-#else // STORING_EVENTS
-  decltype(mdEvents) curve;
-  /*Merging zcurves*/
-  {
-    scoped_wallclock_timer timer("Merging zcurves");
-    merge_event_curves<MDEvent<ND, IntT, MortonT>>(curve, mdEventsBase, mdEventsToMerge);
-  }
-    /* Construct box structure */
-  MDBox<ND, IntT, MortonT> rootMdBoxNew(curve.cbegin(), curve.cend());
-  {
-    scoped_wallclock_timer timer("Constructing new box");
-    rootMdBoxNew.distributeEvents(FLAGS_split_threshold, FLAGS_max_box_depth);
-  }
-  std::cout << "Total events: " << rootMdBoxNew.eventCount() << "\n";
-  std::string structureFileName = "structure_no_storing.txt";
-  std::fstream fs;
-  fs.open(structureFileName.c_str(), std::ios::out);
-  for(auto& leaf: rootMdBoxNew.leafs()) {
-    leaf.box.print(fs, leaf.box.structure());
-  }
-#endif// STORING_EVENTS
-
 }

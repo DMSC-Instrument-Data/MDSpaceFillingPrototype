@@ -144,10 +144,6 @@ TEST(MDBox4DTest, test_fill_events) {
 
   /* Should contain all events */
   EXPECT_EQ(20, root.eventCount());
-#ifndef STORING_EVENTS // lose iterators of initial vector if STORING_EVENTS
-  EXPECT_EQ(curve.cbegin(), root.eventBegin());
-  EXPECT_EQ(curve.cend(), root.eventEnd());
-#endif // STORING_EVENTS
 
   /* Expected structure */
   ExpectedBox expectedRoot{20,

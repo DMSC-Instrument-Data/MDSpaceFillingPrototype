@@ -31,8 +31,8 @@
 
 #pragma once
 
-//store events on tree leafs
-//#define STORING_EVENTS
+//store events on tree leafscd
+#define STORING_EVENTS
 
 /**
  * Performs a dimension-wise comparison on two Morton numbers by masking the
@@ -185,13 +185,11 @@ public:
     /* We check for maxDepth == 1 as maximum depth includes the root node, which
      * did not decrement the max depth counter. */
     if (maxDepth-- == 1 || eventCount() < splitThreshold) {
-#ifdef STORING_EVENTS
       if(m_events.begin() != m_eventBegin) {
         m_events.insert(m_events.end(), m_eventBegin, m_eventEnd);
       }
       m_eventBegin = m_events.begin();
       m_eventEnd = m_events.end();
-#endif // STORING_EVENTS
       return;
     }
 
@@ -355,7 +353,6 @@ public:
     return leafBoxes;
   }
 
-#ifdef STORING_EVENTS
   void distributeEventsSingleThread(const size_t splitThreshold, size_t maxDepth) {
     const auto childBoxCount(ChildBoxCount);
 
@@ -448,7 +445,6 @@ public:
       tsk.leaf.box.appendEvents(tsk.it1, tsk.it2, splitThreshold, maxDepth - tsk.leaf.level);
     }
   }
-#endif // STORING_EVENTS
 
   struct BoxStructure {
     friend std::ostream &operator<<(std::ostream &os, const BoxStructure &structure) {
@@ -467,11 +463,7 @@ public:
   }
 
   void structure(Structure& res) {
-#ifdef STORING_EVENTS
     res.emplace_back(BoxStructure{m_lowerBound, m_upperBound, totalEvents()});
-#else // STORING_EVENTS
-    res.emplace_back(BoxStructure{m_lowerBound, m_upperBound, m_eventEnd - m_eventBegin});
-#endif //STORING_EVENTS
     for(auto& ch: m_childBoxes)
       structure(res);
   }
@@ -494,10 +486,8 @@ private:
   ZCurveIterator m_eventBegin;
   ZCurveIterator m_eventEnd;
 
-#ifdef STORING_EVENTS
   using EventType = typename std::iterator_traits<ZCurveIterator >::value_type;
   std::vector<EventType> m_events;
-#endif //STORING_EVENTS
   /**
    * Vector of child boxes.
    * Must be kept sorted by Morton number (either lower or upper will work) of
