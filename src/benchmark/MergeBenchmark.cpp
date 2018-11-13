@@ -32,23 +32,56 @@
 #include "Merge.h"
 #include "scoped_wallclock_timer.hpp"
 
-const std::string dataDirPath("..");
+const std::string dataDirPath("/home/igudich/work/MDSpaceFillingPrototype/Data/");
+
+MDSpaceBounds<3> md_space_wish() {
+  MDSpaceBounds<3> space;
+  // clang-format off
+  space <<
+        -12.0f, 12.0f,
+      -3.0f, 3.0f,
+      0.0f, 23.0f;
+  // clang-format on
+  return space;
+}
+
+MDSpaceBounds<3> md_space_topaz() {
+  MDSpaceBounds<3> space;
+  // clang-format off
+  space <<
+        0.0f, 60.0f,
+      -40.0f, 40.0f,
+      0.0f, 110.0f;
+  // clang-format on
+  return space;
+}
+
+MDSpaceBounds<3> md_space_sxd() {
+  MDSpaceBounds<3> space;
+  // clang-format off
+  space <<
+        -18.0f, 18.0f,
+      -7.0f, 17.0f,
+      0.0f, 34.0f;
+  // clang-format on
+  return space;
+}
 
 template <size_t ND, typename IntT, typename MortonT>
 void load_and_convert(typename MDEvent<ND, IntT, MortonT>::ZCurve &mdEvents,
-                      const std::string &dataFilename) {
+                      const std::string &dataFilename, const std::string &intrumentFilename) {
   /* MD space */
   MDSpaceBounds<3> mdSpace;
-  // clang-format off
-  mdSpace <<
-    -60.0f, 60.0f,
-    -100.0f, 100.0f,
-    0.0f, 55.0f;
-  // clang-format on
+  if(intrumentFilename.find("wish") != std::string::npos)
+    mdSpace = md_space_wish();
+  else if(intrumentFilename.find("topaz") != std::string::npos)
+    mdSpace = md_space_topaz();
+  else if(intrumentFilename.find("sxd") != std::string::npos)
+    mdSpace = md_space_sxd();
 
   /* Load instrument */
   Instrument inst;
-  load_instrument(inst, dataDirPath + "/sxd.h5");
+  load_instrument(inst, dataDirPath + "/" + intrumentFilename);
 
   std::vector<TofEvent> tofEvents;
   MantidEventNexusLoader loader(dataDirPath + dataFilename);
@@ -75,14 +108,19 @@ void average_counters(benchmark::State &state) {
   }
 }
 
+
+void do_merge() {
+
+}
+
 template <typename IntT, typename MortonT>
 void BM_Merge_Inplace(benchmark::State &state) {
   constexpr size_t ND(3);
   using Event = MDEvent<ND, IntT, MortonT>;
 
   typename Event::ZCurve mdEvents1, mdEvents2;
-  load_and_convert<ND, IntT, MortonT>(mdEvents1, "/SXD30528_event.nxs");
-  load_and_convert<ND, IntT, MortonT>(mdEvents2, "/SXD30529_event.nxs");
+  load_and_convert<ND, IntT, MortonT>(mdEvents1, "/SXD30528_event.nxs", "/sxd.h5");
+  load_and_convert<ND, IntT, MortonT>(mdEvents2, "/SXD30529_event.nxs", "/sxd.h5");
   state.counters["md_events_curve_1"] = mdEvents1.size();
   state.counters["md_events_curve_2"] = mdEvents2.size();
 
@@ -129,8 +167,8 @@ void BM_Merge_New(benchmark::State &state) {
   using Event = MDEvent<ND, IntT, MortonT>;
 
   typename Event::ZCurve mdEvents1, mdEvents2;
-  load_and_convert<ND, IntT, MortonT>(mdEvents1, "/SXD30528_event.nxs");
-  load_and_convert<ND, IntT, MortonT>(mdEvents2, "/SXD30529_event.nxs");
+  load_and_convert<ND, IntT, MortonT>(mdEvents1, "/SXD30528_event.nxs", "/sxd.h5");
+  load_and_convert<ND, IntT, MortonT>(mdEvents2, "/SXD30529_event.nxs", "/sxd.h5");
   state.counters["md_events_curve_1"] = mdEvents1.size();
   state.counters["md_events_curve_2"] = mdEvents2.size();
 

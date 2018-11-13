@@ -26,8 +26,6 @@
 #include "MDBox.h"
 #include "MDEvent.h"
 
-#ifdef STORING_EVENTS
-
 
 constexpr size_t ND(4);
 using IntT = uint16_t;
@@ -182,4 +180,3 @@ TEST(MDBox4DTest, test_append_events) {
   recursive_box_tree_validation(root, curveIt, expectedRoot);
 }
 
-#endif // STORING_EVENTS
