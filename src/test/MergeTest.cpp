@@ -17,6 +17,8 @@
  */
 
 #include <gtest/gtest.h>
+#include <random>
+#include <boost/sort/sort.hpp>
 
 #include "MDEvent.h"
 #include "Merge.h"
@@ -90,4 +92,40 @@ TEST(MergeTest, test_merge_event_curves) {
   EXPECT_EQ(80, curve[9].mortonNumber());
   EXPECT_EQ(90, curve[10].mortonNumber());
   EXPECT_EQ(91, curve[11].mortonNumber());
+}
+
+TEST(MergeTest, test_box_merge) {
+  using IntT = uint16_t;
+  using MortonT = uint32_t;
+  MDEvent<2, IntT, MortonT>::ZCurve zbase(40);
+  MDEvent<2, IntT, MortonT>::ZCurve zmerge(20);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<MortonT> dis(0, 255);
+  for(auto& event: zbase)
+    event = MDEvent<2, IntT, MortonT>(dis(gen));
+  for(auto& event: zmerge)
+    event = MDEvent<2, IntT, MortonT>(dis(gen));
+
+  boost::sort::block_indirect_sort(zbase.begin(), zbase.end());
+  boost::sort::block_indirect_sort(zmerge.begin(), zmerge.end());
+
+  MDBox<2, IntT, MortonT> rootBase(zbase.cbegin(), zbase.cend());
+  rootBase.distributeEvents(3, 20);
+  MDBox<2, IntT, MortonT> rootMerge(zmerge.cbegin(), zmerge.cend());
+  rootMerge.distributeEvents(3, 20);
+
+  std::cerr << rootBase.leafs().size() << "\n";
+  std::cerr << rootMerge.leafs().size() << "\n";
+  rootBase.merge(rootMerge, 3, 20);
+
+  MDEvent<2, IntT, MortonT>::ZCurve curve;
+  merge_event_curves<MDEvent<2, IntT, MortonT>>(curve, zbase,zmerge);
+
+  MDBox<2, IntT, MortonT> root(curve.begin(), curve.end());
+  root.distributeEvents(3, 20);
+
+  std::cerr << root.leafs().size() << "\n";
+
+  EXPECT_TRUE(root.compareLeafs(rootBase));
 }

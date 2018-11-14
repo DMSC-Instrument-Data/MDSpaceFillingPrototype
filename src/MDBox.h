@@ -333,11 +333,17 @@ public:
   struct Leaf {
     unsigned level;
     MDBox<ND, IntT, MortonT >& box;
+
+    Leaf(unsigned l, MDBox<ND, IntT, MortonT >& b) : level(l), box(b) {}
   };
 
   void leafs(std::vector<Leaf>& lf, unsigned& level) {
-    if(isLeaf())
-      lf.emplace_back(Leaf{level, *this});
+    if(isLeaf()) {
+      Leaf l(level, *this);
+//      std::cerr << "lf.size(): " << lf.size() << "\n";
+//      std::cerr << "level " << level << "\n";
+      lf.push_back(l);
+    }
     else {
       ++level;
       for(auto& child: m_childBoxes)
@@ -459,14 +465,15 @@ public:
     auto leafsBase = leafs();
     auto leafsOther = other.leafs();
     auto iterBase1 = leafsBase.begin();
-    auto iterBase2 = leafsBase.end();
+    auto iterBase2 = leafsBase.begin();
     auto iterOther1 = leafsOther.begin();
-    auto iterOther2 = leafsOther.end();
+    auto iterOther2 = leafsOther.begin();
 
     while(1) {
       if(iterBase1->box.m_upperBound >= iterOther1->box.m_upperBound) {
-        while(iterOther2->box.m_upperBound <= iterBase1->box.m_upperBound)
+        while(iterOther2->box.m_upperBound < iterBase1->box.m_upperBound)
           ++iterOther2;
+        ++iterOther2;
 
         iterBase1->box.leaf_merge_leafs(iterOther1, iterOther2, splitThreshold, maxDepth - iterBase1->level);
         if(iterOther2 == leafsOther.end())
@@ -477,8 +484,9 @@ public:
       }
       else {
         auto& events = iterOther1->box.m_events;
-        while(iterBase2->box.m_upperBound <+ iterOther1->box.m_upperBound)
+        while(iterBase2->box.m_upperBound < iterOther1->box.m_upperBound)
           ++iterBase2;
+        ++iterBase2;
         leafs_merge_leaf(iterBase1, iterBase2, iterOther1->box.m_events.begin(), iterOther1->box.m_events.end(),
             splitThreshold, maxDepth);
         if(iterBase2 == leafsBase.end())
@@ -547,6 +555,58 @@ public:
     Structure res;
     structure(res);
     return res;
+  }
+
+  bool compareStructure(MDBox& other) {
+    auto strThis = structure();
+    auto strOther = other.structure();
+    if(strThis.size() != strOther.size()) {
+      std::cerr << "strThis.size() != strOther.size() : " << strThis.size() << " " << strOther.size() << "\n";
+      return false;
+    }
+    for( std::size_t i = 0; i < strThis.size(); ++i) {
+      const auto& sThis = strThis[i];
+      const auto& sOther = strOther[i];
+      if (sThis.lowerBound != sOther.lowerBound || sThis.upperBound != sOther.upperBound) {
+        std::cerr << "Bounds are inequal : [" << sThis.lowerBound  << "; " << sThis.upperBound << "] ["
+        << sOther.lowerBound << "; " << sOther.upperBound << "]\n";
+        return false;
+      }
+      if(sThis.count != sOther.count) {
+        std::cerr << "Counts are inequal : "<< sThis.count << " for [" << sThis.lowerBound  << "; "
+        << sThis.upperBound << "] " << sOther.count << " for ["
+                  << sOther.lowerBound << "; " << sOther.upperBound << "]\n";
+      }
+    }
+  }
+
+  bool compareLeafs(MDBox& other) {
+    auto thisLeafs = leafs();
+    auto otherLeafs = other.leafs();
+    if(thisLeafs.size() != otherLeafs.size()) {
+      std::cerr << "thisLeafs.size() != otherLeafs.size() : " << thisLeafs.size() << " " << otherLeafs.size() << "\n";
+      return false;
+    }
+
+
+    for( std::size_t i = 0; i < thisLeafs.size(); ++i) {
+      auto& thisLf = thisLeafs[i];
+      auto& otherLf = otherLeafs[i];
+      if(thisLf.level != otherLf.level) {
+        return false;
+      }
+      if(thisLf.box.m_lowerBound != otherLf.box.m_lowerBound || thisLf.box.m_upperBound != otherLf.box.m_upperBound) {
+        return false;
+      }
+      if(thisLf.box.m_events.size() != otherLf.box.m_events.size()) {
+        return false;
+      }
+
+      std::cerr << "addres: " << reinterpret_cast<long long>(&thisLf) << " " << reinterpret_cast<long long>(&otherLf) << "\n";
+      std::cerr << "Level: " << thisLf.level << " " << otherLf.level << "\n";
+      std::cerr << "Count: " << thisLf.box.m_events.size() << " " << otherLf.box.m_events.size() << "\n";
+    }
+    return true;
   }
 
   bool isLeaf() { return m_childBoxes.empty(); }
