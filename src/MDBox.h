@@ -602,7 +602,7 @@ public:
         return false;
       }
 
-      std::cerr << "addres: " << reinterpret_cast<long long>(&thisLf) << " " << reinterpret_cast<long long>(&otherLf) << "\n";
+      std::cerr << "address: " << reinterpret_cast<long long>(&thisLf) << " " << reinterpret_cast<long long>(&otherLf) << "\n";
       std::cerr << "Level: " << thisLf.level << " " << otherLf.level << "\n";
       std::cerr << "Count: " << thisLf.box.m_events.size() << " " << otherLf.box.m_events.size() << "\n";
     }
