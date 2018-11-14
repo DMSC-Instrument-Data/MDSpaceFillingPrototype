@@ -21,7 +21,8 @@ from __future__ import print_function
 import mantid_benchmark_common
 
 from mantid import mtd
-from mantid.simpleapi import Load, ConvertToMD, BinMD
+from mantid.simpleapi import Load, ConvertToMD, BinMD, MergeMD
+import os
 
 
 # Load data
