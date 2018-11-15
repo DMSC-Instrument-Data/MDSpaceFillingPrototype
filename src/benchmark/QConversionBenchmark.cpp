@@ -166,37 +166,37 @@ BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint8_t, uint32_t)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint32_t, uint128_t)
-//    ->Unit(benchmark::kMillisecond);
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint64_t, uint256_t)
-//    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509, uint64_t, uint256_t)
+    ->Unit(benchmark::kMillisecond);
 
-//template <typename IntT, typename MortonT>
-//void BM_QConversion_WISH_34509_2x(benchmark::State &state) {
-//  constexpr size_t ND(3);
-//
-//  Instrument inst;
-//  std::vector<TofEvent> tofEventsRaw;
-//  load_isis(inst, tofEventsRaw, dataDirPath + "/wish.h5",
-//            dataDirPath + "/WISH00034509_2x_larger.nxs",
-//            "/raw_data_1/detector_1_events");
-//
-//  for (auto _ : state) {
-//    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
-//                                     {false, Eigen::Matrix3f::Identity()}, 1000,
-//                                     20);
-//  }
-//
-//  average_counters(state);
-//}
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint8_t, uint32_t)
-//    ->Unit(benchmark::kMillisecond);
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint16_t, uint64_t)
-//    ->Unit(benchmark::kMillisecond);
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint32_t, uint128_t)
-//    ->Unit(benchmark::kMillisecond);
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint64_t, uint256_t)
-//    ->Unit(benchmark::kMillisecond);
+template <typename IntT, typename MortonT>
+void BM_QConversion_WISH_34509_2x(benchmark::State &state) {
+  constexpr size_t ND(3);
+
+  Instrument inst;
+  std::vector<TofEvent> tofEventsRaw;
+  load_isis(inst, tofEventsRaw, dataDirPath + "/wish.h5",
+            dataDirPath + "/WISH00034509_2x_larger.nxs",
+            "/raw_data_1/detector_1_events");
+
+  for (auto _ : state) {
+    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
+                                     {false, Eigen::Matrix3f::Identity()}, 1000,
+                                     20);
+  }
+
+  average_counters(state);
+}
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint8_t, uint32_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint16_t, uint64_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint64_t, uint256_t)
+    ->Unit(benchmark::kMillisecond);
 
 template <typename IntT, typename MortonT>
 void BM_QConversion_WISH_38423(benchmark::State &state) {
@@ -228,60 +228,60 @@ BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint16_t, uint64_t)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint32_t, uint128_t)
     ->Unit(benchmark::kMillisecond);
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint64_t, uint256_t)
-//    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint64_t, uint256_t)
+    ->Unit(benchmark::kMillisecond);
 
-//template <typename IntT, typename MortonT>
-//void BM_QConversion_WISH_37828(benchmark::State &state) {
-//  constexpr size_t ND(3);
-//
-//  Instrument inst;
-//  std::vector<TofEvent> tofEventsRaw;
-//  load_mantid(inst, tofEventsRaw, dataDirPath + "/wish.h5",
-//              dataDirPath + "/WISH00037828_event.nxs");
-//
-//  for (auto _ : state) {
-//    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
-//                                     {false, Eigen::Matrix3f::Identity()}, 1000,
-//                                     20);
-//  }
-//
-//  average_counters(state);
-//}
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint8_t, uint32_t)
-//    ->Unit(benchmark::kMillisecond);
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint16_t, uint64_t)
-//    ->Unit(benchmark::kMillisecond);
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint32_t, uint128_t)
-//    ->Unit(benchmark::kMillisecond);
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint64_t, uint256_t)
-//    ->Unit(benchmark::kMillisecond);
-//
-//template <typename IntT, typename MortonT>
-//void BM_QConversion_WISH_37868(benchmark::State &state) {
-//  constexpr size_t ND(3);
-//
-//  Instrument inst;
-//  std::vector<TofEvent> tofEventsRaw;
-//  load_mantid(inst, tofEventsRaw, dataDirPath + "/wish.h5",
-//              dataDirPath + "/WISH00037868_event.nxs");
-//
-//  for (auto _ : state) {
-//    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
-//                                     {false, Eigen::Matrix3f::Identity()}, 1000,
-//                                     20);
-//  }
-//
-//  average_counters(state);
-//}
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint8_t, uint32_t)
-//    ->Unit(benchmark::kMillisecond);
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint16_t, uint64_t)
-//    ->Unit(benchmark::kMillisecond);
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint32_t, uint128_t)
-//    ->Unit(benchmark::kMillisecond);
-//BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint64_t, uint256_t)
-//    ->Unit(benchmark::kMillisecond);
+template <typename IntT, typename MortonT>
+void BM_QConversion_WISH_37828(benchmark::State &state) {
+  constexpr size_t ND(3);
+
+  Instrument inst;
+  std::vector<TofEvent> tofEventsRaw;
+  load_mantid(inst, tofEventsRaw, dataDirPath + "/wish.h5",
+              dataDirPath + "/WISH00037828_event.nxs");
+
+  for (auto _ : state) {
+    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
+                                     {false, Eigen::Matrix3f::Identity()}, 1000,
+                                     20);
+  }
+
+  average_counters(state);
+}
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint8_t, uint32_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint16_t, uint64_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint64_t, uint256_t)
+    ->Unit(benchmark::kMillisecond);
+
+template <typename IntT, typename MortonT>
+void BM_QConversion_WISH_37868(benchmark::State &state) {
+  constexpr size_t ND(3);
+
+  Instrument inst;
+  std::vector<TofEvent> tofEventsRaw;
+  load_mantid(inst, tofEventsRaw, dataDirPath + "/wish.h5",
+              dataDirPath + "/WISH00037868_event.nxs");
+
+  for (auto _ : state) {
+    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
+                                     {false, Eigen::Matrix3f::Identity()}, 1000,
+                                     20);
+  }
+
+  average_counters(state);
+}
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint8_t, uint32_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint16_t, uint64_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint32_t, uint128_t)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint64_t, uint256_t)
+    ->Unit(benchmark::kMillisecond);
 
 template <typename IntT, typename MortonT>
 void BM_QConversion_TOPAZ_3132(benchmark::State &state) {
