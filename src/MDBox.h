@@ -31,9 +31,6 @@
 
 #pragma once
 
-//store events on tree leafscd
-#define STORING_EVENTS
-
 /**
  * Performs a dimension-wise comparison on two Morton numbers by masking the
  * bits of each interleaved integer.
@@ -429,8 +426,10 @@ public:
 
   template <typename LeafIter>
   void leaf_merge_leafs(LeafIter start, LeafIter finish, const size_t splitThreshold, size_t maxDepth) {
+    typename  EventType::ZCurve buffer;
     for(auto it = start; it != finish; ++it)
-      merge_z_curve(it->box.m_events.begin(), it->box.m_events.end());
+      buffer.insert(buffer.end(), it->box.m_events.begin(), it->box.m_events.end());
+    merge_z_curve(buffer.begin(), buffer.end());
 
     distributeEventsSingleThread(splitThreshold, maxDepth);
     if(!isLeaf()) {
