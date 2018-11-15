@@ -29,9 +29,10 @@ NORMAL = '\x1b[0m'
 
 class BenchmarkDriver(object):
 
-    def __init__(self, min_time):
+    def __init__(self, min_time, name = "", log_file=""):
         self.min_time = min_time
-
+        self.log_file = log_file
+        self.name = name
         self.iteration_times = []
 
     @property
@@ -46,10 +47,17 @@ class BenchmarkDriver(object):
         return self
 
     def __exit__(self, *args):
-        print(CYAN + "Iteration count:", YELLOW, len(self.iteration_times))
-        print(CYAN + "Total time:", YELLOW, self.total_time)
-        print(CYAN + "Average time:", YELLOW, self.average_time)
-        print(NORMAL)
+        print(self.name, CYAN + "Iteration count:", YELLOW, len(self.iteration_times))
+        print(self.name, CYAN + "Total time:", YELLOW, self.total_time)
+        print(self.name, CYAN + "Average time:", YELLOW, self.average_time)
+        print(self.name, NORMAL)
+        if self.log_file != "" :
+            with open(self.log_file, "a") as f:
+                print(self.name, CYAN + "Iteration count:", YELLOW, len(self.iteration_times), file=f)
+                print(self.name, CYAN + "Total time:", YELLOW, self.total_time, file=f)
+                print(self.name, CYAN + "Average time:", YELLOW, self.average_time, file=f)
+                print(self.name, NORMAL)
+
 
     def __iter__(self):
         return self
@@ -63,7 +71,7 @@ class BenchmarkDriver(object):
     next = __next__
 
 
-data_path = '/media/scratch/md_data/'
+data_path = '/home/igudich/work/MDSpaceFillingPrototype/Data'
 
 datasets = list(map(lambda f: os.path.join(data_path, f), [
     'WISH00034509.nxs',

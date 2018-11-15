@@ -21,6 +21,7 @@
 #include <numeric>
 
 #include <boost/sort/sort.hpp>
+#include <fstream>
 
 #include "BitInterleaving.h"
 #include "EventToMDEventConversion.h"
@@ -103,105 +104,178 @@ void load_and_convert(typename MDEvent<ND, IntT, MortonT>::ZCurve &mdEvents,
  * Benchmark)
  */
 void average_counters(benchmark::State &state) {
-  for (const auto &name : {"merge", "box_structure"}) {
+  for (const auto &name : {"merge"}) {
     state.counters[name] /= state.iterations();
   }
 }
 
+class Data{
+public:
+  Data(const std::vector<std::string>& fileNames, const std::string& instrumentFilename)  {
+    if(instrumentFilename.find("wish") != std::string::npos)
+      space = md_space_wish();
+    else if(instrumentFilename.find("topaz") != std::string::npos)
+      space = md_space_topaz();
+    else if(instrumentFilename.find("sxd") != std::string::npos)
+      space = md_space_sxd();
 
-void do_merge() {
+    load_instrument(instrument, dataDirPath + instrumentFilename);
+      for(auto& elem: fileNames)
+        data.insert(std::make_pair(elem, std::vector<TofEvent>()));
 
-}
+
+    for(auto& pair: data) {
+      std::cerr << "Loading " << pair.first << "\n";
+      MantidEventNexusLoader loader(dataDirPath + "/" + pair.first);
+      /* Load a mapping from the NeXus file */
+      loader.loadSpectrumDetectorMapping(instrument.spectrum_detector_mapping);
+      /* Load ToF events */
+      loader.loadAllEvents(pair.second);
+    }
+
+  }
+public:
+  Instrument instrument;
+  MDSpaceBounds<3> space;
+  std::map<std::string, std::vector<TofEvent>> data;
+};
 
 template <typename IntT, typename MortonT>
-void BM_Merge_Inplace(benchmark::State &state) {
+void dumpMortonNumbers(const std::string& filename, const std::vector<MDEvent<3, IntT, MortonT>>& events) {
+  std::fstream fs;
+  fs.open(filename.c_str(), std::ios_base::out);
+  for(const auto& event: events)
+    fs << event.mortonNumber() << "\n";
+}
+
+
+template <typename IntT, typename MortonT>
+void bm_merge(benchmark::State &state, Data& data, const std::string& fData1, const std::string& fData2) {
   constexpr size_t ND(3);
   using Event = MDEvent<ND, IntT, MortonT>;
 
   typename Event::ZCurve mdEvents1, mdEvents2;
-  load_and_convert<ND, IntT, MortonT>(mdEvents1, "/SXD30528_event.nxs", "/sxd.h5");
-  load_and_convert<ND, IntT, MortonT>(mdEvents2, "/SXD30529_event.nxs", "/sxd.h5");
+
+  convert_events(mdEvents1, data.data.at(fData1), {false, Eigen::Matrix3f::Identity()}, data.instrument, data.space);
+  boost::sort::block_indirect_sort(mdEvents1.begin(), mdEvents1.end());
+  convert_events(mdEvents2, data.data.at(fData2), {false, Eigen::Matrix3f::Identity()}, data.instrument, data.space);
+  boost::sort::block_indirect_sort(mdEvents2.begin(), mdEvents2.end());
+
+  dumpMortonNumbers(fData1 + "_morton.txt", mdEvents1);
+  dumpMortonNumbers(fData2 + "_morton.txt", mdEvents2);
+
   state.counters["md_events_curve_1"] = mdEvents1.size();
   state.counters["md_events_curve_2"] = mdEvents2.size();
 
   for (auto _ : state) {
     /* Copy first curve so that original data is not modified */
     state.PauseTiming();
-    typename Event::ZCurve mdEvents1Copy(mdEvents1);
+    MDBox<ND, IntT, MortonT> rootMdBox1(mdEvents1.begin(), mdEvents1.end());
+    rootMdBox1.distributeEvents(1000, 20);
+    MDBox<ND, IntT, MortonT> rootMdBox2(mdEvents2.begin(), mdEvents2.end());
+    rootMdBox2.distributeEvents(1000, 20);
     state.ResumeTiming();
 
     /* Merge event curves */
     {
       scoped_wallclock_timer timer(state, "merge");
-      merge_event_curves_inplace<Event>(mdEvents1Copy, mdEvents2);
-    }
-
-    /* Construct box structure */
-    MDBox<ND, IntT, MortonT> rootMdBox(mdEvents1Copy.cbegin(),
-                                       mdEvents1Copy.cend());
-    {
-      scoped_wallclock_timer timer(state, "box_structure");
-      rootMdBox.distributeEvents(1000, 20);
+      rootMdBox1.merge(rootMdBox2, 1000, 20);
     }
 
     /* Record number of events in merged curve */
     state.PauseTiming();
-    state.counters["md_events_merged"] = mdEvents1Copy.size();
+    state.counters["md_events_merged"] = rootMdBox1.totalEvents();
     state.ResumeTiming();
   }
 
   average_counters(state);
 }
-BENCHMARK_TEMPLATE(BM_Merge_Inplace, uint8_t, uint32_t)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK_TEMPLATE(BM_Merge_Inplace, uint16_t, uint64_t)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK_TEMPLATE(BM_Merge_Inplace, uint32_t, uint128_t)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK_TEMPLATE(BM_Merge_Inplace, uint64_t, uint256_t)
-    ->Unit(benchmark::kMillisecond);
+
+
+Data topaz_data({"TOPAZ_3132_event_0_10.nxs",
+                 "TOPAZ_3132_event_0_20.nxs",
+                 "TOPAZ_3132_event_0_30.nxs",
+                 "TOPAZ_3132_event_0_50.nxs",
+                 "TOPAZ_3132_event_50_100.nxs",
+                 "TOPAZ_3132_event_30_100.nxs",
+                 "TOPAZ_3132_event_20_100.nxs",
+                 "TOPAZ_3132_event_10_100.nxs",},
+                "/topaz.h5");
 
 template <typename IntT, typename MortonT>
-void BM_Merge_New(benchmark::State &state) {
-  constexpr size_t ND(3);
-  using Event = MDEvent<ND, IntT, MortonT>;
-
-  typename Event::ZCurve mdEvents1, mdEvents2;
-  load_and_convert<ND, IntT, MortonT>(mdEvents1, "/SXD30528_event.nxs", "/sxd.h5");
-  load_and_convert<ND, IntT, MortonT>(mdEvents2, "/SXD30529_event.nxs", "/sxd.h5");
-  state.counters["md_events_curve_1"] = mdEvents1.size();
-  state.counters["md_events_curve_2"] = mdEvents2.size();
-
-  for (auto _ : state) {
-    /* Merge event curves */
-    typename Event::ZCurve curve;
-    {
-      scoped_wallclock_timer timer(state, "merge");
-      merge_event_curves<Event>(curve, mdEvents1, mdEvents2);
-    }
-
-    /* Construct box structure */
-    MDBox<ND, IntT, MortonT> rootMdBox(curve.cbegin(), curve.cend());
-    {
-      scoped_wallclock_timer timer(state, "box_structure");
-      rootMdBox.distributeEvents(1000, 20);
-    }
-
-    /* Record number of events in merged curve */
-    state.PauseTiming();
-    state.counters["md_events_merged"] = curve.size();
-    state.ResumeTiming();
-  }
-
-  average_counters(state);
+void BM_Merge_Topaz_10(benchmark::State &state) {
+  bm_merge<IntT, MortonT>(state, topaz_data, "TOPAZ_3132_event_10_100.nxs", "TOPAZ_3132_event_0_10.nxs");
 }
-BENCHMARK_TEMPLATE(BM_Merge_New, uint8_t, uint32_t)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK_TEMPLATE(BM_Merge_New, uint16_t, uint64_t)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK_TEMPLATE(BM_Merge_New, uint32_t, uint128_t)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK_TEMPLATE(BM_Merge_New, uint64_t, uint256_t)
-    ->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_Merge_Topaz_10, uint16_t, uint64_t)
+->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_Merge_Topaz_10, uint32_t, uint128_t)
+->Unit(benchmark::kMillisecond);
+
+template <typename IntT, typename MortonT>
+void BM_Merge_Topaz_20(benchmark::State &state) {
+  bm_merge<IntT, MortonT>(state, topaz_data, "TOPAZ_3132_event_20_100.nxs", "TOPAZ_3132_event_0_20.nxs");
+}
+BENCHMARK_TEMPLATE(BM_Merge_Topaz_20, uint16_t, uint64_t)
+->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_Merge_Topaz_20, uint32_t, uint128_t)
+->Unit(benchmark::kMillisecond);
+
+template <typename IntT, typename MortonT>
+void BM_Merge_Topaz_30(benchmark::State &state) {
+  bm_merge<IntT, MortonT>(state, topaz_data, "TOPAZ_3132_event_30_100.nxs", "TOPAZ_3132_event_0_30.nxs");
+}
+BENCHMARK_TEMPLATE(BM_Merge_Topaz_30, uint16_t, uint64_t)
+->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_Merge_Topaz_30, uint32_t, uint128_t)
+->Unit(benchmark::kMillisecond);
+
+template <typename IntT, typename MortonT>
+void BM_Merge_Topaz_50(benchmark::State &state) {
+  bm_merge<IntT, MortonT>(state,  topaz_data,  "TOPAZ_3132_event_50_100.nxs", "TOPAZ_3132_event_0_50.nxs");
+}
+BENCHMARK_TEMPLATE(BM_Merge_Topaz_50, uint16_t, uint64_t)
+->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_Merge_Topaz_50, uint32_t, uint128_t)
+->Unit(benchmark::kMillisecond);
+
+
+
+Data sxd_data({
+               "SXD30535_event_0_60.nxs",
+               "SXD30535_event_0_87.5.nxs",
+               "SXD30535_event_0_98.nxs",
+               "SXD30535_event_60_100.nxs",
+               "SXD30535_event_87.5_100.nxs",
+               "SXD30535_event_98_100.nxs"
+               },
+              "/sxd.h5");
+
+
+template <typename IntT, typename MortonT>
+void BM_Merge_SXD_40(benchmark::State &state) {
+  bm_merge<IntT, MortonT>(state, sxd_data, "SXD30535_event_0_60.nxs", "SXD30535_event_60_100.nxs");
+}
+BENCHMARK_TEMPLATE(BM_Merge_SXD_40, uint16_t, uint64_t)
+->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_Merge_SXD_40, uint32_t, uint128_t)
+->Unit(benchmark::kMillisecond);
+
+template <typename IntT, typename MortonT>
+void BM_Merge_SXD_12(benchmark::State &state) {
+  bm_merge<IntT, MortonT>(state, sxd_data, "SXD30535_event_0_87.5.nxs", "SXD30535_event_87.5_100.nxs");
+}
+BENCHMARK_TEMPLATE(BM_Merge_SXD_12, uint16_t, uint64_t)
+->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_Merge_SXD_12, uint32_t, uint128_t)
+->Unit(benchmark::kMillisecond);
+
+template <typename IntT, typename MortonT>
+void BM_Merge_SXD_2(benchmark::State &state) {
+  bm_merge<IntT, MortonT>(state, sxd_data, "SXD30535_event_0_98.nxs", "SXD30535_event_98_100.nxs");
+}
+BENCHMARK_TEMPLATE(BM_Merge_SXD_2, uint16_t, uint64_t)
+->Unit(benchmark::kMillisecond);
+BENCHMARK_TEMPLATE(BM_Merge_SXD_2, uint32_t, uint128_t)
+->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN();
