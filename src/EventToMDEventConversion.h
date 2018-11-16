@@ -31,7 +31,6 @@
 #include "MDEvent.h"
 #include "TofEvent.h"
 #include "Types.h"
-#include "MantidDataHandling/LoadEventNexus.h"
 
 #pragma once
 
