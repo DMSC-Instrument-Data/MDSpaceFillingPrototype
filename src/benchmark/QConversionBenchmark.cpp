@@ -181,12 +181,14 @@ void BM_QConversion_WISH_34509_2x(benchmark::State &state) {
             dataDirPath + "/WISH00034509_2x_larger.nxs",
             "/raw_data_1/detector_1_events");
 
-  for (auto _ : state) {
-    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
-                                     {false, Eigen::Matrix3f::Identity()}, 1000,
-                                     20);
-  }
+  auto eventInfo = preprocess_events(tofEventsRaw);
+  auto eventList = getMantidNativeEventList(eventInfo);
 
+  for (auto _ : state) {
+        do_conversion<ND, IntT, MortonT>(
+                state, inst, eventList, md_space_wish(),
+                {false, Eigen::Matrix3f::Identity()}, 1000, 20);
+  }
   average_counters(state);
 }
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint8_t, uint32_t)
@@ -210,15 +212,11 @@ void BM_QConversion_WISH_38423(benchmark::State &state) {
   auto eventInfo = preprocess_events(tofEventsRaw);
   auto eventList = getMantidNativeEventList(eventInfo);
 
-
   for (auto _ : state) {
-    do_conversion<ND, IntT, MortonT>(state, inst, eventList, md_space_wish(),
-                                     {false, Eigen::Matrix3f::Identity()}, 1000,
-                                     20);
+        do_conversion<ND, IntT, MortonT>(
+                state, inst, eventList, md_space_wish(),
+                {false, Eigen::Matrix3f::Identity()}, 1000, 20);
   }
-
-  for(auto& it: eventList)
-    delete it;
 
   average_counters(state);
 }
@@ -240,10 +238,13 @@ void BM_QConversion_WISH_37828(benchmark::State &state) {
   load_mantid(inst, tofEventsRaw, dataDirPath + "/wish.h5",
               dataDirPath + "/WISH00037828_event.nxs");
 
+  auto eventInfo = preprocess_events(tofEventsRaw);
+  auto eventList = getMantidNativeEventList(eventInfo);
+
   for (auto _ : state) {
-    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
-                                     {false, Eigen::Matrix3f::Identity()}, 1000,
-                                     20);
+        do_conversion<ND, IntT, MortonT>(
+                state, inst, eventList, md_space_wish(),
+                {false, Eigen::Matrix3f::Identity()}, 1000, 20);
   }
 
   average_counters(state);
@@ -266,10 +267,13 @@ void BM_QConversion_WISH_37868(benchmark::State &state) {
   load_mantid(inst, tofEventsRaw, dataDirPath + "/wish.h5",
               dataDirPath + "/WISH00037868_event.nxs");
 
+  auto eventInfo = preprocess_events(tofEventsRaw);
+  auto eventList = getMantidNativeEventList(eventInfo);
+
   for (auto _ : state) {
-    do_conversion<ND, IntT, MortonT>(state, inst, tofEventsRaw, md_space_wish(),
-                                     {false, Eigen::Matrix3f::Identity()}, 1000,
-                                     20);
+    do_conversion<ND, IntT, MortonT>(
+            state, inst, eventList, md_space_wish(),
+            {false, Eigen::Matrix3f::Identity()}, 1000, 20);
   }
 
   average_counters(state);

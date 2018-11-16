@@ -17,8 +17,6 @@
  */
 
 #include <vector>
-#include "MantidTypes/Event/TofEvent.h"
-
 
 #pragma once
 
@@ -29,10 +27,17 @@ struct TofEvent {
   float weight;
 };
 
+
 using TofEventList = std::vector<TofEvent>;
 
 // Mantid event types and storage
-using MantidNativeTofEvent = Mantid::Types::Event::TofEvent;
+struct MantidNativeTofEvent {
+    int64_t pulseTimePadding;
+    double m_tof;
+    MantidNativeTofEvent(const double& tof, const double& p) : m_tof(tof) {}
+    double tof() {return m_tof;}
+
+};
 struct MantidNativeWeightedEvent : public MantidNativeTofEvent {
   /// The weight of this neutron.
   float weight;
