@@ -25,6 +25,7 @@
 #include <type_traits>
 #include <utility>
 #include <numeric>
+#include <atomic>
 
 #include "Constants.h"
 #include "Instrument.h"
