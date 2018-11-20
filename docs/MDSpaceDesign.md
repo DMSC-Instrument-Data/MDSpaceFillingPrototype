@@ -23,18 +23,42 @@ TMDE(size_t MDBox)::addEvent(const MDE &Evnt) {
   this->data.push_back(Evnt);
   return 1;
 ```
+Common scheme of appending events to the workspace is following:
 
-Here we can see two issues:
-1. One by one event adding, in fact one by one pushing back in the std::vector.  
-2. Locking the box during the adding of single events.
+First step (single thread): 
+``` 
+FOR i IN [0; n]
+    FOR j IN [0; tof_events[i]]
+        CONVERT_AND_ADD_TO_WORCSPACE_NODE(tof_event[i][j])
+    END
+END
+```
+
+![Convert and add to MD workspace](add_to_mdw.png)
+
+Second step (multiple threads):
+
+```
+    DISTRIBUTE_EVENTS_IN_TREE 
+```
+
+![Distribute events through the tree](distribute_events.png)
+
+The main issue is that the first step can't be effectively parallelized, because we need a random access to the leafs of 
+the workspace tree. Even if we provide the thread safety through mutex (to avoid adding multiple events to the same node
+with different threads at the same time) for every leaf, locks are very inefficient. 
 
 ### Proposed implementation
 
 The natural approach to solve this issues is some kind of ordering or groupping events to have the ability to append
-different groups in non blocking manner. For optimization of memory utilizing and cache usage the best way is to have the 
-continuous (in terms of memory) chunks with events corresponding to particular box, which are not fragmented during the 
-splitting the box. That means we have to introduce some mapping from Z<sup>n</sup>+ (n-dimensional positive integers, 
-box space) to Z+ (1-dimensional positive integers, memory space).
+different groups in non blocking manner. 
+
+![Append events in nonblocking manner](add_groups.png)
+
+For optimization of memory utilizing and cache usage the best way is to have the continuous (in terms of memory) chunks 
+with events corresponding to particular box, which are not fragmented during the splitting the box. That means we have 
+to introduce some mapping from Z<sup>n</sup>+ (n-dimensional positive integers, box space) to Z+ (1-dimensional positive 
+integers, memory space).
  
 The known way for providing such mapping is using space filling curves: the discrete coordinate of the
 box on this curve become the additional 1d index for any MD event and every box contains the continuous range of this 
