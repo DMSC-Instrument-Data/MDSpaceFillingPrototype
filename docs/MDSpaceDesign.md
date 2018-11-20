@@ -50,15 +50,20 @@ with different threads at the same time) for every leaf, locks are very ineffici
 
 ### Proposed implementation
 
-The natural approach to solve this issues is some kind of ordering or groupping events to have the ability to append
-different groups in non blocking manner. 
+The common idea is to split step 1 into two: conversion the time of flight event to MD event and appending to the 
+workspace. Then the conversion step can be obviously parallelized, But we still have an issue with appending events.
+The natural approach to solve this issue is some kind of ordering or groupping events to have the ability to append
+different groups in non blocking manner with multiple threads. 
 
 ![Append events in nonblocking manner](add_groups.png)
 
+For creating MD workspace from scratch we actually need sorting instead of grouping, because we have no leafs and do
+not know how to group events for each leaf.
 For optimization of memory utilizing and cache usage the best way is to have the continuous (in terms of memory) chunks 
-with events corresponding to particular box, which are not fragmented during the splitting the box. That means we have 
-to introduce some mapping from Z<sup>n</sup>+ (n-dimensional positive integers, box space) to Z+ (1-dimensional positive 
-integers, memory space).
+with events corresponding to particular box, which are not fragmented during the splitting the box (MD events should 
+keep order when box is split). That means we have 
+to introduce some mapping from Z<sup>n</sup>+ (n-dimensional positive integers, box space) with hierarchical dynamic
+structure (nested boxes) to Z+ (1-dimensional positive integers, memory space).
  
 The known way for providing such mapping is using space filling curves: the discrete coordinate of the
 box on this curve become the additional 1d index for any MD event and every box contains the continuous range of this 
@@ -79,26 +84,34 @@ case. Due to the simplicity the Morton number can be computed very fast.
 
 *And adding new portion of events:*  
 
-![Merging thw new portion](merging_md_space.png) 
+![Merging thw new portion](merging_md_space.png)
 
-### Changes to current implementation
+#### Utilizing the index
+The Morton numbers of different length provide the different discretization limits for the workspace, for example  using
+64bit Morton number for Nd space you can split the initial box into 2<sup>(64//N)*N</sup> smallest boxes, that
+corresponds the tree with the split factor 2 for each dimension of depth 64//N: for 3D maximal depth is 21, for 4d - 16, 
+and twice more for 128bit Morton number. Of course it always better to have more precision than less, but the length of 
+the Morton number affects the size of the structure that stores MD event (MDEvent) information that is the critical 
+parameter for processing performance (the dependence is linear) because of frequent copying with the respect to cache 
+efficiency and also the time to calculate the longer number is bigger. To decrease the size of the MDEvent it is 
+possible to throw theNd coordinates from the MDEvent, they can be retrieved from the morton number with the accuracy 
+bounded by the discretization limit described above. The size of the 3d lean event (MDLeanEvent<3>) with the 32bit 
+floating point coordinates is 20 (8 + 12 for coordinates) bytes, if we substitute this coordinates with 64bit Morton 
+number it is 16 bytes, 128bit Morton number - 24bytes; for 4d: 24bytes for both coordinates and 128bit Morton, 16 - 64 
+bit Morton. The options are:
 
-In fact there are only a few things to change in the current implementation of MD workspace:
-1. Add the index field in the box base class.
-2. Reimplement addEvent() and addEvents() functions. 
+1. Keep both floating point coordinates and Morton number: not so good for performance, but keep the original location 
+data.
+
+2. Keep only coordinates: then need to compute morton number every time during the appending procedure - to expensive.
+
+3. Keep only the morton number: loose accuracy comparing with floating point coordinates in some cases, but can choose
+longer Morton number to be more precise, need to compute coordinates every time.       
+
 
 ### Drawbacks
-
-1. Loosing the split factor (SplitInfo) as a parameter: automatically fixed as 2 for every axes of the box.
-2. Limited precision of the box hierarchy (the depth of tree): N/n for N bit Morton number and n dimensions, but there
-is the possibility to choose Morton number, that affects the performance.
-3. Fixed global box, the initial box can't grow with adding next portion of events, the boundaries should be defined
+1. The split factor parameter (SplitInfo) can me only be chosen from the powers of 2 (e.g. 2, 4, 8, 16...) and should be
+ the same for each dimension.
+3. Fixed global box: the initial box can't grow with adding next portion of events, the boundaries should be defined
 once from instrument or sample geometry. 
 
-### Optimization notes
-
-The main bottleneck of the approach is memory access to MDEvent object. The best optimization for this is to make the
-MDEvent object as small as possible. To reach this the floating point coordinates can be thrown out the MDEvent structure 
-and retrieved then it is needed from the Morton number of the MDEvent. Also the Morton number can be chosen small enough 
-to provide acceptable accuracy to increase performance. The most expensive part of both creating workspace and appending
-new events is sorting, that could be also adopted for the specific data at some point.
