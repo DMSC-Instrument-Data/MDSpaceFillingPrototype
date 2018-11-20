@@ -3,7 +3,7 @@
 ### Rationale
 
 The idea to change the design of MD workspace grows from the slow execution of ConvertToMD algorithm and MergeMD, 
-that used in various work flows. The reason of this is the way of appending events to the workspace. The two main use
+that are used in various work flows. The reason of this is the way of appending events to the workspace. The two main use
 cases for appending events to the workspace are: constructing the MD workspace from the existing event workspace, 
 appending the number of events to existing MD workspace (merging two workspaces). Both of this cases require "bulk"
 processing of multiple events. 
@@ -93,8 +93,8 @@ corresponds the tree with the split factor 2 for each dimension of depth 64//N: 
 and twice more for 128bit Morton number. Of course it always better to have more precision than less, but the length of 
 the Morton number affects the size of the structure that stores MD event (MDEvent) information that is the critical 
 parameter for processing performance (the dependence is linear) because of frequent copying with the respect to cache 
-efficiency and also the time to calculate the longer number is bigger. To decrease the size of the MDEvent it is 
-possible to throw theNd coordinates from the MDEvent, they can be retrieved from the morton number with the accuracy 
+efficiency, and also the time to calculate the longer number is bigger. To decrease the size of the MDEvent it is 
+possible to throw the Nd coordinates from the MDEvent, they can be retrieved from the morton number with the accuracy 
 bounded by the discretization limit described above. The size of the 3d lean event (MDLeanEvent<3>) with the 32bit 
 floating point coordinates is 20 (8 + 12 for coordinates) bytes, if we substitute this coordinates with 64bit Morton 
 number it is 16 bytes, 128bit Morton number - 24bytes; for 4d: 24bytes for both coordinates and 128bit Morton, 16 - 64 
