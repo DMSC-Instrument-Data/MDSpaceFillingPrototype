@@ -95,7 +95,6 @@ void do_conversion(benchmark::State &state, const Instrument &inst,
     rootMdBox.distributeEvents(splitThreshold, maxBoxTreeDepth);
   }
 
-  benchmark::DoNotOptimize(mdEvents);
 }
 
 void load_isis(Instrument &inst, std::vector<TofEvent> &events,
@@ -152,6 +151,9 @@ void BM_QConversion_WISH_34509(benchmark::State &state) {
   auto eventInfo = preprocess_events(tofEventsRaw);
   auto eventList = getMantidNativeEventList(eventInfo);
 
+  eventInfo.spectrum_to_events.clear();
+  tofEventsRaw.clear();
+
   for (auto _ : state) {
     do_conversion<ND, IntT, MortonT>(state, inst, eventList, md_space_wish(),
                                      {false, Eigen::Matrix3f::Identity()}, 1000,
@@ -184,12 +186,17 @@ void BM_QConversion_WISH_34509_2x(benchmark::State &state) {
   auto eventInfo = preprocess_events(tofEventsRaw);
   auto eventList = getMantidNativeEventList(eventInfo);
 
+  eventInfo.spectrum_to_events.clear();
+  tofEventsRaw.clear();
+
   for (auto _ : state) {
         do_conversion<ND, IntT, MortonT>(
                 state, inst, eventList, md_space_wish(),
                 {false, Eigen::Matrix3f::Identity()}, 1000, 20);
   }
   average_counters(state);
+  for(auto& it: eventList)
+    delete it;
 }
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_34509_2x, uint8_t, uint32_t)
     ->Unit(benchmark::kMillisecond);
@@ -212,6 +219,9 @@ void BM_QConversion_WISH_38423(benchmark::State &state) {
   auto eventInfo = preprocess_events(tofEventsRaw);
   auto eventList = getMantidNativeEventList(eventInfo);
 
+  eventInfo.spectrum_to_events.clear();
+  tofEventsRaw.clear();
+
   for (auto _ : state) {
         do_conversion<ND, IntT, MortonT>(
                 state, inst, eventList, md_space_wish(),
@@ -219,6 +229,8 @@ void BM_QConversion_WISH_38423(benchmark::State &state) {
   }
 
   average_counters(state);
+  for(auto& it: eventList)
+    delete it;
 }
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_38423, uint8_t, uint32_t)
     ->Unit(benchmark::kMillisecond);
@@ -241,6 +253,9 @@ void BM_QConversion_WISH_37828(benchmark::State &state) {
   auto eventInfo = preprocess_events(tofEventsRaw);
   auto eventList = getMantidNativeEventList(eventInfo);
 
+  eventInfo.spectrum_to_events.clear();
+  tofEventsRaw.clear();
+
   for (auto _ : state) {
         do_conversion<ND, IntT, MortonT>(
                 state, inst, eventList, md_space_wish(),
@@ -248,6 +263,8 @@ void BM_QConversion_WISH_37828(benchmark::State &state) {
   }
 
   average_counters(state);
+  for(auto& it: eventList)
+    delete it;
 }
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_37828, uint8_t, uint32_t)
     ->Unit(benchmark::kMillisecond);
@@ -270,12 +287,17 @@ void BM_QConversion_WISH_37868(benchmark::State &state) {
   auto eventInfo = preprocess_events(tofEventsRaw);
   auto eventList = getMantidNativeEventList(eventInfo);
 
+  eventInfo.spectrum_to_events.clear();
+  tofEventsRaw.clear();
+
   for (auto _ : state) {
     do_conversion<ND, IntT, MortonT>(
             state, inst, eventList, md_space_wish(),
             {false, Eigen::Matrix3f::Identity()}, 1000, 20);
   }
 
+  for(auto& it: eventList)
+    delete it;
   average_counters(state);
 }
 BENCHMARK_TEMPLATE(BM_QConversion_WISH_37868, uint8_t, uint32_t)
@@ -299,6 +321,9 @@ void BM_QConversion_TOPAZ_3132(benchmark::State &state) {
   auto eventInfo = preprocess_events(tofEventsRaw);
   auto eventList = getMantidNativeEventList(eventInfo);
 
+  eventInfo.spectrum_to_events.clear();
+  tofEventsRaw.clear();
+
   for (auto _ : state) {
     do_conversion<ND, IntT, MortonT>(
         state, inst, eventList, md_space_topaz(),
@@ -306,7 +331,6 @@ void BM_QConversion_TOPAZ_3132(benchmark::State &state) {
   }
 
   average_counters(state);
-
   for(auto& it: eventList)
     delete it;
 }
@@ -331,6 +355,9 @@ void BM_QConversion_SXD_23767(benchmark::State &state) {
   auto eventInfo = preprocess_events(tofEventsRaw);
   auto eventList = getMantidNativeEventList(eventInfo);
 
+  eventInfo.spectrum_to_events.clear();
+  tofEventsRaw.clear();
+
   for (auto _ : state) {
     do_conversion<ND, IntT, MortonT>(state, inst, eventList, md_space_sxd(),
                                      {false, Eigen::Matrix3f::Identity()}, 1000,
@@ -338,7 +365,6 @@ void BM_QConversion_SXD_23767(benchmark::State &state) {
   }
 
   average_counters(state);
-
   for(auto& it: eventList)
     delete it;
 }
