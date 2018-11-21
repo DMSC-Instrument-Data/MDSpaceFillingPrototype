@@ -3,8 +3,8 @@
 ### Rationale
 
 The idea to change the design of MD workspace grows from the slow execution of ConvertToMD algorithm and MergeMD, 
-that are used in various work flows. The reason of this is the way of appending events to the workspace. The two main use
-cases for appending events to the workspace are: constructing the MD workspace from the existing event workspace, 
+that are used in various work flows. The reason of this is the way of appending events to the workspace. The two main 
+use cases for appending events to the workspace are: constructing the MD workspace from the existing event workspace, 
 appending the number of events to existing MD workspace (merging two workspaces). Both of this cases require "bulk"
 processing of multiple events. 
 
@@ -100,14 +100,33 @@ floating point coordinates is 20 (8 + 12 for coordinates) bytes, if we substitut
 number it is 16 bytes, 128bit Morton number - 24bytes; for 4d: 24bytes for both coordinates and 128bit Morton, 16 - 64 
 bit Morton. The options are:
 
-1. Keep both floating point coordinates and Morton number: not so good for performance, but keep the original location 
-data.
+#####1. Keep both floating point coordinates and Morton number. 
+In this case we would save all interfaces, formats and so on, but this is not so good for performance of proposed
+algorithms for merging and appending events, because of bigger size of MDEvent. This is the simplest case for
+reimplementation in current version.
 
-2. Keep only coordinates: then need to compute morton number every time during the appending procedure - to expensive.
+#####2. Keep only coordinates.
+Follow this approach we need to compute morton number every time during the appending procedure (sorting and merging), 
+that could be too much expensive, especially for sorting, also we need to provide access to the top level bounding box 
+from every single event to compute the Morton number. This option is raqther simple for implementation but less 
+promising in the performance field.
 
-3. Keep only the morton number: loose accuracy comparing with floating point coordinates in some cases, but can choose
-longer Morton number to be more precise, need to compute coordinates every time.       
+#####3. Keep only the morton number. 
+We can lose accuracy comparing with floating point coordinates in some cases, but can choose longer Morton number to be 
+more precise. We need to compute coordinates every time, so access the top level bounding box from every single event.
+That means that we need to push some reference to bounding box through all  calls in chain to the getCoordinates(). 
+And also we need to reimplement all functions that change the floating point coordinates (workspace tranformations) to 
+transform only the top level bounding box. This option is the most labor-consuming.         
 
+####4. Switch between the Morton number and floating point coordinates.
+Here we can store either morton number or coordinates in the same memory and switch between them. As in 3 we can lose 
+accuracy some time (if use 64bit Morton number in 3d space) or have small memory overhead in MDEvent (if use 128bit 
+Morton number in 3d space), we also need to control the state of this single piece of memory. The switching operation 
+also require access to top level bounding box but this operation should be applied to whole box structure synchronously,
+so bounding box could be passed as an argument to this switch function.
+
+###External storage formats
+The proposed implementation will not affect any external storage formats.   
 
 ### Drawbacks
 1. The split factor parameter (SplitInfo) can me only be chosen from the powers of 2 (e.g. 2, 4, 8, 16...) and should be
