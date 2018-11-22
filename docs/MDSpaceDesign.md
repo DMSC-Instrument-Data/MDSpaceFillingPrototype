@@ -89,8 +89,8 @@ case. Due to the simplicity the Morton number can be computed very fast.
 #### Utilizing the index
 The Morton numbers of different length provide the different discretization limits for the workspace, for example  using
 64bit Morton number for Nd space you can split the initial box into 2<sup>(64//N)*N</sup> smallest boxes, that
-corresponds the tree with the split factor 2 for each dimension of depth 64//N: for 3D maximal depth is 21 bins per 
-dimension 2<sup>21</sup>, for 4d depth is 16, bins per dimension 2<sup>16</sup>, and twice more for 128bit Morton number. 
+corresponds the tree with the split factor 2 for each dimension of depth 64//N: for 3D maximal depth is 21, bins per 
+dimension ~2M, for 4d depth is 16, bins per dimension ~65K, and twice more for 128bit Morton number. 
 It seems that 128bit Morton numbers cover all possible use cases, in many scenarios 64bit would be sufficient. The
 setting to choose Morton number length could be provided.  Of course it always better to have more precision than less,
 but the length of 
@@ -111,15 +111,16 @@ memory overhead, that makes it less attractive. This is the simplest case for re
 ##### 2. Keep only coordinates.
 Follow this approach we need to compute morton number every time during the appending procedure (sorting and merging), 
 that could be too much expensive, especially for sorting, also we need to provide access to the top level bounding box 
-from every single event to compute the Morton number. This option is raqther simple for implementation but less 
-promising in the performance field.
+from every single event to compute the Morton number. This option is rather simple for implementation but less 
+promising in the performance field, sorting is ~10 times slower in this case for the same length of the Morton number.
 
 ##### 3. Keep only the morton number. 
 We can lose accuracy comparing with floating point coordinates in some cases, but can choose longer Morton number to be 
 more precise. We need to compute coordinates every time, so access the top level bounding box from every single event.
 That means that we need to push some reference to bounding box through all  calls in chain to the getCoordinates(). 
-And also we need to reimplement all functions that change the floating point coordinates (workspace tranformations) to 
-transform only the top level bounding box. This option is the most labor-consuming.         
+And also we need to reimplement all functions that change the floating point coordinates (workspace transformations) to 
+transform only the top level bounding box. This option is the most labor-consuming, my optimistic estimate would be 3-4 
+months.         
 
 ##### 4. Switch between the Morton number and floating point coordinates.
 Here we can store either morton number or coordinates in the same memory and switch between them. As in 3 we can lose 
