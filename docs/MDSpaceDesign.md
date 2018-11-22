@@ -118,7 +118,7 @@ That means that we need to push some reference to bounding box through all  call
 And also we need to reimplement all functions that change the floating point coordinates (workspace tranformations) to 
 transform only the top level bounding box. This option is the most labor-consuming.         
 
-#### 4. Switch between the Morton number and floating point coordinates.
+##### 4. Switch between the Morton number and floating point coordinates.
 Here we can store either morton number or coordinates in the same memory and switch between them. As in 3 we can lose 
 accuracy some time (if use 64bit Morton number in 3d space) or have small memory overhead in MDEvent (if use 128bit 
 Morton number in 3d space), we also need to control the state of this single piece of memory. The switching operation 
