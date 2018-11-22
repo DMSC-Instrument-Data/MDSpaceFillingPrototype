@@ -89,8 +89,11 @@ case. Due to the simplicity the Morton number can be computed very fast.
 #### Utilizing the index
 The Morton numbers of different length provide the different discretization limits for the workspace, for example  using
 64bit Morton number for Nd space you can split the initial box into 2<sup>(64//N)*N</sup> smallest boxes, that
-corresponds the tree with the split factor 2 for each dimension of depth 64//N: for 3D maximal depth is 21, for 4d - 16, 
-and twice more for 128bit Morton number. Of course it always better to have more precision than less, but the length of 
+corresponds the tree with the split factor 2 for each dimension of depth 64//N: for 3D maximal depth is 21 bins per 
+dimension 2<sup>21</sup>, for 4d depth is 16, bins per dimension 2<sup>16</sup>, and twice more for 128bit Morton number. 
+It seems that 128bit Morton numbers cover all possible use cases, in many scenarios 64bit would be sufficient. The
+setting to choose Morton number length could be provided.  Of course it always better to have more precision than less,
+but the length of 
 the Morton number affects the size of the structure that stores MD event (MDEvent) information that is the critical 
 parameter for processing performance (the dependence is linear) because of frequent copying with the respect to cache 
 efficiency, and also the time to calculate the longer number is bigger. To decrease the size of the MDEvent it is 
@@ -102,8 +105,8 @@ bit Morton. The options are:
 
 ##### 1. Keep both floating point coordinates and Morton number. 
 In this case we would save all interfaces, formats and so on, but this is not so good for performance of proposed
-algorithms for merging and appending events, because of bigger size of MDEvent. This is the simplest case for
-reimplementation in current version.
+algorithms for merging and appending events, because of bigger size of MDEvent. Also with approach leads to significant
+memory overhead, that makes it less attractive. This is the simplest case for reimplementation in current version.
 
 ##### 2. Keep only coordinates.
 Follow this approach we need to compute morton number every time during the appending procedure (sorting and merging), 
@@ -125,12 +128,17 @@ Morton number in 3d space), we also need to control the state of this single pie
 also require access to top level bounding box but this operation should be applied to whole box structure synchronously,
 so bounding box could be passed as an argument to this switch function.
 
+#### Access to the global box.
+We can consider the one global box (hardcoded or global variable) big enough for any instrument or coordinates in any
+workspace, in this case we should use te 128bit Morton numbers and would not lose the accuracy.     
+
 ### External storage formats
-The proposed implementation will not affect any external storage formats.   
+The proposed implementation will not affect any external storage formats, because in any case we would have the 
+floating point coordinates to store.   
 
 ### Drawbacks
 1. The split factor parameter (SplitInfo) can me only be chosen from the powers of 2 (e.g. 2, 4, 8, 16...) and should be
  the same for each dimension.
-3. Fixed global box: the initial box can't grow with adding next portion of events, the boundaries should be defined
-once from instrument or sample geometry. 
+2. Fixed global box. Changing the global box boundaries is equivalent to constructing all the structure from scratch, so
+it is very expensive to expand global box during the appending events.
 
