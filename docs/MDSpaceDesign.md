@@ -143,3 +143,20 @@ floating point coordinates to store.
 2. Fixed global box. Changing the global box boundaries is equivalent to constructing all the structure from scratch, so
 it is very expensive to expand global box during the appending events.
 
+### Some benchmarks results
+
+#### Workspace creation
+
+#### Merging workspaces
+
+For this benchmarks the existing files have been split into 2 chunks with some filtering provided by MantidPlot. The
+first column in the table is the relation between chunks in percentage of the initial file. Other columns contain
+time in seconds.
+
+*Some SXD file, number of events ~= 53M, number of pixels ~= 45K*
+
+![SXD data](sxd_merge_benchmark.png)
+
+*Some TOPAZ file, number of events ~= 15M, number of pixels ~= 900K*
+
+![TOPAZ data](topaz_merge_benchmark.png)
