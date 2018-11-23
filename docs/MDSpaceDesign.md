@@ -89,8 +89,11 @@ case. Due to the simplicity the Morton number can be computed very fast.
 ### Utilizing the index
 The Morton numbers of different length provide the different discretization limits for the workspace, for example  using
 64bit Morton number for Nd space you can split the initial box into 2<sup>(64//N)*N</sup> smallest boxes, that
-corresponds the tree with the split factor 2 for each dimension of depth 64//N: for 3D maximal depth is 21, bins per 
-dimension ~2M, for 4d depth is 16, bins per dimension ~65K, and twice more for 128bit Morton number. 
+corresponds the tree with the split factor 2 for each dimension of depth 64//N. The table below contains the maximal
+tree depth and number of bins per dimension in different cases.
+
+![128bit and 64bit Morton numbers related to tree structure](bins_and_depth.png)
+
 It seems that 128bit Morton numbers cover all possible use cases, in many scenarios 64bit would be sufficient. The
 setting to choose Morton number length could be provided.  Of course it always better to have more precision than less,
 but the length of 
