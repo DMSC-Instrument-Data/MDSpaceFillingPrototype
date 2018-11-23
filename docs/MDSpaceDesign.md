@@ -1,6 +1,6 @@
-## Multidimentional workspace design
+# Multidimentional workspace design
 
-### Rationale
+## Rationale
 
 The idea to change the design of MD workspace grows from the slow execution of ConvertToMD algorithm and MergeMD, 
 that are used in various work flows. The reason of this is the way of appending events to the workspace. The two main 
@@ -48,7 +48,7 @@ The main issue is that the first step can't be effectively parallelized, because
 the workspace tree. Even if we provide the thread safety through mutex (to avoid adding multiple events to the same node
 with different threads at the same time) for every leaf, locks are very inefficient. 
 
-### Proposed implementation
+## Proposed implementation
 
 The common idea is to split step 1 into two: conversion the time of flight event to MD event and appending to the 
 workspace. Then the conversion step can be obviously parallelized, But we still have an issue with appending events.
@@ -86,7 +86,7 @@ case. Due to the simplicity the Morton number can be computed very fast.
 
 ![Merging thw new portion](merging_md_space.png)
 
-#### Utilizing the index
+### Utilizing the index
 The Morton numbers of different length provide the different discretization limits for the workspace, for example  using
 64bit Morton number for Nd space you can split the initial box into 2<sup>(64//N)*N</sup> smallest boxes, that
 corresponds the tree with the split factor 2 for each dimension of depth 64//N: for 3D maximal depth is 21, bins per 
@@ -103,18 +103,18 @@ floating point coordinates is 20 (8 + 12 for coordinates) bytes, if we substitut
 number it is 16 bytes, 128bit Morton number - 24bytes; for 4d: 24bytes for both coordinates and 128bit Morton, 16 - 64 
 bit Morton. The options are:
 
-##### 1. Keep both floating point coordinates and Morton number. 
+#### 1. Keep both floating point coordinates and Morton number.
 In this case we would save all interfaces, formats and so on, but this is not so good for performance of proposed
 algorithms for merging and appending events, because of bigger size of MDEvent. Also with approach leads to significant
 memory overhead, that makes it less attractive. This is the simplest case for reimplementation in current version.
 
-##### 2. Keep only coordinates.
+#### 2. Keep only coordinates.
 Follow this approach we need to compute morton number every time during the appending procedure (sorting and merging), 
 that could be too much expensive, especially for sorting, also we need to provide access to the top level bounding box 
 from every single event to compute the Morton number. This option is rather simple for implementation but less 
 promising in the performance field, sorting is ~10 times slower in this case for the same length of the Morton number.
 
-##### 3. Keep only the morton number. 
+#### 3. Keep only the morton number.
 We can lose accuracy comparing with floating point coordinates in some cases, but can choose longer Morton number to be 
 more precise. We need to compute coordinates every time, so access the top level bounding box from every single event.
 That means that we need to push some reference to bounding box through all  calls in chain to the getCoordinates(). 
@@ -122,7 +122,7 @@ And also we need to reimplement all functions that change the floating point coo
 transform only the top level bounding box. This option is the most labor-consuming, my optimistic estimate would be 3-4 
 months.         
 
-##### 4. Switch between the Morton number and floating point coordinates.
+#### 4. Switch between the Morton number and floating point coordinates.
 Here we can store either Morton number or coordinates in the same memory and switch between them. As in 3 we can lose
 accuracy some time (if use 64bit Morton number in 3d space) or have small memory overhead in MDEvent (if use 128bit 
 Morton number in 3d space). In principle if we are very concerned about memory we can use "96bit" Morton number.
@@ -136,32 +136,32 @@ void MDWorkSpace::appendEvents(EventType events) {
 ```
 This additional step for restoring coordinates takes less than 10% of sorting time only.
 
-#### Access to the global box.
+### Access to the global box.
 We can consider the one global box (hardcoded or global variable) big enough for any instrument or coordinates in any
 workspace, in this case we should use te 128bit Morton numbers and would not lose the accuracy.     
 
-### External storage formats
+## External storage formats
 The proposed implementation will not affect any external storage formats, because in any case we would have the 
 floating point coordinates to store.   
 
-### Drawbacks
+## Drawbacks
 1. The split factor parameter (SplitInfo) can me only be chosen from the powers of 2 (e.g. 2, 4, 8, 16...) and should be
  the same for each dimension.
 2. Fixed global box. Changing the global box boundaries is equivalent to constructing all the structure from scratch, so
 it is very expensive to expand global box during the appending events.
 
-### Some benchmarks results
+## Some benchmarks results
 
 Below there are some results of benchmarking for workspace creation and merging for prototypes with different Morton
 numbers in comparison with current mantid implementation.
 
-#### Workspace creation
+### Workspace creation
 
 Here are the results of workspace creation benchmarks for different files of different instruments, time in seconds:
 
 ![Creation of the workspace](creation_benchmark.png)
 
-#### Merging workspaces
+### Merging workspaces
 
 For this benchmarks the existing files have been split into 2 chunks with some filtering provided by MantidPlot. The
 first column in the table is the relation between chunks in percentage of the initial file. Other columns contain
