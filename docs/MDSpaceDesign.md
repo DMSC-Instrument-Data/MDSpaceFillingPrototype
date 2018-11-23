@@ -123,11 +123,18 @@ transform only the top level bounding box. This option is the most labor-consumi
 months.         
 
 ##### 4. Switch between the Morton number and floating point coordinates.
-Here we can store either morton number or coordinates in the same memory and switch between them. As in 3 we can lose 
+Here we can store either Morton number or coordinates in the same memory and switch between them. As in 3 we can lose
 accuracy some time (if use 64bit Morton number in 3d space) or have small memory overhead in MDEvent (if use 128bit 
-Morton number in 3d space), we also need to control the state of this single piece of memory. The switching operation 
-also require access to top level bounding box but this operation should be applied to whole box structure synchronously,
-so bounding box could be passed as an argument to this switch function.
+Morton number in 3d space). In principle if we are very concerned about memory we can use "96bit" Morton number.
+The switching operation should be applied only internally in functions that operate appending events, like following:
+``` c++
+void MDWorkSpace::appendEvents(EventType events) {
+    restoreMortonIndex();
+// Append events here
+    restoreCoordinates();
+}
+```
+This additional step for restoring coordinates takes less than 10% of sorting time only.
 
 #### Access to the global box.
 We can consider the one global box (hardcoded or global variable) big enough for any instrument or coordinates in any
@@ -145,7 +152,14 @@ it is very expensive to expand global box during the appending events.
 
 ### Some benchmarks results
 
+Below there are some results of benchmarking for workspace creation and merging for prototypes with different Morton
+numbers in comparison with current mantid implementation.
+
 #### Workspace creation
+
+Here are the results of workspace creation benchmarks for different files of different instruments, time in seconds:
+
+![Creation of the workspace](creation_benchmark.png)
 
 #### Merging workspaces
 
