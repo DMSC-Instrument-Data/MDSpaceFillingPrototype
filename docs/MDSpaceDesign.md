@@ -139,7 +139,9 @@ void MDWorkSpace::appendEvents(EventType events) {
 ```
 This additional steps for restoring coordinates takes less than 15% of sorting time only. In this approach we should
 change only the algorithms, which are related to the changing of the tree structure, concretely: appending new events
-and build the workspace, this are only a few functions. All other functionality would not be involved.
+and build the workspace, this are only a few functions. All other functionality would not be involved. Also
+we can even leave a possibility to use the old version of structure without any changes and algorithms and add indexing
+as an option: we should use an index not longer than coordinates storage in this case.
 
 ### Access to the global box.
 We can consider the one global box (hardcoded or global variable) big enough for any instrument or coordinates in any
