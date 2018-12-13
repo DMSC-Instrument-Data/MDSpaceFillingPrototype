@@ -14,6 +14,7 @@ set(UNIT_TESTS
   MDBox4DTest
   MDEventTest
   MergeTest
+  Morton96Test
   RebinTest
   TestUtilTest
 )

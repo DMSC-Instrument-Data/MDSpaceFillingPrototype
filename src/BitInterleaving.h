@@ -19,8 +19,6 @@
 #include <cinttypes>
 #include <cstddef>
 
-#include <boost/multiprecision/cpp_int.hpp>
-
 #include "Types.h"
 
 #pragma once
@@ -152,8 +150,6 @@ template <> uint16_t compact<3, uint16_t, uint64_t>(uint64_t x) {
   x = (x | x >> 32) & 0xffff;
   return (uint16_t)x;
 }
-
-using uint128_t = boost::multiprecision::uint128_t;
 
 template <> uint128_t pad<1, uint32_t, uint128_t>(uint32_t v) {
   using namespace boost::multiprecision::literals;
@@ -319,6 +315,10 @@ MortonT interleave(const IntArray<ND, IntT> &coord) {
   return retVal;
 }
 
+template <size_t ND, typename IntT>
+Morton96 interleave(const IntArray<3, uint32_t> &coord) {
+  return Morton96(interleave<ND, IntT, uint128_t>(coord));
+}
 /**
  * Deinterleaves a Morton number into an integer coordinate.
  *
@@ -335,4 +335,9 @@ IntArray<ND, IntT> deinterleave(const MortonT z) {
     retVal[i] = (IntT)compact<ND - 1, IntT, MortonT>(z >> i);
   }
   return retVal;
+}
+
+template <size_t ND, typename IntT>
+IntArray<ND, IntT> deinterleave(const Morton96& z) {
+  return deinterleave<ND, IntT, uint128_t >(z.to_uint128_t());
 }
